@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Facebook,
   Mail,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLenis } from '@/components/providers/lenis-context';
+import { VBIZ_LOGO } from '@/lib/site-assets';
 
 const PLATFORM_LINKS = [
   ['/', 'Home'],
@@ -113,10 +115,11 @@ export const Footer = () => {
           {/* Brand — full width on mobile */}
           <div className="col-span-2 md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left border-b border-white/5 pb-8 md:border-0 md:pb-0">
             <Link href="/" className="group flex items-center mb-4 md:mb-8">
-              <img
-                src="https://www.vbizme.com/wp-content/uploads/2025/02/logo-vbizme.webp"
+              <Image
+                src={VBIZ_LOGO.src}
                 alt="vBiz Me Logo"
-                referrerPolicy="no-referrer"
+                width={VBIZ_LOGO.width}
+                height={VBIZ_LOGO.height}
                 className="h-12 md:h-[78px] w-auto object-contain transition-transform duration-500 group-hover:scale-105"
               />
             </Link>

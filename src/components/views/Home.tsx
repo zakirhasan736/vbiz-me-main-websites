@@ -327,7 +327,8 @@ const qrSliderItems = [
 
 // Hero section with video on mockup on the right
 const Hero = () => {
-  const { revealReady } = usePageTransition();
+  const { revealReady, animationKey } = usePageTransition();
+  const animateHeroEntrance = animationKey > 0;
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 1000], [0, 150]);
   const y2 = useTransform(scrollY, [0, 1000], [0, 250]);
@@ -412,7 +413,7 @@ const Hero = () => {
         
         {/* Left column: Compelling pitch */}
         <motion.div 
-          initial={{ opacity: 0, x: -50 }}
+          initial={animateHeroEntrance ? { opacity: 0, x: -50 } : false}
           animate={revealReady ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="lg:col-span-7 flex flex-col items-start text-left"
@@ -427,6 +428,7 @@ const Hero = () => {
             tag="h1"
             highlightedWords={["Sells"]}
             centered={false}
+            priority
           />
           
           <RevealParagraph 
@@ -564,14 +566,17 @@ const Hero = () => {
               </div>
             </div>
 
-            {/* Bottom Profile Anchor */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-neutral-950/90 backdrop-blur-xl border-t border-white/15 flex gap-2.5 items-center z-20">
+            {/* Bottom Profile Anchor (decorative demo UI — not page structure) */}
+            <div
+              className="absolute bottom-0 left-0 right-0 p-4 bg-neutral-950/90 backdrop-blur-xl border-t border-white/15 flex gap-2.5 items-center z-20"
+              aria-hidden="true"
+            >
               <div className="w-9 h-9 rounded-full overflow-hidden border border-brand-gold/30 relative">
                 <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=80" alt="Avatar" className="w-full h-full object-cover" />
                 <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-neutral-950 rounded-full" />
               </div>
               <div className="flex-grow min-w-0">
-                <h4 className="text-[11px] font-semibold text-white truncate tracking-wide">Michael Casanova</h4>
+                <p className="text-[11px] font-semibold text-white truncate tracking-wide">Michael Casanova</p>
                 <p className="text-[9px] text-neutral-400 font-light truncate">Hartford Motors Advisor</p>
               </div>
               <button className="h-7 px-3.5 rounded-full bg-brand-gold text-black font-semibold text-[9px] tracking-wider uppercase shrink-0 hover:bg-yellow-400 active:scale-95 transition-all shadow-[0_2px_10px_rgba(212,175,55,0.25)]">

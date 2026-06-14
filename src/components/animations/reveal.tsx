@@ -21,18 +21,47 @@ export const RevealText = ({
   tag: Tag = 'h2',
   highlightedWords = [],
   centered = true,
+  priority = false,
 }: {
   text: string;
   className?: string;
   tag?: React.ElementType;
   highlightedWords?: string[];
   centered?: boolean;
+  /** Above-the-fold titles: visible on first paint for LCP (no stagger/blur delay). */
+  priority?: boolean;
 }) => {
   const words = text.split(' ');
   const { revealReady } = usePageTransition();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const shouldReveal = revealReady && isInView;
+
+  if (priority) {
+    return (
+      <Tag
+        data-reveal-title
+        ref={ref}
+        className={`${className} ${centered ? 'text-center justify-center mx-auto' : ''}`}
+      >
+        {words.map((word, idx) => {
+          const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, '');
+          const isHighlighted = highlightedWords.some(
+            (h) => h.toLowerCase() === cleanWord.toLowerCase(),
+          );
+
+          return (
+            <span
+              key={idx}
+              className={`inline-block mr-[0.22em] ${isHighlighted ? 'text-brand-gold font-semibold' : ''}`}
+            >
+              {word}
+            </span>
+          );
+        })}
+      </Tag>
+    );
+  }
 
   return (
     <Tag

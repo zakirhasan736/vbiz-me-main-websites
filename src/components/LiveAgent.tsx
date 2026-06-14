@@ -455,12 +455,12 @@ export function LiveAgent() {
 
     let removeListeners: (() => void) | null = null;
     let mounted = true;
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     const tryAutoConnect = async () => {
-      setIsOpen(true);
       await startConnection();
       if (mounted && isConnectedRef.current) {
-        setIsOpen(true);
         return;
       }
 
@@ -487,11 +487,29 @@ export function LiveAgent() {
       window.addEventListener('keydown', handleFirstGesture);
     };
 
-    void tryAutoConnect();
+    const scheduleAutoConnect = () => {
+      if (typeof window.requestIdleCallback === 'function') {
+        idleId = window.requestIdleCallback(() => {
+          void tryAutoConnect();
+        }, { timeout: 8000 });
+      } else {
+        timeoutId = setTimeout(() => {
+          void tryAutoConnect();
+        }, 4000);
+      }
+    };
+
+    scheduleAutoConnect();
 
     return () => {
       mounted = false;
       removeListeners?.();
+      if (idleId !== undefined && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+      }
     };
   }, [apiKey, keyReady, startConnection]);
 
@@ -513,7 +531,7 @@ export function LiveAgent() {
     <motion.div
       drag
       dragMomentum={false}
-      className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[100] flex flex-col items-end gap-4 pointer-events-none"
+      className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[100] flex flex-col items-end gap-4 pointer-events-none w-14"
     >
       <AnimatePresence>
         {isOpen && (
@@ -555,9 +573,9 @@ export function LiveAgent() {
             </div>
 
             {error && (
-              <div className="text-red-400 text-xs flex items-center gap-1.5 p-2 bg-red-400/10 rounded-xl z-10 border border-red-500/20">
-                <AlertCircle size={14} className="shrink-0" />
-                <span>{error}</span>
+              <div className="text-red-400 text-xs flex items-start gap-1.5 p-2 bg-red-400/10 rounded-xl z-10 border border-red-500/20 max-h-24 overflow-y-auto">
+                <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                <span className="line-clamp-4 whitespace-pre-line">{error}</span>
               </div>
             )}
 
@@ -565,32 +583,42 @@ export function LiveAgent() {
               {isConnected ? (
                 <>
                   <button
+                    type="button"
                     onClick={() => setIsMuted(!isMuted)}
+                    aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
+                    aria-pressed={isMuted}
                     className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all ${
                       isMuted
                         ? 'bg-red-500/10 border-red-500/30 text-red-400'
                         : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
                     }`}
                   >
-                    {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
+                    {isMuted ? <MicOff size={18} aria-hidden="true" /> : <Mic size={18} aria-hidden="true" />}
                   </button>
                   <button
+                    type="button"
                     onClick={toggleConnection}
+                    aria-label="End voice chat"
                     className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white transition-all active:scale-95 border border-red-400"
                   >
-                    <Square size={20} fill="currentColor" />
+                    <Square size={20} fill="currentColor" aria-hidden="true" />
                   </button>
                 </>
               ) : (
                 <button
+                  type="button"
                   onClick={toggleConnection}
                   disabled={isConnecting}
+                  aria-label={
+                    isConnecting ? 'Connecting to Live Agent' : 'Start voice chat with Live Agent'
+                  }
+                  aria-busy={isConnecting}
                   className="w-16 h-16 rounded-full bg-zinc-100 hover:bg-white disabled:opacity-50 flex items-center justify-center text-zinc-950 transition-all ml-auto hover:scale-105 active:scale-95 shadow-sm"
                 >
                   {isConnecting ? (
-                    <Loader2 size={24} className="animate-spin text-zinc-500" />
+                    <Loader2 size={24} className="animate-spin text-zinc-500" aria-hidden="true" />
                   ) : (
-                    <Mic size={24} strokeWidth={2.5} />
+                    <Mic size={24} strokeWidth={2.5} aria-hidden="true" />
                   )}
                 </button>
               )}
@@ -600,6 +628,7 @@ export function LiveAgent() {
       </AnimatePresence>
 
       <button
+        type="button"
         onClick={() => {
           if (isOpen) {
             setIsOpen(false);
@@ -610,13 +639,15 @@ export function LiveAgent() {
             void startConnection();
           }
         }}
+        aria-label={isOpen ? 'Close Live Agent panel' : 'Open Live Agent'}
+        aria-expanded={isOpen}
         className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transition-all duration-75 relative border ${
           isOpen
             ? 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 border-zinc-800 shadow-sm'
             : 'bg-zinc-100 text-zinc-950 border-white hover:scale-105 shadow-sm active:scale-95'
         }`}
       >
-        <Bot size={24} />
+        <Bot size={24} aria-hidden="true" />
         {isConnected && !isOpen && (
           <>
             <span className="absolute top-0 right-0 w-3 h-3 bg-zinc-400 rounded-full border-2 border-zinc-900 animate-ping" />

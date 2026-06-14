@@ -1,11 +1,11 @@
-/** Static mobile vCard previews for Toggle Industries (screenshots 11–18). */
+/** Local industry mockup screenshots (WebP). */
 export const INDUSTRY_MOCKUP_IMAGES = {
-  contractor: '/industries/industry-11-casanova.png',
-  'real-estate': '/industries/industry-12-chago.png',
-  'auto-sales': '/industries/industry-15-walter.png',
-  barber: '/industries/industry-16-brian.png',
-  coach: '/industries/industry-17-sheldon.png',
-  restaurant: '/industries/industry-18-sabor.png',
+  contractor: '/industries/industry-11-casanova.webp',
+  'real-estate': '/industries/industry-12-chago.webp',
+  'auto-sales': '/industries/industry-15-walter.webp',
+  barber: '/industries/industry-16-brian.webp',
+  coach: '/industries/industry-17-sheldon.webp',
+  restaurant: '/industries/industry-18-sabor.webp',
 } as const;
 
 export type IndustryMockupId = keyof typeof INDUSTRY_MOCKUP_IMAGES;

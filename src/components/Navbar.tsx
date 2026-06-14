@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'motion/react';
 import { Menu, X, Moon, Sparkles } from 'lucide-react';
 import { MagneticButton } from './InteractiveElements';
 import { useTheme } from '@/components/providers/theme-provider';
+import { VBIZ_LOGO } from '@/lib/site-assets';
 
 export const Navbar: React.FC = () => {
   const { theme, setTheme } = useTheme();
@@ -72,10 +74,12 @@ export const Navbar: React.FC = () => {
               <div className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-gold/0 via-brand-gold/5 to-brand-gold/0 opacity-50 pointer-events-none" />
             )}
             <Link href="/" className="relative z-10 flex-shrink-0 flex items-center pl-2 group">
-              <img
-                src="https://www.vbizme.com/wp-content/uploads/2025/02/logo-vbizme.webp"
+              <Image
+                src={VBIZ_LOGO.src}
                 alt="vBiz Me Logo"
-                referrerPolicy="no-referrer"
+                width={VBIZ_LOGO.width}
+                height={VBIZ_LOGO.height}
+                priority
                 className="h-[45px] w-auto object-contain transition-transform duration-500 group-hover:scale-105"
               />
             </Link>

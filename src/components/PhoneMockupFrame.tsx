@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'motion/react';
 import { VCardIframeFrame } from '@/components/VCardIframeFrame';
 
@@ -12,6 +13,8 @@ interface PhoneMockupFrameProps {
   size?: 'hero' | 'modal';
   className?: string;
   compactLoader?: boolean;
+  /** Eager-load the preview image when it is above the fold */
+  previewPriority?: boolean;
 }
 
 const SIZE_STYLES = {
@@ -38,6 +41,7 @@ export function PhoneMockupFrame({
   size = 'hero',
   className = '',
   compactLoader = false,
+  previewPriority = false,
 }: PhoneMockupFrameProps) {
   const styles = SIZE_STYLES[size];
 
@@ -63,20 +67,25 @@ export function PhoneMockupFrame({
       >
         {previewImage ? (
           <AnimatePresence mode="popLayout" initial={false}>
-            <motion.img
+            <motion.div
               key={previewImage}
-              src={previewImage}
-              alt={title}
-              initial={{ opacity: 0, scale: 1.05, y: 12, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.97, y: -10, filter: 'blur(8px)' }}
-              transition={{
-                duration: 0.5,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="absolute inset-0 h-full w-full object-cover object-top will-change-transform"
-              draggable={false}
-            />
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={previewImage}
+                alt={title}
+                fill
+                sizes="320px"
+                quality={80}
+                priority={previewPriority}
+                className="object-cover object-top"
+                draggable={false}
+              />
+            </motion.div>
           </AnimatePresence>
         ) : (
           <VCardIframeFrame src={src} title={title} compact={compactLoader} />
