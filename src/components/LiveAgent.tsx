@@ -16,6 +16,7 @@ import {
   getGoogleReferrerFixMessage,
   getLiveAgentSetupError,
   getMediaPermissionErrorMessage,
+  isMediaPermissionError,
   queryLiveAgentMediaPermission,
   requestLiveAgentMedia,
   resolveLiveAgentApiKey,
@@ -37,6 +38,7 @@ export function LiveAgent() {
   const [keyReady, setKeyReady] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [mediaBlocked, setMediaBlocked] = useState(false);
+  const [awaitingPageGesture, setAwaitingPageGesture] = useState(false);
 
   const hasGreetedRef = useRef(false);
   const isConnectingRef = useRef(false);
@@ -52,6 +54,7 @@ export function LiveAgent() {
   const checkSpeakingRef = useRef<number>(0);
   const lastAudioTimeRef = useRef<number>(0);
   const autoStartAttemptedRef = useRef(false);
+  const gestureListenersActiveRef = useRef(false);
 
   const aiRef = useRef<GoogleGenAI | null>(null);
 
@@ -252,44 +255,53 @@ export function LiveAgent() {
     }
   }, []);
 
-  const startConnection = useCallback(async () => {
-    if (isConnectedRef.current || isConnectingRef.current) return;
+  const startConnection = useCallback(async (options?: { fromUserGesture?: boolean }): Promise<boolean> => {
+    if (isConnectedRef.current || isConnectingRef.current) return isConnectedRef.current;
 
     const setupError = getLiveAgentSetupError();
     if (setupError) {
       setError(setupError);
-      return;
+      return false;
     }
 
     if (!keyReady) {
-      setError('Loading Live Agent configuration...');
-      return;
+      return false;
     }
 
     if (!apiKey || !aiRef.current) {
       setError(
         'Gemini API key is missing on the server. Set GEMINI_API_KEY on your VPS and restart the app.',
       );
-      return;
+      return false;
     }
 
     isConnectingRef.current = true;
     setIsConnecting(true);
     setIsConnected(false);
+    setIsOpen(true);
     setError(null);
     setMediaBlocked(false);
+    setAwaitingPageGesture(false);
     setStatusMessage('Allow microphone & camera when your browser asks...');
 
     let stream: MediaStream;
     try {
-      stream = await requestLiveAgentMedia();
+      stream = await requestLiveAgentMedia({ skipDeniedCheck: Boolean(options?.fromUserGesture) });
       mediaStreamRef.current = stream;
       setupMicPipeline(stream);
     } catch (mediaErr) {
+      if (!options?.fromUserGesture && isMediaPermissionError(mediaErr)) {
+        isConnectingRef.current = false;
+        setIsConnecting(false);
+        setStatusMessage(null);
+        setAwaitingPageGesture(true);
+        return false;
+      }
+
       const message = getMediaPermissionErrorMessage(mediaErr);
       setMediaBlocked(true);
       failConnection(message);
-      return;
+      return false;
     }
 
     setStatusMessage('Connecting to Gemini...');
@@ -300,7 +312,7 @@ export function LiveAgent() {
       failConnection(
         audioErr instanceof Error ? audioErr.message : 'Could not start audio playback.',
       );
-      return;
+      return false;
     }
 
     try {
@@ -470,11 +482,13 @@ export function LiveAgent() {
 
       sendInitialGreeting(session);
       setStatusMessage('Connected');
+      return true;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Could not start voice session.';
       console.error('Failed to start Live API', err);
       failConnection(message);
       disconnect();
+      return false;
     }
   }, [
     apiKey,
@@ -492,30 +506,77 @@ export function LiveAgent() {
     if (!keyReady || !apiKey || autoStartAttemptedRef.current) return;
     autoStartAttemptedRef.current = true;
 
-    let removeListeners: (() => void) | null = null;
     let mounted = true;
 
-    const handleFirstGesture = async () => {
-      if (!mounted) return;
+    const attachGestureListeners = () => {
+      if (gestureListenersActiveRef.current || !mounted) return;
+      gestureListenersActiveRef.current = true;
+      setAwaitingPageGesture(true);
       setIsOpen(true);
-      await startConnection();
-      removeListeners?.();
-      removeListeners = null;
+
+      const handleGesture = () => {
+        if (!mounted || isConnectedRef.current || isConnectingRef.current) return;
+        setAwaitingPageGesture(false);
+        void startConnection({ fromUserGesture: true }).then((ok) => {
+          if (ok) detachGestureListeners();
+        });
+      };
+
+      const detachGestureListeners = () => {
+        gestureListenersActiveRef.current = false;
+        window.removeEventListener('pointerdown', handleGesture, true);
+        window.removeEventListener('keydown', handleGesture, true);
+      };
+
+      window.addEventListener('pointerdown', handleGesture, { capture: true, once: false });
+      window.addEventListener('keydown', handleGesture, { capture: true, once: false });
+
+      return detachGestureListeners;
     };
 
-    removeListeners = () => {
-      window.removeEventListener('click', handleFirstGesture);
-      window.removeEventListener('touchstart', handleFirstGesture);
-      window.removeEventListener('keydown', handleFirstGesture);
+    let detachGestures: (() => void) | undefined;
+    let idleCallbackId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const boot = async () => {
+      setIsOpen(true);
+
+      const permission = await queryLiveAgentMediaPermission();
+      if (permission === 'denied') {
+        setMediaBlocked(true);
+        return;
+      }
+
+      const started = await startConnection();
+      if (!mounted) return;
+
+      if (started || isConnectedRef.current) {
+        setAwaitingPageGesture(false);
+        return;
+      }
+
+      detachGestures = attachGestureListeners();
     };
 
-    window.addEventListener('click', handleFirstGesture);
-    window.addEventListener('touchstart', handleFirstGesture);
-    window.addEventListener('keydown', handleFirstGesture);
+    if (typeof window.requestIdleCallback === 'function') {
+      idleCallbackId = window.requestIdleCallback(() => {
+        void boot();
+      }, { timeout: 1500 });
+    } else {
+      timeoutId = window.setTimeout(() => {
+        void boot();
+      }, 800);
+    }
 
     return () => {
       mounted = false;
-      removeListeners?.();
+      detachGestures?.();
+      if (idleCallbackId !== undefined && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleCallbackId);
+      }
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId);
+      }
     };
   }, [apiKey, keyReady, startConnection]);
 
@@ -529,12 +590,26 @@ export function LiveAgent() {
     if (isConnectedRef.current || isConnectingRef.current) {
       disconnect();
     } else {
-      void startConnection();
+      void startConnection({ fromUserGesture: true });
     }
   };
 
   return (
-    <motion.div
+    <>
+      {awaitingPageGesture && !isConnected && !isConnecting && (
+        <div
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[99] pointer-events-none max-w-[min(90vw,360px)] rounded-2xl border border-brand-gold/30 bg-zinc-950/95 px-4 py-3 text-center shadow-lg backdrop-blur-md"
+          role="status"
+        >
+          <p className="text-sm font-medium text-zinc-100">Live Agent starting…</p>
+          <p className="mt-1 text-[11px] leading-relaxed text-zinc-400">
+            Tap anywhere on the page and click <span className="text-brand-gold">Allow</span> for
+            microphone &amp; camera.
+          </p>
+        </div>
+      )}
+
+      <motion.div
       drag
       dragMomentum={false}
       className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[100] flex flex-col items-end gap-4 pointer-events-none w-14"
@@ -592,9 +667,9 @@ export function LiveAgent() {
               </p>
             )}
 
-            {!isConnected && !isConnecting && !error && !mediaBlocked && (
+            {!isConnected && !isConnecting && !error && !awaitingPageGesture && !mediaBlocked && (
               <p className="text-zinc-500 text-[11px] leading-relaxed z-10">
-                Tap the mic button — your browser will ask to allow microphone and camera.
+                Live Agent starts automatically. Allow microphone when your browser asks.
               </p>
             )}
 
@@ -649,21 +724,9 @@ export function LiveAgent() {
       <button
         type="button"
         onClick={() => {
-          if (isOpen) {
-            setIsOpen(false);
-            return;
-          }
-          setIsOpen(true);
-          setError(null);
-          if (!isConnectedRef.current && !isConnectingRef.current) {
-            void startConnection();
-          }
+          setIsOpen((open) => !open);
         }}
-        aria-label={
-          isOpen ?
-            'Close Live Agent panel'
-          : 'Open Live Agent — allow microphone and camera when prompted'
-        }
+        aria-label={isOpen ? 'Close Live Agent panel' : 'Open Live Agent panel'}
         aria-expanded={isOpen}
         className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transition-all duration-75 relative border ${
           isOpen
@@ -680,5 +743,6 @@ export function LiveAgent() {
         )}
       </button>
     </motion.div>
+    </>
   );
 }

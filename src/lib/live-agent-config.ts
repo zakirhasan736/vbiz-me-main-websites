@@ -31,17 +31,32 @@ export async function queryLiveAgentMediaPermission(): Promise<MediaPermissionSt
   }
 
   try {
-    const [mic, camera] = await Promise.all([
-      navigator.permissions.query({ name: 'microphone' as PermissionName }),
-      navigator.permissions.query({ name: 'camera' as PermissionName }),
-    ]);
+    const mic = await navigator.permissions.query({ name: 'microphone' as PermissionName });
 
-    if (mic.state === 'denied' || camera.state === 'denied') return 'denied';
-    if (mic.state === 'granted' && camera.state === 'granted') return 'granted';
+    if (mic.state === 'denied') return 'denied';
+    if (mic.state === 'granted') return 'granted';
+
+    try {
+      const camera = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      if (camera.state === 'denied') return 'denied';
+    } catch {
+      /* camera permission API unavailable — mic prompt state is enough */
+    }
+
     return 'prompt';
   } catch {
     return 'unknown';
   }
+}
+
+export function isMediaPermissionError(err: unknown): boolean {
+  if (err instanceof DOMException) {
+    return err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError';
+  }
+  if (err instanceof Error) {
+    return err.message.includes('Allow when your browser asks');
+  }
+  return false;
 }
 
 export function getMediaPermissionErrorMessage(err: unknown): string {
@@ -70,19 +85,21 @@ export function getMediaPermissionErrorMessage(err: unknown): string {
 }
 
 /**
- * Must run inside a user gesture (click/tap). Requests mic + camera, keeps audio only.
+ * Requests mic + camera (camera released after grant). Works on load if already allowed.
  */
-export async function requestLiveAgentMedia(): Promise<MediaStream> {
+export async function requestLiveAgentMedia(options?: { skipDeniedCheck?: boolean }): Promise<MediaStream> {
   if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
     throw new Error('This browser does not support microphone access.');
   }
 
-  const existing = await queryLiveAgentMediaPermission();
-  if (existing === 'denied') {
-    throw new DOMException(
-      'Microphone and camera are blocked for this site. Change them to Allow in browser site settings, then refresh.',
-      'NotAllowedError',
-    );
+  if (!options?.skipDeniedCheck) {
+    const existing = await queryLiveAgentMediaPermission();
+    if (existing === 'denied') {
+      throw new DOMException(
+        'Microphone and camera are blocked for this site. Change them to Allow in browser site settings, then refresh.',
+        'NotAllowedError',
+      );
+    }
   }
 
   const stream = await withTimeout(
