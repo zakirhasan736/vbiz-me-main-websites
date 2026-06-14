@@ -14,6 +14,7 @@ import {
   CONNECT_TIMEOUT_MS,
   MIC_TIMEOUT_MS,
   createLiveGenAIClient,
+  getGoogleReferrerFixMessage,
   getLiveAgentSetupError,
   resolveLiveAgentApiKey,
   withTimeout,
@@ -381,7 +382,10 @@ export function LiveAgent() {
         },
         onerror: (err: { message?: string }) => {
           console.error('Live API Error:', err);
-          setError(`Connection error: ${err?.message || 'Unknown error'}`);
+          const detail = err?.message || 'Unknown error';
+          setError(
+            `Gemini rejected the connection (${detail}).\n\n${getGoogleReferrerFixMessage()}`,
+          );
           disconnect();
         },
         onclose: () => {
@@ -409,7 +413,7 @@ export function LiveAgent() {
               callbacks,
             }),
             CONNECT_TIMEOUT_MS,
-            `Timed out connecting to Gemini (${model}). Check API key and domain restrictions in Google AI Studio.`,
+            `Timed out connecting to Gemini (${model}).\n\n${getGoogleReferrerFixMessage()}`,
           );
           break;
         } catch (err) {
@@ -421,9 +425,7 @@ export function LiveAgent() {
       if (!session) {
         throw (
           lastError ??
-          new Error(
-            'Could not connect to Gemini Live API. Add your production domain to the API key HTTP referrers in Google AI Studio.',
-          )
+          new Error(`Could not connect to Gemini Live API.\n\n${getGoogleReferrerFixMessage()}`)
         );
       }
 

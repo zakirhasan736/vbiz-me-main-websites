@@ -3,8 +3,7 @@
 import { GoogleGenAI } from '@google/genai';
 
 const LIVE_MODELS = [
-  'gemini-2.5-flash-native-audio-preview-12-2025',
-  'gemini-3.1-flash-live-preview',
+  "gemini-3.1-flash-live-preview",
 ] as const;
 
 export { LIVE_MODELS };
@@ -76,4 +75,22 @@ export function getLiveAgentSetupError(): string | null {
   }
 
   return null;
+}
+
+export function getGoogleReferrerFixMessage(): string {
+  if (typeof window === 'undefined') {
+    return 'Add your production domain to HTTP referrers in Google AI Studio.';
+  }
+
+  const { protocol, hostname } = window.location;
+  const origin = `${protocol}//${hostname}`;
+
+  return (
+    `Google AI Studio → API key → Application restrictions → HTTP referrers → add:\n` +
+    `• ${origin}/*\n` +
+    (hostname.startsWith('www.') ?
+      ''
+    : `• ${protocol}//www.${hostname}/*\n`) +
+    `Save, wait ~2 minutes, then refresh this page.`
+  );
 }
