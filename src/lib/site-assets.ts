@@ -19,4 +19,4 @@ export const VBIZ_LOGO = {
 
 /** CEO / founder intro — homepage hero + About page. */
 export const FOUNDER_INTRO_VIDEO =
-  'https://www.vbizme.com/wp-content/uploads/2024/08/vBizMe_080624_IT002.mp4';
+  '/vBizMe_080624_IT002.mp4';
