@@ -1,0 +1,6 @@
+{
+  "name": "vBiz Me Landing Page",
+  "description": "A dark-themed landing page for virtual business cards, featuring glowing elements, phone mockups, and QR codes.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

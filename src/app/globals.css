@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "lenis/dist/lenis.css";
+@import "tailwindcss";
+
+:root {
+  --color-brand-dark: #12141d;
+  --color-brand-gold: #eeca53;
+  --color-accent-blue: #3b82f6;
+  --color-ocean-glow: rgba(212, 175, 55, 0.15);
+}
+
+body,
+body.theme-midnight {
+  --color-brand-dark: #12141d;
+  --color-brand-gold: #eeca53;
+  --color-accent-blue: #3b82f6;
+  --color-ocean-glow: rgba(212, 175, 55, 0.18);
+  color-scheme: dark;
+}
+
+body.theme-ocean {
+  --color-brand-dark: #050b18;
+  --color-brand-gold: #38bdf8;
+  --color-accent-blue: #00f0ff;
+  --color-ocean-glow: rgba(56, 189, 248, 0.22);
+  color-scheme: dark;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-brand-gold: var(--color-brand-gold);
+  --color-brand-dark: var(--color-brand-dark);
+  --color-accent-blue: var(--color-accent-blue);
+  --color-ocean-glow: var(--color-ocean-glow);
+  --color-brand-card: #f9f9f9;
+  --color-brand-text: #a1a1aa;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* Keep iframe demo cards interactive — Lenis must not steal touch/pointer on embedded vCards */
+.vcard-phone-mockup,
+.vcard-phone-screen,
+.vcard-iframe-shell,
+.vcard-iframe-zone,
+.vcard-iframe-shell iframe {
+  touch-action: auto;
+  pointer-events: auto;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--color-brand-dark);
+  color: white;
+  font-family: var(--font-sans);
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+@layer utilities {
+  /* Standard section rhythm — mobile 45px, desktop 60px (hero excluded) */
+  .site-section {
+    padding-top: 45px;
+    padding-bottom: 45px;
+  }
+
+  @media (min-width: 768px) {
+    .site-section {
+      padding-top: 60px;
+      padding-bottom: 60px;
+    }
+  }
+
+  /* Standard card interior padding — mobile py-6 px-4, desktop md:py-8 md:px-6 */
+  .site-card-padding {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .site-card-padding {
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  .gsap-reveal {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(32px);
+    filter: blur(10px);
+    transition:
+      opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 1s cubic-bezier(0.16, 1, 0.3, 1),
+      filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity, filter;
+  }
+
+  .gsap-reveal.revealed {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+
+  .gsap-reveal-left {
+    transform: translateX(-48px);
+  }
+
+  .gsap-reveal-right {
+    transform: translateX(48px);
+  }
+
+  .gsap-reveal-left.revealed,
+  .gsap-reveal-right.revealed {
+    transform: translateX(0);
+  }
+}
