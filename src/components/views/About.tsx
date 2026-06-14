@@ -4,6 +4,7 @@ import { Facebook, Twitter, Youtube, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
 import { RevealText, RevealParagraph, ScrollRevealCard } from '@/components/animations/reveal';
+import { FOUNDER_INTRO_VIDEO } from '@/lib/site-assets';
 
 export default function About() {
   return (
@@ -56,10 +57,10 @@ export default function About() {
               <GlowCard className="py-6 px-4 md:py-8 md:px-6 rounded-[2.5rem] shadow-2xl h-full" glowColor="rgba(212,175,55,0.18)">
                 <div className="relative z-10">
                   <h3 className="text-white font-medium text-3xl mb-6 tracking-tight">Our Vision</h3>
-                  <p className="text-neutral-400 text-base leading-relaxed font-light mb-6">
+                  <p className="text-neutral-400 text-base leading-normal md:leading-relaxed font-light mb-6">
                     At vBiz Me, our vision is to revolutionize the way people connect by providing innovative and personalized virtual business cards. We aim to empower individuals and businesses to create lasting, indelible impressions in every interaction.
                   </p>
-                  <p className="text-neutral-400 text-base leading-relaxed font-light">
+                  <p className="text-neutral-400 text-base leading-normal md:leading-relaxed font-light">
                     At vBiz Me, we are dedicated to supporting you every step of the way, ensuring your success and satisfaction. Thank you for joining us on this journey to transform connections and create unforgettable impressions.
                   </p>
                 </div>
@@ -70,7 +71,7 @@ export default function About() {
               <GlowCard className="py-6 px-4 md:py-8 md:px-6 rounded-[2.5rem] shadow-2xl h-full" glowColor="rgba(43,108,176,0.18)">
                 <div className="relative z-10">
                   <h3 className="text-white font-medium text-3xl mb-6 tracking-tight">Our Mission</h3>
-                  <p className="text-neutral-400 text-base leading-relaxed font-light">
+                  <p className="text-neutral-400 text-base  leading-normal md:leading-relaxed font-light">
                     At vBiz Me, we're transforming the way people connect and exchange information with cutting-edge, customized virtual business cards. Our goal is to help individuals and businesses leave a lasting impression in every encounter. By leveraging the latest technology and offering full personalization, we make sure each connection you create is not only impactful but truly memorable. Your success drives us, and we're dedicated to being by your side at every stage, ensuring your satisfaction and helping you stand out.
                   </p>
                 </div>
@@ -87,12 +88,21 @@ export default function About() {
           <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
             
             <ScrollRevealCard direction="left" className="w-full lg:w-2/5 relative">
-              <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative group">
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10" />
-                <img 
-                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=800" 
-                  alt="Michaelangelo Michelangelo Casanova" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative group bg-black">
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent z-10 pointer-events-none" />
+                <video
+                  src={FOUNDER_INTRO_VIDEO}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  onLoadedMetadata={(e) => {
+                    e.currentTarget.muted = true;
+                    e.currentTarget.play().catch(() => {});
+                  }}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  aria-label="Michaelangelo Casanova intro video"
                 />
                 <div className="absolute bottom-8 left-8 z-20">
                   <h3 className="text-2xl font-medium text-white mb-1 tracking-tight">Michaelangelo Casanova</h3>
@@ -106,7 +116,7 @@ export default function About() {
               <h2 className="text-4xl md:text-5xl font-medium text-white mb-10 tracking-tight leading-[1.1] text-left">
                 A Message from the <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-neutral-300 to-neutral-600">Founder</span>
               </h2>
-              <div className="space-y-6 text-neutral-400 text-lg leading-relaxed font-light text-left">
+              <div className="sspace-y-4 md:space-y-6 text-neutral-400 text-lg leading-relaxed font-light text-left">
                 <p>Hello and welcome to vBiz Me!</p>
                 <p>
                   I'm Michaelangelo Casanova, and I want to personally thank you for choosing vBiz Me. Your support and trust mean everything to us. We are dedicated to helping you connect and share information in the most innovative and effective ways possible.

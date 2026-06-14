@@ -347,7 +347,7 @@ export default function OurWork() {
               <h2 className="text-white font-medium text-3xl md:text-4xl mb-4 tracking-tight leading-tight">Let's Transform Your Digital Presence Together</h2>
               <p className="text-neutral-400 font-light text-lg leading-relaxed">Ready to elevate your digital presence? Contact us today to discuss how our services can help your business succeed in the digital world.</p>
             </div>
-            <div className="shrink-0 relative z-10 w-full md:w-auto flex justify-center">
+            <div className="shrink-0 mt-6 relative z-10 w-full md:w-auto flex justify-center">
               <MagneticButton 
                 href="/contact" 
                 className="bg-brand-gold hover:bg-yellow-400 text-black font-semibold py-4 px-8 rounded-full flex items-center justify-center transition-transform hover:scale-105 shadow-[0_0_20px_rgba(212,175,55,0.3)] h-14 w-full md:w-auto"

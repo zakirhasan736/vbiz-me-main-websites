@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { 
   ArrowRight, BarChart, Edit, Lightbulb, Play, Scan, Send, Video, 
@@ -7,10 +7,9 @@ import {
   MapPin, ThumbsUp, HelpCircle, FileText, Pause, Briefcase, X,
   QrCode, TrendingUp, Layers, Bot, Bell, Wallet, ExternalLink
 } from 'lucide-react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import React, { useRef, useState, useEffect } from 'react';
-import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
-import { InteractiveParticles } from '@/components/InteractiveParticles';
+import { GlowCard } from '@/components/InteractiveElements';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { GSAP_DEFAULT_START } from '@/lib/gsap-animation-utils';
@@ -24,122 +23,10 @@ import {
   ScrollRevealCard,
   SectionReveal,
 } from '@/components/animations/reveal';
-import { usePageTransition } from '@/components/providers/page-transition-context';
-
 gsap.registerPlugin(ScrollTrigger);
 
-// Trusted dealer logos / labels
-const TrustBar = () => {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full border-t border-b border-white/5 bg-neutral-950/40 backdrop-blur-md py-6 z-10 relative"
-    >
-      <div className="max-w-7xl mx-auto px-4 text-center">
-        <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 font-semibold mb-3">
-          Trusted by top professionals at
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-3 text-neutral-400 text-sm font-medium">
-          <div className="flex items-center gap-1.5 hover:text-white transition-colors">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold" /> Kia of East Hartford
-          </div>
-          <div className="flex items-center gap-1.5 hover:text-white transition-colors">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold" /> Subaru of Hartford
-          </div>
-          <div className="flex items-center gap-1.5 hover:text-white transition-colors">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold" /> Gallagher Buick/GMC
-          </div>
-          <div className="flex items-center gap-1.5 hover:text-white transition-colors hidden sm:flex">
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold" /> and growing businesses across Connecticut
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
 // Custom high-contrast realistic SVG-based QR code mockup component
-const QRCodeMockup = ({ isBitcoin, isRedQr, isGoldQr, centerText }: { isBitcoin?: boolean; isRedQr?: boolean; isGoldQr?: boolean; centerText?: string }) => {
-  const color = isRedQr ? '#E53E3E' : (isGoldQr ? '#D4AF37' : '#000000');
-  
-  return (
-    <svg viewBox="0 0 100 100" className="w-full h-full p-2 text-inherit select-none pointer-events-none">
-      {/* Background container wrapper inside the mockup for clear separation */}
-      <rect x="0" y="0" width="100" height="100" rx="14" fill="#FFFFFF" />
 
-      {/* Finder Patterns */}
-      {/* Bottom Left */}
-      <rect x="7" y="7" width="22" height="22" rx="3.5" fill="none" stroke={color} strokeWidth="4.2" />
-      <rect x="13" y="13" width="10" height="10" rx="1.5" fill={color} />
-      
-      {/* Top Right */}
-      <rect x="71" y="7" width="22" height="22" rx="3.5" fill="none" stroke={color} strokeWidth="4.2" />
-      <rect x="77" y="13" width="10" height="10" rx="1.5" fill={color} />
-      
-      {/* Bottom Left */}
-      <rect x="7" y="71" width="22" height="22" rx="3.5" fill="none" stroke={color} strokeWidth="4.2" />
-      <rect x="13" y="77" width="10" height="10" rx="1.5" fill={color} />
-      
-      {/* Alignment / Positioning pattern bottom right */}
-      <rect x="73" y="73" width="10" height="10" rx="2" fill="none" stroke={color} strokeWidth="2.5" />
-      <rect x="76" y="76" width="4" height="4" rx="0.5" fill={color} />
-
-      {/* Realistic QR Data and Matrix block trails */}
-      <path d="M 36,7 H 42 M 48,7 H 65 M 36,13 H 40 M 48,13 H 53 M 57,13 H 67 M 36,18 H 45 M 50,18 H 56 M 36,23 H 40 M 44,23 H 54 M 58,23 H 67" stroke={color} strokeWidth="3" strokeLinecap="round" />
-      <path d="M 7,37 V 43 M 7,49 V 59 M 7,65 V 67" stroke={color} strokeWidth="3" strokeLinecap="round" />
-      <path d="M 93,37 V 43 M 93,49 V 59 M 93,65 V 67" stroke={color} strokeWidth="3" strokeLinecap="round" />
-      <path d="M 37,93 H 43 M 49,93 H 67" stroke={color} strokeWidth="3" strokeLinecap="round" />
-      
-      {/* Center cutout area for custom logos/emblems */}
-      <rect x="30" y="30" width="40" height="40" fill="white" rx="10" />
-      
-      {/* Central branding item custom rendering */}
-      {isBitcoin ? (
-        <g transform="translate(50, 50) scale(1.15)">
-          {/* Circular solid orange brand badge with a white drop shadow indicator */}
-          <circle cx="0" cy="0" r="11" fill="#F7931A" />
-          <circle cx="0" cy="0" r="11" fill="none" stroke="white" strokeWidth="1" />
-          <text 
-            x="0" 
-            y="4" 
-            textAnchor="middle" 
-            fill="white" 
-            fontSize="12.5" 
-            fontFamily="sans-serif" 
-            fontWeight="900"
-            className="italic text-center font-serif select-none"
-          >
-            ₿
-          </text>
-        </g>
-      ) : (
-        <g transform="translate(50, 50)">
-          {/* Pill badge with a soft border frame */}
-          <rect x="-19" y="-8.5" width="38" height="17" rx="5" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1" />
-          <text 
-            x="0" 
-            y="2.5" 
-            textAnchor="middle" 
-            fill={color === '#000000' ? '#111827' : color} 
-            fontSize="6.5" 
-            fontFamily="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" 
-            fontWeight="bold"
-            className="tracking-tighter select-none font-semibold text-center"
-          >
-            {centerText}
-          </text>
-        </g>
-      )}
-
-      {/* Scattered matrix data blocks in alignment bounds */}
-      <path d="M 33,30 H 37 M 63,30 H 67 M 33,70 H 37 M 63,70 H 67 M 30,33 V 37 M 30,63 V 67 M 70,33 V 37 M 70,63 V 67" stroke={color} strokeWidth="2.8" strokeLinecap="round" />
-      <path d="M 36,40 H 42 M 58,40 H 64 M 36,60 H 42 M 58,60 H 64" stroke={color} strokeWidth="2.8" strokeLinecap="round" />
-    </svg>
-  );
-};
 
 // Premium mock showcase items specifically for responsive slider matching the attachments
 const qrSliderItems = [
@@ -325,390 +212,6 @@ const qrSliderItems = [
   }
 ];
 
-// Hero section with video on mockup on the right
-const Hero = ({ heroHeading }: { heroHeading?: React.ReactNode }) => {
-  const { revealReady } = usePageTransition();
-  const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 1000], [0, 150]);
-  const y2 = useTransform(scrollY, [0, 1000], [0, 250]);
-  const yGrid = useTransform(scrollY, [0, 1000], [0, 75]);
-  const [isMuted, setIsMuted] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  // Scroll to demo helper
-  const scrollToDemo = () => {
-    const demoElement = document.getElementById('see-in-action');
-    if (demoElement) {
-      window.scrollTo({
-        top: demoElement.getBoundingClientRect().top + window.scrollY - 100,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (video) {
-      video.defaultMuted = true;
-      video.muted = isMuted;
-      
-      const firePlay = () => {
-        if (isPlaying) {
-          video.play().catch(err => {
-            console.log("Auto-play blocked or failed", err);
-          });
-        } else {
-          video.pause();
-        }
-      };
-
-      firePlay();
-
-      const handleUserGesture = () => {
-        if (isPlaying && video.paused) {
-          video.play().catch(() => {});
-        }
-      };
-
-      window.addEventListener('click', handleUserGesture, { once: true });
-      window.addEventListener('touchstart', handleUserGesture, { once: true });
-
-      return () => {
-        window.removeEventListener('click', handleUserGesture);
-        window.removeEventListener('touchstart', handleUserGesture);
-      };
-    }
-  }, [isPlaying, isMuted]);
-
-  return (
-    <section className="section-hero relative min-h-screen flex flex-col justify-center pt-32 pb-16 overflow-hidden bg-black">
-      {/* Background Orbs and Grid */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,#111111_0%,black_100%)] opacity-85" />
-        <motion.div 
-          style={{ y: y1 }}
-          animate={{ opacity: [0.1, 0.2, 0.1], scale: [1, 1.1, 1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[-10%] left-1/3 w-[800px] h-[500px] bg-brand-gold/15 blur-[120px] rounded-full pointer-events-none"
-        />
-        <motion.div 
-          style={{ y: y2 }}
-          animate={{ opacity: [0.05, 0.12, 0.05] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-1/4 left-5 w-[400px] h-[400px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none"
-        />
-        <motion.div 
-          style={{ y: yGrid }}
-          className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_80%)]" 
-        />
-        {/* Subtle, interactive particle background */}
-        <InteractiveParticles />
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-grow">
-        
-        {/* Left column: Compelling pitch — static wrapper so LCP h1 is not gated by motion */}
-        <div className="lg:col-span-7 flex flex-col items-start text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/20 text-brand-gold text-xs font-semibold uppercase tracking-wider mb-6 animate-pulse">
-            <Sparkles size={12} /> Real-time Video Introductions
-          </div>
-
-          {heroHeading ?? (
-            <RevealText
-              text="The Virtual Business Card That Sells Before You Even Speak"
-              className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight mb-6 leading-tight text-white text-left"
-              tag="h1"
-              highlightedWords={['Sells']}
-              centered={false}
-              priority
-            />
-          )}
-          
-          <RevealParagraph 
-            text="Discover the vBiz Me virtual business card (vCard)—an innovative leap in digital networking designed to make a powerful emotional impact."
-            className="text-lg sm:text-xl text-neutral-400 font-light leading-relaxed mb-8 max-w-2xl text-left"
-            delay={0.2}
-            centered={false}
-          />
-
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto z-10 relative">
-            <MagneticButton 
-              href="/contact"
-              className="bg-brand-gold hover:bg-yellow-400 text-black font-semibold h-14 px-8 rounded-full flex items-center justify-center gap-2 transition-transform hover:scale-105 shadow-[0_0_20px_rgba(212,175,55,0.25)] w-full sm:w-auto"
-            >
-              Create My Free vCard <ArrowRight size={16} />
-            </MagneticButton>
-            
-            <MagneticButton 
-              onClick={() => setIsPopupOpen(true)}
-              className="border border-white/10 bg-white/5 text-white font-medium h-14 px-8 rounded-full flex items-center justify-center gap-3 hover:bg-white/10 transition-colors w-full sm:w-auto text-sm shrink-0"
-            >
-              <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center">
-                <BarChart size={12} className="text-brand-gold" />
-              </div>
-              See How We Beat The Competition
-            </MagneticButton>
-          </div>
-
-          <div className="mt-10 flex flex-wrap items-center gap-6 text-neutral-500 text-xs">
-            <div className="flex items-center gap-1.5">
-              <Check size={14} className="text-brand-gold" /> No Application Required
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Check size={14} className="text-brand-gold" /> Instant Smartphone Saving
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Check size={14} className="text-brand-gold" /> Unlimited Sharing Limits
-            </div>
-          </div>
-        </div>
-
-        {/* Right column: Ultra-modern premium floating showcase card design with ambient styling */}
-        <motion.div 
-          initial={{ opacity: 0, y: 50 }}
-          animate={revealReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-          transition={{ duration: 0.8, delay: revealReady ? 0.15 : 0, ease: [0.16, 1, 0.3, 1] }}
-          className="lg:col-span-5 flex justify-center lg:justify-end relative md:pr-4 w-full"
-        >
-          {/* Ambient Glow Backgrounds */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] bg-brand-gold/15 blur-[100px] rounded-full pointer-events-none" />
-          <div className="absolute top-1/3 left-2/3 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] bg-blue-500/10 blur-[90px] rounded-full pointer-events-none" />
-
-          {/* Core Widescreen Showcase Container */}
-          <div className="relative w-full max-w-[620px] h-[460px] sm:h-[540px] lg:h-[580px] bg-neutral-950/70 backdrop-blur-md rounded-2xl border border-white/10 hover:border-brand-gold/30 transition-all duration-500 group shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_40px_rgba(212,175,55,0.05)] overflow-hidden z-10 flex flex-col">
-            
-            {/* Elegant Top Status Overlay */}
-            <div className="absolute top-0 inset-x-0 h-14 bg-gradient-to-b from-black/80 to-transparent z-20 px-4 flex items-center justify-between text-[10px] text-white/60 font-mono tracking-widest uppercase">
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                Live Demo
-              </span>
-              <span className="text-brand-gold font-semibold">Widescreen Feature Presentation</span>
-            </div>
-
-            {/* Video component with object-cover so we view in full heightened presentation */}
-            <video
-              ref={videoRef}
-              src="https://www.vbizme.com/wp-content/uploads/2024/08/vBizMe_080624_IT002.mp4"
-              autoPlay
-              loop
-              muted={true}
-              playsInline
-              onLoadedMetadata={(e) => {
-                e.currentTarget.muted = true;
-                e.currentTarget.play().catch(() => {});
-              }}
-              className={`absolute inset-0 w-full h-full object-cover bg-black transition-all duration-700 ${isPlaying ? 'opacity-95 scale-100' : 'opacity-30 scale-95'}`}
-            />
-
-            {/* Premium Gradient Overlay */}
-            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent pointer-events-none z-10" />
-            <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-neutral-950/80 to-transparent pointer-events-none z-10" />
-
-            {/* High-Contrast Interactive Controls */}
-            <div className="absolute top-4 right-4 flex items-center gap-2 z-30 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300">
-              <button 
-                type="button"
-                onClick={() => setIsMuted(!isMuted)}
-                className="w-8 h-8 rounded-full bg-black/70 border border-white/10 flex items-center justify-center text-white hover:text-brand-gold hover:bg-black/90 active:scale-95 transition-all cursor-pointer shadow-lg backdrop-blur-sm"
-                title={isMuted ? "Unmute" : "Mute"}
-              >
-                {isMuted ? <VolumeX size={12} /> : <Volume2 size={12} />}
-              </button>
-              <button 
-                type="button"
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="w-8 h-8 rounded-full bg-brand-gold flex items-center justify-center text-black hover:bg-yellow-400 active:scale-95 transition-all cursor-pointer shadow-lg"
-                title={isPlaying ? "Pause" : "Play"}
-              >
-                {isPlaying ? <Pause size={11} fill="currentColor" /> : <Play size={11} fill="currentColor" />}
-              </button>
-            </div>
-
-            {/* Audio Indicator (Glow Bar visualizer) */}
-            {isPlaying && !isMuted ? (
-              <div className="absolute bottom-28 right-4 flex items-end gap-0.5 h-6 z-20 bg-black/40 backdrop-blur-md px-2 py-1 rounded-md border border-white/5">
-                <span className="w-0.5 bg-brand-gold rounded-full animate-[pulse_0.8s_infinite] h-2" />
-                <span className="w-0.5 bg-brand-gold rounded-full animate-[pulse_0.6s_infinite] h-4" />
-                <span className="w-0.5 bg-brand-gold rounded-full animate-[pulse_0.7s_infinite] h-3" />
-                <span className="w-0.5 bg-brand-gold rounded-full animate-[pulse_0.5s_infinite] h-5" />
-              </div>
-            ) : null}
-
-            {/* Micro Audio warning overlay when playing muted */}
-            {isPlaying && isMuted && (
-              <div className="absolute bottom-28 left-4 z-20">
-                <button 
-                  onClick={() => setIsMuted(false)} 
-                  className="flex items-center gap-1 px-2 py-1 bg-black/60 hover:bg-black/80 border border-white/10 rounded-md text-[9px] text-brand-gold font-mono uppercase tracking-wider animate-bounce cursor-pointer border-none outline-none"
-                >
-                  <VolumeX size={10} /> Tap for Sound
-                </button>
-              </div>
-            )}
-
-            {/* Overlay content: Elegant Identity Box */}
-            <div className="absolute bottom-20 left-4 right-4 z-20">
-              <div className="bg-black/50 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-xl transition-all duration-300 group-hover:border-brand-gold/30">
-                <div className="flex items-center gap-1 text-[8px] uppercase tracking-wider text-brand-gold font-bold mb-1">
-                  <Sparkles size={8} /> Elevated Networking
-                </div>
-                <p className="text-[11px] text-white/90 font-medium leading-normal italic">
-                  "Watch a vCard capture immediate context, engaging connections instantly."
-                </p>
-              </div>
-            </div>
-
-            {/* Bottom Profile Anchor (decorative demo UI — not page structure) */}
-            <div
-              className="absolute bottom-0 left-0 right-0 p-4 bg-neutral-950/90 backdrop-blur-xl border-t border-white/15 flex gap-2.5 items-center z-20"
-              aria-hidden="true"
-            >
-              <div className="w-9 h-9 rounded-full overflow-hidden border border-brand-gold/30 relative">
-                <img referrerPolicy="no-referrer" src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=80" alt="Avatar" className="w-full h-full object-cover" />
-                <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-neutral-950 rounded-full" />
-              </div>
-              <div className="flex-grow min-w-0">
-                <p className="text-[11px] font-semibold text-white truncate tracking-wide">Michael Casanova</p>
-                <p className="text-[9px] text-neutral-400 font-light truncate">Hartford Motors Advisor</p>
-              </div>
-              <button className="h-7 px-3.5 rounded-full bg-brand-gold text-black font-semibold text-[9px] tracking-wider uppercase shrink-0 hover:bg-yellow-400 active:scale-95 transition-all shadow-[0_2px_10px_rgba(212,175,55,0.25)]">
-                Save Contact
-              </button>
-            </div>
-
-            {/* Play overlay for touch screens or when paused */}
-            {!isPlaying && (
-              <button 
-                onClick={() => setIsPlaying(true)}
-                className="absolute inset-0 w-full h-full bg-black/60 flex items-center justify-center z-20 transition-colors cursor-pointer group border-none outline-none"
-              >
-                <div className="w-14 h-14 rounded-full bg-brand-gold/95 flex items-center justify-center text-black shadow-[0_0_30px_rgba(212,175,55,0.4)] group-hover:scale-110 transition-transform">
-                  <Play size={20} fill="currentColor" className="ml-1 text-black" />
-                </div>
-              </button>
-            )}
-
-          </div>
-
-          {/* MODERN FLOATING DECORATIONS (Dashboard Widget Overlays) */}
-          {/* Widget 1: Live Analytics Counter (Bottom Left) */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20, y: 30 }}
-            animate={revealReady ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: -20, y: 30 }}
-            transition={{ delay: revealReady ? 0.3 : 0, duration: 0.6 }}
-            className="absolute bottom-8 -left-12 bg-neutral-950/80 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-2xl z-20 flex flex-col gap-1 w-32 hidden md:flex"
-          >
-            <div className="flex items-center justify-between text-[9px] text-neutral-400">
-              <span>Saved Rate</span>
-              <span className="text-emerald-500 font-bold font-mono">+140%</span>
-            </div>
-            <div className="text-lg font-bold text-white font-mono">92.4%</div>
-            <div className="w-full bg-white/5 h-1 rounded-full overflow-hidden">
-              <div className="bg-brand-gold h-full rounded-full w-[92.4%]" />
-            </div>
-          </motion.div>
-
-          {/* Widget 2: Micro Heatmap Spark Widget (Top Right) */}
-          <motion.div 
-            initial={{ opacity: 0, x: 20, y: -20 }}
-            animate={revealReady ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: 20, y: -20 }}
-            transition={{ delay: revealReady ? 0.5 : 0, duration: 0.6 }}
-            className="absolute top-12 -right-10 bg-neutral-950/80 backdrop-blur-xl border border-white/10 p-3 rounded-xl shadow-2xl z-20 flex items-center gap-3 w-36 hidden md:flex"
-          >
-            <div className="p-1 px-1.5 rounded-lg bg-brand-gold/15 text-brand-gold">
-              <Sparkles size={12} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[8px] text-neutral-400 uppercase tracking-widest">Speed Dial</span>
-              <span className="text-xs font-bold text-white leading-tight">Instant Lead</span>
-            </div>
-          </motion.div>
-        </motion.div>
-
-      </div>
-
-      <AnimatePresence>
-        {isPopupOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsPopupOpen(false)}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
-          >
-            <motion.div
-              initial={{ scale: 0.95, y: 15 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 15 }}
-              transition={{ type: "spring", duration: 0.4 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-5xl bg-neutral-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl py-6 px-4 md:py-8 md:px-6"
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
-                <div className="flex items-center gap-2">
-                  <span className="p-1 px-2.5 rounded bg-brand-gold/15 text-brand-gold text-[10px] font-bold uppercase tracking-wider">
-                    Competitive Analysis
-                  </span>
-                  <h3 className="text-sm font-semibold text-white tracking-wide">
-                    vBiz Me vs. Legacy Cards
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsPopupOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white transition-colors cursor-pointer"
-                  aria-label="Close modal"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              {/* Image content */}
-              <div className="relative aspect-[16/9] w-full bg-black/30 rounded-xl overflow-hidden flex items-center justify-center border border-white/5">
-                <img
-                  src="https://www.vbizme.com/wp-content/uploads/2026/04/vBiz-Me-Competative-Analysis.png"
-                  alt="vBiz-Me Competitive Analysis Layout"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-contain max-h-[70vh]"
-                />
-              </div>
-
-              {/* Footer details */}
-              <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-                <p className="text-neutral-500 font-light text-center sm:text-left">
-                  Designed to transform standard handshakes into premium sales opportunities.
-                </p>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setIsPopupOpen(false)}
-                    className="px-4 py-2 rounded-full border border-white/10 bg-white/5 text-white font-medium hover:bg-white/10 transition-colors"
-                  >
-                    Close
-                  </button>
-                  <a
-                    href="/contact"
-                    className="px-5 py-2 rounded-full bg-brand-gold text-black font-semibold hover:bg-yellow-400 transition-colors"
-                    onClick={() => setIsPopupOpen(false)}
-                  >
-                    Take Action Now
-                  </a>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <TrustBar />
-    </section>
-  );
-};
-
 // Interactive Demo Component ("See It In Action")
 const InteractiveDemoSection = () => {
   const industries = [
@@ -717,7 +220,7 @@ const InteractiveDemoSection = () => {
       name: 'Contractor',
       icon: <Briefcase className="w-4 h-4" />,
       company: 'Casanova Carpentry',
-      introTitle: 'Michaelangelo Casanova — Master Remodeler',
+      introTitle: 'Michaelangelo Casanova â€” Master Remodeler',
       videoPlaceholder: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120',
       tagline: 'See our high-end luxury carpentry portfolios and custom remodels.',
@@ -731,7 +234,7 @@ const InteractiveDemoSection = () => {
       name: 'Real Estate',
       icon: <Building className="w-4 h-4" />,
       company: 'Vargas Exclusive',
-      introTitle: 'Chago Vargas — Elite Realtor',
+      introTitle: 'Chago Vargas â€” Elite Realtor',
       videoPlaceholder: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120',
       tagline: 'Tour Connecticut\'s most exclusive residential listings instantly.',
@@ -745,7 +248,7 @@ const InteractiveDemoSection = () => {
       name: 'Auto Sales',
       icon: <Car className="w-4 h-4" />,
       company: 'Premier Luxury Motors',
-      introTitle: 'Walter Jofre Jr — VIP Client Advisor',
+      introTitle: 'Walter Jofre Jr â€” VIP Client Advisor',
       videoPlaceholder: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=120',
       tagline: 'Skip dealership runarounds. Instant showroom inventory VIP access.',
@@ -759,7 +262,7 @@ const InteractiveDemoSection = () => {
       name: 'Master Barber',
       icon: <Scissors className="w-4 h-4" />,
       company: 'Dennis Signature Grooming',
-      introTitle: 'Brian Dennis — Master Grooming Expert',
+      introTitle: 'Brian Dennis â€” Master Grooming Expert',
       videoPlaceholder: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
       tagline: 'Book a premium barber session or straight-razor trim with ease.',
@@ -773,7 +276,7 @@ const InteractiveDemoSection = () => {
       name: 'Executive Coach',
       icon: <Award className="w-4 h-4" />,
       company: 'Singleton Advisory',
-      introTitle: 'Sheldon Singleton — Growth Coach',
+      introTitle: 'Sheldon Singleton â€” Growth Coach',
       videoPlaceholder: 'https://images.unsplash.com/photo-1552581230-c015914626ed?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120',
       tagline: 'Transform operations and scale your company from 10M to 100M.',
@@ -787,7 +290,7 @@ const InteractiveDemoSection = () => {
       name: 'Restaurant',
       icon: <Utensils className="w-4 h-4" />,
       company: 'Sabor Ecuatoriano',
-      introTitle: 'Sabor Ecuatoriano Kitchen — Elegant Dining',
+      introTitle: 'Sabor Ecuatoriano Kitchen â€” Elegant Dining',
       videoPlaceholder: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120',
       tagline: 'Secure immediate online reservation. Experience authentic culinary flair.',
@@ -1060,7 +563,7 @@ const PortfolioSection = () => {
             tag="h2"
           />
           <RevealParagraph 
-            text="Share your vCard effortlessly with a QR code or URL link. Scanning or clicking triggers a dynamic intro video, followed by your full vCard, to reflect your unique brand. Our vCards are more than contact information—they are powerful marketing tools that stand out making an instant and lasting impression."
+            text="Share your vCard effortlessly with a QR code or URL link. Scanning or clicking triggers a dynamic intro video, followed by your full vCard, to reflect your unique brand. Our vCards are more than contact informationâ€”they are powerful marketing tools that stand out making an instant and lasting impression."
             className="text-neutral-400 font-light text-base sm:text-lg leading-relaxed max-w-3xl mx-auto"
           />
         </SectionReveal>
@@ -1342,7 +845,7 @@ const PortfolioSection = () => {
                         )}
                         {item.name === 'bitcoin' && (
                            <div className="w-[18%] h-[18%] max-w-[50px] max-h-[50px] bg-orange-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white transform group-hover:scale-110 -rotate-12 transition-transform duration-500">
-                              <span className="text-white text-sm sm:text-base font-bold -ml-[1.5px] mt-[0.5px]">₿</span>
+                              <span className="text-white text-sm sm:text-base font-bold -ml-[1.5px] mt-[0.5px]">â‚¿</span>
                            </div>
                         )}
                       </div>
@@ -1449,7 +952,7 @@ const PortfolioSection = () => {
                     onClick={() => setShowModalPhoneFrame(false)}
                     className="absolute top-5 left-5 text-neutral-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors z-50 font-sans text-xs font-semibold"
                   >
-                    ← Back
+                    â† Back
                   </button>
                 )}
 
@@ -1507,7 +1010,7 @@ const PortfolioSection = () => {
                           )}
                           {selectedQrCard.name === 'bitcoin' && (
                              <div className="w-[18%] h-[18%] max-w-[65px] max-h-[65px] bg-orange-500 rounded-full flex items-center justify-center shadow-[0_5px_15px_rgba(249,115,22,0.35)] border-4 border-white">
-                                <span className="text-white text-lg sm:text-xl font-bold -ml-[2px] mt-[0.5px]">₿</span>
+                                <span className="text-white text-lg sm:text-xl font-bold -ml-[2px] mt-[0.5px]">â‚¿</span>
                              </div>
                           )}
                         </div>
@@ -1579,7 +1082,7 @@ const PortfolioSection = () => {
                   {selectedCard.name}
                 </h3>
                 <p className="text-neutral-500 font-light text-[10px] mb-4 text-center max-w-[240px]">
-                  {selectedCard.role} • {selectedCard.company}
+                  {selectedCard.role} â€¢ {selectedCard.company}
                 </p>
                 
                 <PhoneMockupFrame
@@ -1644,28 +1147,28 @@ const InvisibleAdvantageTeaser = () => {
 
             <div className="grid grid-cols-2 gap-4 mb-8">
               <ScrollRevealCard direction="up" className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Emotion</span>
+                <span className="text-brand-gold text-lg font-bold block mb-1">âœ“ Emotion</span>
                 <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
                   Humanize the initial handshake with a 9s looping intro video.
                 </p>
               </ScrollRevealCard>
               
               <ScrollRevealCard direction="right" delay={0.1} className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Identity</span>
+                <span className="text-brand-gold text-lg font-bold block mb-1">âœ“ Identity</span>
                 <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
                   Displays official corporate role, badges, and background seamlessly.
                 </p>
               </ScrollRevealCard>
               
               <ScrollRevealCard direction="left" delay={0.2} className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Proof</span>
+                <span className="text-brand-gold text-lg font-bold block mb-1">âœ“ Proof</span>
                 <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
                   Verified customer experience reviews loaded direct onto the card.
                 </p>
               </ScrollRevealCard>
               
               <ScrollRevealCard direction="down" delay={0.3} className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Action</span>
+                <span className="text-brand-gold text-lg font-bold block mb-1">âœ“ Action</span>
                 <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
                   Smart call-to-actions (Book Now, Call Now) configured dynamically.
                 </p>
@@ -1994,7 +1497,7 @@ const SocialProof = () => {
                   })()}
                 </div>
                 <p className="text-neutral-400 font-light text-[12.5px] italic leading-relaxed line-clamp-5">
-                  “{reviews[prevIdx].quote}”
+                  â€œ{reviews[prevIdx].quote}â€
                 </p>
               </div>
               <div className="border-t border-white/5 pt-5 mt-6 flex gap-3.5 items-center">
@@ -2003,7 +1506,7 @@ const SocialProof = () => {
                 </div>
                 <div className="overflow-hidden">
                   <span className="text-neutral-300 font-semibold text-xs block truncate">{reviews[prevIdx].rater}</span>
-                  <span className="text-neutral-500 text-[10.5px] font-light block truncate mt-0.5">{reviews[prevIdx].role} — {reviews[prevIdx].comp}</span>
+                  <span className="text-neutral-500 text-[10.5px] font-light block truncate mt-0.5">{reviews[prevIdx].role} â€” {reviews[prevIdx].comp}</span>
                 </div>
               </div>
             </div>
@@ -2025,7 +1528,7 @@ const SocialProof = () => {
                 
                 {/* Elegant giant background quotation mark */}
                 <span className="absolute top-10 right-10 text-[190px] font-serif text-brand-gold/[0.035] select-none pointer-events-none leading-none font-extrabold">
-                  ”
+                  â€
                 </span>
 
                 <div>
@@ -2051,7 +1554,7 @@ const SocialProof = () => {
                   </div>
 
                   <p className="text-base sm:text-lg md:text-[19px] text-white font-light leading-relaxed tracking-wide italic mb-8 relative z-10 font-sans">
-                    “{reviews[currentIdx].quote}”
+                    â€œ{reviews[currentIdx].quote}â€
                   </p>
                 </div>
 
@@ -2064,7 +1567,7 @@ const SocialProof = () => {
                     <div>
                       <span className="text-white font-bold text-base block tracking-tight">{reviews[currentIdx].rater}</span>
                       <span className="text-neutral-400 text-xs font-light block mt-0.5">
-                        {reviews[currentIdx].role} — <strong className="text-brand-gold/90 font-medium">{reviews[currentIdx].comp}</strong>
+                        {reviews[currentIdx].role} â€” <strong className="text-brand-gold/90 font-medium">{reviews[currentIdx].comp}</strong>
                       </span>
                     </div>
                   </div>
@@ -2112,7 +1615,7 @@ const SocialProof = () => {
                   })()}
                 </div>
                 <p className="text-neutral-400 font-light text-[12.5px] italic leading-relaxed line-clamp-5">
-                  “{reviews[nextIdx].quote}”
+                  â€œ{reviews[nextIdx].quote}â€
                 </p>
               </div>
               <div className="border-t border-white/5 pt-5 mt-6 flex gap-3.5 items-center">
@@ -2121,7 +1624,7 @@ const SocialProof = () => {
                 </div>
                 <div className="overflow-hidden">
                   <span className="text-neutral-300 font-semibold text-xs block truncate">{reviews[nextIdx].rater}</span>
-                  <span className="text-neutral-500 text-[10.5px] font-light block truncate mt-0.5">{reviews[nextIdx].role} — {reviews[nextIdx].comp}</span>
+                  <span className="text-neutral-500 text-[10.5px] font-light block truncate mt-0.5">{reviews[nextIdx].role} â€” {reviews[nextIdx].comp}</span>
                 </div>
               </div>
             </div>
@@ -2186,7 +1689,7 @@ const FinalCTA = () => {
           highlightedWords={["Thrown", "Away"]}
         />
         <RevealParagraph 
-          text="Start making every single introduction count — starting today."
+          text="Start making every single introduction count â€” starting today."
           className="text-neutral-400 font-light text-base leading-relaxed mb-8 max-w-2xl mx-auto text-center block"
         />
         
@@ -2228,7 +1731,7 @@ const HowCanWeHelp = () => {
     },
     {
       title: "Engagement Features",
-      desc: "Include call-to-action buttons, such as “Book Now” to drive immediate engagement.",
+      desc: "Include call-to-action buttons, such as â€œBook Nowâ€ to drive immediate engagement.",
       icon: <Sparkles size={22} />,
       index: "03"
     },
@@ -2364,10 +1867,9 @@ const HowCanWeHelp = () => {
   );
 };
 
-export default function Home({ heroHeading }: { heroHeading?: React.ReactNode }) {
+export default function Home() {
   return (
     <div className="bg-black">
-      <Hero heroHeading={heroHeading} />
       <HowCanWeHelp />
       <InteractiveDemoSection />
       <PortfolioSection />

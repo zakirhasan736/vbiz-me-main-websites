@@ -1,6 +1,38 @@
 @import "lenis/dist/lenis.css";
 @import "tailwindcss";
 
+@keyframes hero-orb-fade {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes hero-orb-fade-soft {
+  0%,
+  100% {
+    opacity: 0.05;
+  }
+  50% {
+    opacity: 0.12;
+  }
+}
+
+.hero-orb-gold {
+  animation: hero-orb-fade 10s ease-in-out infinite;
+  will-change: opacity;
+  contain: strict;
+}
+
+.hero-orb-blue {
+  animation: hero-orb-fade-soft 12s ease-in-out infinite;
+  will-change: opacity;
+  contain: strict;
+}
+
 :root {
   --color-brand-dark: #12141d;
   --color-brand-gold: #eeca53;

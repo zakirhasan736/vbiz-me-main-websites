@@ -1,6 +1,11 @@
 import Home from '@/components/views/Home';
-import { HeroHeading } from '@/components/hero/HeroHeading';
+import { HeroSection } from '@/components/hero/HeroSection';
 
 export default function HomePage() {
-  return <Home heroHeading={<HeroHeading />} />;
+  return (
+    <>
+      <HeroSection />
+      <Home />
+    </>
+  );
 }

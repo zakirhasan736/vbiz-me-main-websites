@@ -77,10 +77,11 @@ export const Navbar: React.FC = () => {
               <Image
                 src={VBIZ_LOGO.src}
                 alt="vBiz Me Logo"
-                width={VBIZ_LOGO.width}
-                height={VBIZ_LOGO.height}
+                width={VBIZ_LOGO.navbar.width}
+                height={VBIZ_LOGO.navbar.height}
+                sizes={VBIZ_LOGO.navbar.sizes}
                 priority
-                className="h-[45px] w-auto object-contain transition-transform duration-500 group-hover:scale-105"
+                className={`${VBIZ_LOGO.navbar.className} transition-transform duration-500 group-hover:scale-105`}
               />
             </Link>
 

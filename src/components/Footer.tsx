@@ -118,9 +118,10 @@ export const Footer = () => {
               <Image
                 src={VBIZ_LOGO.src}
                 alt="vBiz Me Logo"
-                width={VBIZ_LOGO.width}
-                height={VBIZ_LOGO.height}
-                className="h-12 md:h-[78px] w-auto object-contain transition-transform duration-500 group-hover:scale-105"
+                width={VBIZ_LOGO.footer.width}
+                height={VBIZ_LOGO.footer.height}
+                sizes={VBIZ_LOGO.footer.sizes}
+                className={`${VBIZ_LOGO.footer.className} transition-transform duration-500 group-hover:scale-105`}
               />
             </Link>
             <p className="text-neutral-400 text-xs md:text-sm font-light max-w-sm leading-relaxed mb-5 md:mb-8 mx-auto md:mx-0">

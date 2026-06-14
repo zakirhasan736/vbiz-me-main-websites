@@ -58,7 +58,7 @@ export default function OurVCards() {
           <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl mb-10 shadow-[0_0_20px_rgba(212,175,55,0.15)] relative overflow-hidden group">
              <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/0 via-brand-gold/10 to-brand-gold/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
              <Sparkles size={14} className="text-brand-gold" />
-             <span className="text-[12px] font-medium tracking-[0.15em] uppercase text-neutral-200">The Ultimate Digital Asset</span>
+             <span className="text-[10px] md:text-[12px] font-medium tracking-[0.15em] uppercase text-neutral-200">The Ultimate Digital Asset</span>
           </div>
           
           <RevealText 
