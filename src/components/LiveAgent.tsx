@@ -9,6 +9,12 @@ import {
   DEFAULT_CARD_DATA,
   LIVE_AGENT_GREETING_TURN,
 } from '@/lib/live-agent-prompt';
+import {
+  LIVE_MODELS,
+  createLiveGenAIClient,
+  getLiveAgentSetupError,
+  resolveLiveAgentApiKey,
+} from '@/lib/live-agent-config';
 
 const SYSTEM_PROMPT = buildLiveAgentSystemPrompt(DEFAULT_CARD_DATA, undefined, {
   voice: true,
@@ -21,6 +27,8 @@ export function LiveAgent() {
   const [error, setError] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [keyReady, setKeyReady] = useState(false);
 
   const hasGreetedRef = useRef(false);
   const isConnectingRef = useRef(false);
@@ -35,14 +43,33 @@ export function LiveAgent() {
   const nextStartTimeRef = useRef<number>(0);
   const checkSpeakingRef = useRef<number>(0);
   const lastAudioTimeRef = useRef<number>(0);
-
-  const apiKey =
-    process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
+  const autoStartAttemptedRef = useRef(false);
 
   const aiRef = useRef<GoogleGenAI | null>(null);
-  if (!aiRef.current && apiKey) {
-    aiRef.current = new GoogleGenAI({ apiKey });
-  }
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadKey = async () => {
+      try {
+        const key = await resolveLiveAgentApiKey();
+        if (cancelled) return;
+        setApiKey(key);
+        aiRef.current = createLiveGenAIClient(key);
+      } catch (err) {
+        if (cancelled) return;
+        const message = err instanceof Error ? err.message : 'Could not load Live Agent config.';
+        setError(message);
+      } finally {
+        if (!cancelled) setKeyReady(true);
+      }
+    };
+
+    void loadKey();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     isMutedRef.current = isMuted;
@@ -131,6 +158,7 @@ export function LiveAgent() {
 
     isConnectedRef.current = false;
     isConnectingRef.current = false;
+    hasGreetedRef.current = false;
     setIsConnected(false);
     setIsConnecting(false);
     setIsSpeaking(false);
@@ -138,8 +166,22 @@ export function LiveAgent() {
 
   const startConnection = useCallback(async () => {
     if (isConnectedRef.current || isConnectingRef.current) return;
+
+    const setupError = getLiveAgentSetupError();
+    if (setupError) {
+      setError(setupError);
+      return;
+    }
+
+    if (!keyReady) {
+      setError('Loading Live Agent configuration...');
+      return;
+    }
+
     if (!apiKey || !aiRef.current) {
-      setError('Gemini API key is missing. Add NEXT_PUBLIC_GEMINI_API_KEY to .env');
+      setError(
+        'Gemini API key is missing on the server. Set GEMINI_API_KEY on your VPS and restart the app.',
+      );
       return;
     }
 
@@ -158,216 +200,242 @@ export function LiveAgent() {
       await audioContext.resume();
 
       const source = audioContext.createMediaStreamSource(stream);
+      const silentGain = audioContext.createGain();
+      silentGain.gain.value = 0;
 
-      const session = await aiRef.current.live.connect({
-        model: 'gemini-3.1-flash-live-preview',
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
-          },
-          systemInstruction: SYSTEM_PROMPT,
-          tools: [
+      const liveTools = [
+        {
+          functionDeclarations: [
             {
-              functionDeclarations: [
-                {
-                  name: 'callUser',
-                  description: 'Execute this to call the business owner or user by phone.',
-                  parameters: { type: Type.OBJECT, properties: {} },
+              name: 'callUser',
+              description: 'Execute this to call the business owner or user by phone.',
+              parameters: { type: Type.OBJECT, properties: {} },
+            },
+            {
+              name: 'emailUser',
+              description: 'Execute this to send an email to the business owner or user.',
+              parameters: { type: Type.OBJECT, properties: {} },
+            },
+            {
+              name: 'openVideos',
+              description: 'Execute this to open YouTube intro videos based on a query.',
+              parameters: {
+                type: Type.OBJECT,
+                properties: {
+                  query: { type: Type.STRING, description: 'Search query for videos' },
                 },
-                {
-                  name: 'emailUser',
-                  description: 'Execute this to send an email to the business owner or user.',
-                  parameters: { type: Type.OBJECT, properties: {} },
-                },
-                {
-                  name: 'openVideos',
-                  description: 'Execute this to open YouTube intro videos based on a query.',
-                  parameters: {
-                    type: Type.OBJECT,
-                    properties: {
-                      query: { type: Type.STRING, description: 'Search query for videos' },
-                    },
-                  },
-                },
-                {
-                  name: 'saveContact',
-                  description: "Execute this to save the business owner's contact info (vCard) to the user's device.",
-                  parameters: { type: Type.OBJECT, properties: {} },
-                },
-                {
-                  name: 'openNotepad',
-                  description: 'Execute this to open the notepad/guestbook section for leaving notes.',
-                  parameters: { type: Type.OBJECT, properties: {} },
-                },
-              ],
+              },
+            },
+            {
+              name: 'saveContact',
+              description: "Execute this to save the business owner's contact info (vCard) to the user's device.",
+              parameters: { type: Type.OBJECT, properties: {} },
+            },
+            {
+              name: 'openNotepad',
+              description: 'Execute this to open the notepad/guestbook section for leaving notes.',
+              parameters: { type: Type.OBJECT, properties: {} },
             },
           ],
         },
-        callbacks: {
-          onopen: () => {
-            isConnectedRef.current = true;
-            isConnectingRef.current = false;
-            setIsConnected(true);
-            setIsConnecting(false);
-            checkSpeakingRef.current = requestAnimationFrame(monitorSpeaking);
+      ] as never;
 
-            const processor = audioContext.createScriptProcessor(512, 1, 1);
-            processorRef.current = processor;
-            source.connect(processor);
-            processor.connect(audioContext.destination);
+      const callbacks = {
+        onmessage: (e: unknown) => {
+          const message = e as LiveServerMessage;
 
-            processor.onaudioprocess = (e) => {
-              if (isMutedRef.current || !sessionRef.current) return;
-
-              const inputData = e.inputBuffer.getChannelData(0);
-              const pcm16 = new Int16Array(inputData.length);
-              let hasAudio = false;
-
-              for (let i = 0; i < inputData.length; i++) {
-                pcm16[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7fff;
-                if (Math.abs(pcm16[i]) > 100) hasAudio = true;
+          if (message.toolCall?.functionCalls?.length) {
+            for (const call of message.toolCall.functionCalls) {
+              if (call.name === 'callUser') {
+                window.location.href = 'tel:+18607709893';
+              } else if (call.name === 'emailUser') {
+                window.location.href = 'mailto:mcasanova@vbizme.com';
+              } else if (call.name === 'openVideos') {
+                const args = call.args as Record<string, string>;
+                window.open(
+                  `https://www.youtube.com/results?search_query=${encodeURIComponent(args?.query || 'mc intro videos')}`,
+                  '_blank'
+                );
+              } else if (call.name === 'saveContact') {
+                window.dispatchEvent(new CustomEvent('saveContactAction'));
+              } else if (call.name === 'openNotepad') {
+                window.dispatchEvent(new CustomEvent('openNotepadAction'));
               }
 
-              if (!hasAudio) return;
-
-              const uint8 = new Uint8Array(pcm16.buffer);
-              let binary = '';
-              for (let i = 0; i < uint8.byteLength; i++) {
-                binary += String.fromCharCode(uint8[i]);
-              }
-
-              sessionRef.current.sendRealtimeInput({
-                audio: {
-                  mimeType: 'audio/pcm;rate=16000',
-                  data: btoa(binary),
-                },
+              sessionRef.current?.sendToolResponse({
+                functionResponses: [
+                  {
+                    id: call.id,
+                    name: call.name,
+                    response: { result: 'Action executed successfully' },
+                  },
+                ],
               });
-            };
-          },
-          onmessage: (e: unknown) => {
-            const message = e as LiveServerMessage;
+            }
+          }
 
-            if (message.toolCall?.functionCalls?.length) {
-              for (const call of message.toolCall.functionCalls) {
-                if (call.name === 'callUser') {
-                  window.location.href = 'tel:+18607709893';
-                } else if (call.name === 'emailUser') {
-                  window.location.href = 'mailto:mcasanova@vbizme.com';
-                } else if (call.name === 'openVideos') {
-                  const args = call.args as Record<string, string>;
-                  window.open(
-                    `https://www.youtube.com/results?search_query=${encodeURIComponent(args?.query || 'mc intro videos')}`,
-                    '_blank'
-                  );
-                } else if (call.name === 'saveContact') {
-                  window.dispatchEvent(new CustomEvent('saveContactAction'));
-                } else if (call.name === 'openNotepad') {
-                  window.dispatchEvent(new CustomEvent('openNotepadAction'));
-                }
+          const parts = message.serverContent?.modelTurn?.parts ?? [];
+          for (const part of parts) {
+            const base64Audio = part.inlineData?.data;
+            if (!base64Audio || !pcmContextRef.current) continue;
 
-                sessionRef.current?.sendToolResponse({
-                  functionResponses: [
-                    {
-                      id: call.id,
-                      name: call.name,
-                      response: { result: 'Action executed successfully' },
-                    },
-                  ],
-                });
-              }
+            const binary = atob(base64Audio);
+            const buffer = new ArrayBuffer(binary.length);
+            const view = new Uint8Array(buffer);
+            for (let i = 0; i < binary.length; i++) {
+              view[i] = binary.charCodeAt(i);
             }
 
-            const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (base64Audio && pcmContextRef.current) {
-              const binary = atob(base64Audio);
-              const buffer = new ArrayBuffer(binary.length);
-              const view = new Uint8Array(buffer);
-              for (let i = 0; i < binary.length; i++) {
-                view[i] = binary.charCodeAt(i);
-              }
-
-              const pcm16 = new Int16Array(buffer);
-              const pcmContext = pcmContextRef.current;
-              const audioBuffer = pcmContext.createBuffer(1, pcm16.length, 24000);
-              const channelData = audioBuffer.getChannelData(0);
-              for (let i = 0; i < pcm16.length; i++) {
-                channelData[i] = pcm16[i] / 0x7fff;
-              }
-
-              playChunk(audioBuffer);
+            const pcm16 = new Int16Array(buffer);
+            const pcmContext = pcmContextRef.current;
+            const audioBuffer = pcmContext.createBuffer(1, pcm16.length, 24000);
+            const channelData = audioBuffer.getChannelData(0);
+            for (let i = 0; i < pcm16.length; i++) {
+              channelData[i] = pcm16[i] / 0x7fff;
             }
 
-            if (message.serverContent?.interrupted && pcmContextRef.current) {
-              scheduledSourcesRef.current.forEach((source) => {
-                try {
-                  source.stop();
-                } catch {
-                  /* ignore */
-                }
-              });
-              scheduledSourcesRef.current = [];
-              nextStartTimeRef.current = pcmContextRef.current.currentTime;
-              lastAudioTimeRef.current = 0;
-            }
-          },
-          onerror: (err: { message?: string }) => {
-            console.error('Live API Error:', err);
-            setError(`Connection error: ${err?.message || 'Unknown error'}`);
-            disconnect();
-          },
-          onclose: () => {
-            disconnect();
-          },
+            playChunk(audioBuffer);
+          }
+
+          if (message.serverContent?.interrupted && pcmContextRef.current) {
+            scheduledSourcesRef.current.forEach((source) => {
+              try {
+                source.stop();
+              } catch {
+                /* ignore */
+              }
+            });
+            scheduledSourcesRef.current = [];
+            nextStartTimeRef.current = pcmContextRef.current.currentTime;
+            lastAudioTimeRef.current = 0;
+          }
         },
-      });
+        onerror: (err: { message?: string }) => {
+          console.error('Live API Error:', err);
+          setError(`Connection error: ${err?.message || 'Unknown error'}`);
+          disconnect();
+        },
+        onclose: () => {
+          disconnect();
+        },
+      };
+
+      let session: Awaited<ReturnType<GoogleGenAI['live']['connect']>> | null = null;
+      let lastError: Error | null = null;
+
+      for (const model of LIVE_MODELS) {
+        try {
+          session = await aiRef.current.live.connect({
+            model,
+            config: {
+              responseModalities: [Modality.AUDIO],
+              speechConfig: {
+                voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
+              },
+              systemInstruction: SYSTEM_PROMPT,
+              tools: liveTools,
+            },
+            callbacks,
+          });
+          break;
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error(String(err));
+          console.warn(`Live model ${model} failed:`, err);
+        }
+      }
+
+      if (!session) {
+        throw lastError ?? new Error('Could not connect to Gemini Live API.');
+      }
 
       sessionRef.current = session;
+      isConnectedRef.current = true;
+      isConnectingRef.current = false;
+      setIsConnected(true);
+      setIsConnecting(false);
+      checkSpeakingRef.current = requestAnimationFrame(monitorSpeaking);
+
       sendInitialGreeting(session);
+
+      const processor = audioContext.createScriptProcessor(512, 1, 1);
+      processorRef.current = processor;
+      source.connect(processor);
+      processor.connect(silentGain);
+      silentGain.connect(audioContext.destination);
+
+      processor.onaudioprocess = (e) => {
+        if (isMutedRef.current || !sessionRef.current) return;
+
+        const inputData = e.inputBuffer.getChannelData(0);
+        const pcm16 = new Int16Array(inputData.length);
+        let hasAudio = false;
+
+        for (let i = 0; i < inputData.length; i++) {
+          pcm16[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7fff;
+          if (Math.abs(pcm16[i]) > 100) hasAudio = true;
+        }
+
+        if (!hasAudio) return;
+
+        const uint8 = new Uint8Array(pcm16.buffer);
+        let binary = '';
+        for (let i = 0; i < uint8.byteLength; i++) {
+          binary += String.fromCharCode(uint8[i]);
+        }
+
+        try {
+          sessionRef.current.sendRealtimeInput({
+            audio: {
+              mimeType: 'audio/pcm;rate=16000',
+              data: btoa(binary),
+            },
+          });
+        } catch {
+          /* socket closed */
+        }
+      };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Could not start voice session.';
       console.error('Failed to start Live API', err);
-      if (!apiKey) {
-        console.warn('Gemini API key is undefined at runtime.');
-      }
       setError(message);
       disconnect();
-      throw err;
     }
-  }, [apiKey, disconnect, initAudioOutput, monitorSpeaking, playChunk, sendInitialGreeting]);
+  }, [apiKey, disconnect, initAudioOutput, keyReady, monitorSpeaking, playChunk, sendInitialGreeting]);
 
   useEffect(() => {
+    if (!keyReady || !apiKey || autoStartAttemptedRef.current) return;
+    autoStartAttemptedRef.current = true;
+
     let removeListeners: (() => void) | null = null;
     let mounted = true;
 
     const tryAutoConnect = async () => {
-      try {
-        await startConnection();
-        if (mounted) setIsOpen(true);
-      } catch {
-        if (!mounted) return;
-
-        const handleFirstGesture = async () => {
-          try {
-            await startConnection();
-            setIsOpen(true);
-          } catch (e) {
-            console.warn('Connection failed after user gesture', e);
-          }
-          removeListeners?.();
-          removeListeners = null;
-        };
-
-        removeListeners = () => {
-          window.removeEventListener('click', handleFirstGesture);
-          window.removeEventListener('touchstart', handleFirstGesture);
-          window.removeEventListener('keydown', handleFirstGesture);
-        };
-
-        window.addEventListener('click', handleFirstGesture);
-        window.addEventListener('touchstart', handleFirstGesture);
-        window.addEventListener('keydown', handleFirstGesture);
+      await startConnection();
+      if (mounted && isConnectedRef.current) {
+        setIsOpen(true);
+        return;
       }
+
+      if (!mounted) return;
+
+      const handleFirstGesture = async () => {
+        await startConnection();
+        if (mounted && isConnectedRef.current) {
+          setIsOpen(true);
+        }
+        removeListeners?.();
+        removeListeners = null;
+      };
+
+      removeListeners = () => {
+        window.removeEventListener('click', handleFirstGesture);
+        window.removeEventListener('touchstart', handleFirstGesture);
+        window.removeEventListener('keydown', handleFirstGesture);
+      };
+
+      window.addEventListener('click', handleFirstGesture);
+      window.addEventListener('touchstart', handleFirstGesture);
+      window.addEventListener('keydown', handleFirstGesture);
     };
 
     void tryAutoConnect();
@@ -375,9 +443,14 @@ export function LiveAgent() {
     return () => {
       mounted = false;
       removeListeners?.();
+    };
+  }, [apiKey, keyReady, startConnection]);
+
+  useEffect(() => {
+    return () => {
       disconnect();
     };
-  }, [disconnect, startConnection]);
+  }, [disconnect]);
 
   const toggleConnection = () => {
     if (isConnectedRef.current || isConnectingRef.current) {
@@ -474,7 +547,16 @@ export function LiveAgent() {
       </AnimatePresence>
 
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (isOpen) {
+            setIsOpen(false);
+            return;
+          }
+          setIsOpen(true);
+          if (!isConnectedRef.current && !isConnectingRef.current) {
+            void startConnection();
+          }
+        }}
         className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transition-all duration-75 relative border ${
           isOpen
             ? 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 border-zinc-800 shadow-sm'
