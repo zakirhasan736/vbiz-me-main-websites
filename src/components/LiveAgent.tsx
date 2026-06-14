@@ -536,7 +536,7 @@ export function LiveAgent() {
 
     let detachGestures: (() => void) | undefined;
     let idleCallbackId: number | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let timeoutId: number | undefined;
 
     const boot = async () => {
       setIsOpen(true);
