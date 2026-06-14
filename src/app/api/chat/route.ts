@@ -1,9 +1,10 @@
 import { GoogleGenAI } from '@google/genai';
 import { NextRequest } from 'next/server';
 import { buildLiveAgentSystemPrompt } from '@/lib/live-agent-prompt';
+import { getServerGeminiApiKey } from '@/lib/gemini-env';
 
 const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
+  apiKey: getServerGeminiApiKey(),
   httpOptions: {
     headers: {
       'User-Agent': 'aistudio-build',

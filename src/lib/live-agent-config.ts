@@ -33,7 +33,12 @@ export async function resolveLiveAgentApiKey(): Promise<string> {
   // Production/VPS: always prefer server runtime env (GEMINI_API_KEY).
   try {
     const response = await fetch('/api/live-agent/config', { cache: 'no-store' });
-    const data = (await response.json()) as { apiKey?: string; message?: string };
+    const data = (await response.json()) as {
+      apiKey?: string;
+      message?: string;
+      configured?: boolean;
+      vpsChecklist?: string[];
+    };
 
     if (response.ok && data.apiKey) {
       return data.apiKey;
@@ -41,9 +46,15 @@ export async function resolveLiveAgentApiKey(): Promise<string> {
 
     if (bakedKey) return bakedKey;
 
+    const checklist =
+      data.vpsChecklist?.length ?
+        `\n\nVPS checklist:\n${data.vpsChecklist.map((line) => `• ${line}`).join('\n')}`
+      : '';
+
     throw new Error(
-      data.message ||
-        'Live Agent is not configured on the server. Set GEMINI_API_KEY on your VPS and restart the app.',
+      (data.message ||
+        'Live Agent is not configured on the server. Set GEMINI_API_KEY in .env and restart the app.') +
+        checklist,
     );
   } catch (err) {
     if (bakedKey) return bakedKey;
