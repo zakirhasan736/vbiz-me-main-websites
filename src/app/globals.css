@@ -67,6 +67,10 @@ body.theme-ocean {
   --color-brand-text: #a1a1aa;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 html.lenis,
 html.lenis body {
   height: auto;
@@ -99,6 +103,13 @@ body {
   color: white;
   font-family: var(--font-sans);
   transition: background-color 0.5s ease, color 0.5s ease;
+  overflow-x: hidden;
+}
+
+section,
+footer,
+.section-hero {
+  overflow: hidden;
 }
 
 @layer utilities {
@@ -106,6 +117,7 @@ body {
   .site-section {
     padding-top: 45px;
     padding-bottom: 45px;
+    overflow: hidden;
   }
 
   @media (min-width: 768px) {

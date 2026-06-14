@@ -25,10 +25,12 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <ThemeProvider>
       <PageTransitionProvider>
         <SmoothScrollProvider>
-          <div className="min-h-screen bg-brand-dark font-sans selection:bg-brand-gold selection:text-brand-dark transition-colors duration-500">
+          <div className="min-h-screen overflow-x-hidden bg-brand-dark font-sans selection:bg-brand-gold selection:text-brand-dark transition-colors duration-500">
             <GsapRevealController />
             <Navbar />
-            <PageTransitionOverlay>{children}</PageTransitionOverlay>
+            <main className="overflow-hidden">
+              <PageTransitionOverlay>{children}</PageTransitionOverlay>
+            </main>
             <Footer />
             <LiveAgent />
           </div>
