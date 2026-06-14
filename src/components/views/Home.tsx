@@ -326,9 +326,8 @@ const qrSliderItems = [
 ];
 
 // Hero section with video on mockup on the right
-const Hero = () => {
-  const { revealReady, animationKey } = usePageTransition();
-  const animateHeroEntrance = animationKey > 0;
+const Hero = ({ heroHeading }: { heroHeading?: React.ReactNode }) => {
+  const { revealReady } = usePageTransition();
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 1000], [0, 150]);
   const y2 = useTransform(scrollY, [0, 1000], [0, 250]);
@@ -411,25 +410,22 @@ const Hero = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-grow">
         
-        {/* Left column: Compelling pitch */}
-        <motion.div 
-          initial={animateHeroEntrance ? { opacity: 0, x: -50 } : false}
-          animate={revealReady ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="lg:col-span-7 flex flex-col items-start text-left"
-        >
+        {/* Left column: Compelling pitch — static wrapper so LCP h1 is not gated by motion */}
+        <div className="lg:col-span-7 flex flex-col items-start text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/20 text-brand-gold text-xs font-semibold uppercase tracking-wider mb-6 animate-pulse">
             <Sparkles size={12} /> Real-time Video Introductions
           </div>
-          
-          <RevealText 
-            text="The Virtual Business Card That Sells Before You Even Speak"
-            className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight mb-6 leading-tight text-white text-left"
-            tag="h1"
-            highlightedWords={["Sells"]}
-            centered={false}
-            priority
-          />
+
+          {heroHeading ?? (
+            <RevealText
+              text="The Virtual Business Card That Sells Before You Even Speak"
+              className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight mb-6 leading-tight text-white text-left"
+              tag="h1"
+              highlightedWords={['Sells']}
+              centered={false}
+              priority
+            />
+          )}
           
           <RevealParagraph 
             text="Discover the vBiz Me virtual business card (vCard)—an innovative leap in digital networking designed to make a powerful emotional impact."
@@ -468,7 +464,7 @@ const Hero = () => {
               <Check size={14} className="text-brand-gold" /> Unlimited Sharing Limits
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Right column: Ultra-modern premium floating showcase card design with ambient styling */}
         <motion.div 
@@ -2368,10 +2364,10 @@ const HowCanWeHelp = () => {
   );
 };
 
-export default function Home() {
+export default function Home({ heroHeading }: { heroHeading?: React.ReactNode }) {
   return (
     <div className="bg-black">
-      <Hero />
+      <Hero heroHeading={heroHeading} />
       <HowCanWeHelp />
       <InteractiveDemoSection />
       <PortfolioSection />

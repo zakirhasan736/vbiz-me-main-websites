@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "lenis/dist/lenis.css";
 @import "tailwindcss";
 
@@ -27,7 +26,7 @@ body.theme-ocean {
 }
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --color-brand-gold: var(--color-brand-gold);
   --color-brand-dark: var(--color-brand-dark);
   --color-accent-blue: var(--color-accent-blue);
