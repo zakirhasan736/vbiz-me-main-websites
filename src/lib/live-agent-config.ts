@@ -9,7 +9,94 @@ const LIVE_MODELS = [
 export { LIVE_MODELS };
 
 export const CONNECT_TIMEOUT_MS = 25000;
-export const MIC_TIMEOUT_MS = 12000;
+export const MIC_TIMEOUT_MS = 60000;
+
+export const LIVE_AGENT_MEDIA_CONSTRAINTS: MediaStreamConstraints = {
+  audio: {
+    echoCancellation: true,
+    noiseSuppression: true,
+  },
+  video: {
+    facingMode: 'user',
+    width: { ideal: 640, max: 1280 },
+    height: { ideal: 480, max: 720 },
+  },
+};
+
+export type MediaPermissionState = 'unknown' | 'prompt' | 'granted' | 'denied';
+
+export async function queryLiveAgentMediaPermission(): Promise<MediaPermissionState> {
+  if (typeof navigator === 'undefined' || !navigator.permissions?.query) {
+    return 'unknown';
+  }
+
+  try {
+    const [mic, camera] = await Promise.all([
+      navigator.permissions.query({ name: 'microphone' as PermissionName }),
+      navigator.permissions.query({ name: 'camera' as PermissionName }),
+    ]);
+
+    if (mic.state === 'denied' || camera.state === 'denied') return 'denied';
+    if (mic.state === 'granted' && camera.state === 'granted') return 'granted';
+    return 'prompt';
+  } catch {
+    return 'unknown';
+  }
+}
+
+export function getMediaPermissionErrorMessage(err: unknown): string {
+  if (err instanceof Error && err.message.includes('Allow when your browser asks')) {
+    return err.message;
+  }
+
+  if (err instanceof DOMException) {
+    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      return (
+        'Microphone and camera access is blocked.\n\n' +
+        'Click the lock/site icon in your address bar → Site settings → set Microphone and Camera to Allow (not Ask or Block), then refresh and click the agent again.'
+      );
+    }
+    if (err.name === 'NotFoundError') {
+      return 'No microphone was found on this device. Plug in a mic or use another device.';
+    }
+    if (err.name === 'NotReadableError') {
+      return 'Microphone or camera is in use by another app. Close other apps using your mic/camera and try again.';
+    }
+  }
+
+  return err instanceof Error ?
+      err.message
+    : 'Could not access microphone and camera. Allow both when your browser prompts you.';
+}
+
+/**
+ * Must run inside a user gesture (click/tap). Requests mic + camera, keeps audio only.
+ */
+export async function requestLiveAgentMedia(): Promise<MediaStream> {
+  if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+    throw new Error('This browser does not support microphone access.');
+  }
+
+  const existing = await queryLiveAgentMediaPermission();
+  if (existing === 'denied') {
+    throw new DOMException(
+      'Microphone and camera are blocked for this site. Change them to Allow in browser site settings, then refresh.',
+      'NotAllowedError',
+    );
+  }
+
+  const stream = await withTimeout(
+    navigator.mediaDevices.getUserMedia(LIVE_AGENT_MEDIA_CONSTRAINTS),
+    MIC_TIMEOUT_MS,
+    'Please click Allow when your browser asks for microphone and camera access.',
+  );
+
+  stream.getVideoTracks().forEach((track) => {
+    track.stop();
+  });
+
+  return new MediaStream(stream.getAudioTracks());
+}
 
 export function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
   return Promise.race([

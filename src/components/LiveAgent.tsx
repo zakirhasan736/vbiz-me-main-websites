@@ -12,10 +12,12 @@ import {
 import {
   LIVE_MODELS,
   CONNECT_TIMEOUT_MS,
-  MIC_TIMEOUT_MS,
   createLiveGenAIClient,
   getGoogleReferrerFixMessage,
   getLiveAgentSetupError,
+  getMediaPermissionErrorMessage,
+  queryLiveAgentMediaPermission,
+  requestLiveAgentMedia,
   resolveLiveAgentApiKey,
   withTimeout,
 } from '@/lib/live-agent-config';
@@ -34,6 +36,7 @@ export function LiveAgent() {
   const [apiKey, setApiKey] = useState('');
   const [keyReady, setKeyReady] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [mediaBlocked, setMediaBlocked] = useState(false);
 
   const hasGreetedRef = useRef(false);
   const isConnectingRef = useRef(false);
@@ -79,6 +82,63 @@ export function LiveAgent() {
   useEffect(() => {
     isMutedRef.current = isMuted;
   }, [isMuted]);
+
+  useEffect(() => {
+    void queryLiveAgentMediaPermission().then((state) => {
+      if (state === 'denied') setMediaBlocked(true);
+    });
+  }, []);
+
+  const setupMicPipeline = useCallback((stream: MediaStream) => {
+    if (processorRef.current) return;
+
+    const audioContext = new AudioContext({ sampleRate: 16000, latencyHint: 'interactive' });
+    audioContextRef.current = audioContext;
+
+    const source = audioContext.createMediaStreamSource(stream);
+    const silentGain = audioContext.createGain();
+    silentGain.gain.value = 0;
+
+    const processor = audioContext.createScriptProcessor(512, 1, 1);
+    processorRef.current = processor;
+    source.connect(processor);
+    processor.connect(silentGain);
+    silentGain.connect(audioContext.destination);
+
+    processor.onaudioprocess = (e) => {
+      if (isMutedRef.current || !sessionRef.current) return;
+
+      const inputData = e.inputBuffer.getChannelData(0);
+      const pcm16 = new Int16Array(inputData.length);
+      let hasAudio = false;
+
+      for (let i = 0; i < inputData.length; i++) {
+        pcm16[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7fff;
+        if (Math.abs(pcm16[i]) > 100) hasAudio = true;
+      }
+
+      if (!hasAudio) return;
+
+      const uint8 = new Uint8Array(pcm16.buffer);
+      let binary = '';
+      for (let i = 0; i < uint8.byteLength; i++) {
+        binary += String.fromCharCode(uint8[i]);
+      }
+
+      try {
+        sessionRef.current.sendRealtimeInput({
+          audio: {
+            mimeType: 'audio/pcm;rate=16000',
+            data: btoa(binary),
+          },
+        });
+      } catch {
+        /* socket closed */
+      }
+    };
+
+    void audioContext.resume();
+  }, []);
 
   const initAudioOutput = useCallback(async () => {
     if (!pcmContextRef.current) {
@@ -170,6 +230,28 @@ export function LiveAgent() {
     setStatusMessage(null);
   }, []);
 
+  const failConnection = useCallback((message: string) => {
+    isConnectingRef.current = false;
+    setIsConnecting(false);
+    setIsConnected(false);
+    isConnectedRef.current = false;
+    setError(message);
+    setStatusMessage(null);
+
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
+    }
+    if (processorRef.current) {
+      processorRef.current.disconnect();
+      processorRef.current = null;
+    }
+    if (audioContextRef.current) {
+      void audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+  }, []);
+
   const startConnection = useCallback(async () => {
     if (isConnectedRef.current || isConnectingRef.current) return;
 
@@ -193,84 +275,33 @@ export function LiveAgent() {
 
     isConnectingRef.current = true;
     setIsConnecting(true);
+    setIsConnected(false);
     setError(null);
+    setMediaBlocked(false);
+    setStatusMessage('Allow microphone & camera when your browser asks...');
+
+    let stream: MediaStream;
+    try {
+      stream = await requestLiveAgentMedia();
+      mediaStreamRef.current = stream;
+      setupMicPipeline(stream);
+    } catch (mediaErr) {
+      const message = getMediaPermissionErrorMessage(mediaErr);
+      setMediaBlocked(true);
+      failConnection(message);
+      return;
+    }
+
     setStatusMessage('Connecting to Gemini...');
 
-    await initAudioOutput();
-
-    let stream: MediaStream | null = null;
-    let audioContext: AudioContext | null = null;
-    let source: MediaStreamAudioSourceNode | null = null;
-    let silentGain: GainNode | null = null;
-
-    const startMicCapture = async () => {
-      if (!sessionRef.current || processorRef.current) return;
-
-      setStatusMessage('Requesting microphone...');
-
-      try {
-        stream = await withTimeout(
-          navigator.mediaDevices.getUserMedia({ audio: true }),
-          MIC_TIMEOUT_MS,
-          'Microphone permission is required. Click the agent and allow mic access.',
-        );
-        mediaStreamRef.current = stream;
-
-        audioContext = new AudioContext({ sampleRate: 16000, latencyHint: 'interactive' });
-        audioContextRef.current = audioContext;
-        await audioContext.resume();
-
-        source = audioContext.createMediaStreamSource(stream);
-        silentGain = audioContext.createGain();
-        silentGain.gain.value = 0;
-
-        const processor = audioContext.createScriptProcessor(512, 1, 1);
-        processorRef.current = processor;
-        source.connect(processor);
-        processor.connect(silentGain);
-        silentGain.connect(audioContext.destination);
-
-        processor.onaudioprocess = (e) => {
-          if (isMutedRef.current || !sessionRef.current) return;
-
-          const inputData = e.inputBuffer.getChannelData(0);
-          const pcm16 = new Int16Array(inputData.length);
-          let hasAudio = false;
-
-          for (let i = 0; i < inputData.length; i++) {
-            pcm16[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7fff;
-            if (Math.abs(pcm16[i]) > 100) hasAudio = true;
-          }
-
-          if (!hasAudio) return;
-
-          const uint8 = new Uint8Array(pcm16.buffer);
-          let binary = '';
-          for (let i = 0; i < uint8.byteLength; i++) {
-            binary += String.fromCharCode(uint8[i]);
-          }
-
-          try {
-            sessionRef.current.sendRealtimeInput({
-              audio: {
-                mimeType: 'audio/pcm;rate=16000',
-                data: btoa(binary),
-              },
-            });
-          } catch {
-            /* socket closed */
-          }
-        };
-
-        setStatusMessage('Connected');
-      } catch (micErr) {
-        const micMessage =
-          micErr instanceof Error ? micErr.message : 'Microphone access failed.';
-        console.warn('Mic setup failed:', micErr);
-        setError(micMessage);
-        setStatusMessage('Connected (voice reply needs mic)');
-      }
-    };
+    try {
+      await initAudioOutput();
+    } catch (audioErr) {
+      failConnection(
+        audioErr instanceof Error ? audioErr.message : 'Could not start audio playback.',
+      );
+      return;
+    }
 
     try {
       const liveTools = [
@@ -438,16 +469,24 @@ export function LiveAgent() {
       checkSpeakingRef.current = requestAnimationFrame(monitorSpeaking);
 
       sendInitialGreeting(session);
-
-      void startMicCapture();
+      setStatusMessage('Connected');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Could not start voice session.';
       console.error('Failed to start Live API', err);
-      setError(message);
-      setStatusMessage(null);
+      failConnection(message);
       disconnect();
     }
-  }, [apiKey, disconnect, initAudioOutput, keyReady, monitorSpeaking, playChunk, sendInitialGreeting]);
+  }, [
+    apiKey,
+    disconnect,
+    failConnection,
+    initAudioOutput,
+    keyReady,
+    monitorSpeaking,
+    playChunk,
+    sendInitialGreeting,
+    setupMicPipeline,
+  ]);
 
   useEffect(() => {
     if (!keyReady || !apiKey || autoStartAttemptedRef.current) return;
@@ -455,61 +494,28 @@ export function LiveAgent() {
 
     let removeListeners: (() => void) | null = null;
     let mounted = true;
-    let idleId: number | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-    const tryAutoConnect = async () => {
-      await startConnection();
-      if (mounted && isConnectedRef.current) {
-        return;
-      }
-
+    const handleFirstGesture = async () => {
       if (!mounted) return;
-
-      const handleFirstGesture = async () => {
-        setIsOpen(true);
-        await startConnection();
-        if (mounted && isConnectedRef.current) {
-          setIsOpen(true);
-        }
-        removeListeners?.();
-        removeListeners = null;
-      };
-
-      removeListeners = () => {
-        window.removeEventListener('click', handleFirstGesture);
-        window.removeEventListener('touchstart', handleFirstGesture);
-        window.removeEventListener('keydown', handleFirstGesture);
-      };
-
-      window.addEventListener('click', handleFirstGesture);
-      window.addEventListener('touchstart', handleFirstGesture);
-      window.addEventListener('keydown', handleFirstGesture);
+      setIsOpen(true);
+      await startConnection();
+      removeListeners?.();
+      removeListeners = null;
     };
 
-    const scheduleAutoConnect = () => {
-      if (typeof window.requestIdleCallback === 'function') {
-        idleId = window.requestIdleCallback(() => {
-          void tryAutoConnect();
-        }, { timeout: 8000 });
-      } else {
-        timeoutId = setTimeout(() => {
-          void tryAutoConnect();
-        }, 4000);
-      }
+    removeListeners = () => {
+      window.removeEventListener('click', handleFirstGesture);
+      window.removeEventListener('touchstart', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
     };
 
-    scheduleAutoConnect();
+    window.addEventListener('click', handleFirstGesture);
+    window.addEventListener('touchstart', handleFirstGesture);
+    window.addEventListener('keydown', handleFirstGesture);
 
     return () => {
       mounted = false;
       removeListeners?.();
-      if (idleId !== undefined && typeof window.cancelIdleCallback === 'function') {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timeoutId !== undefined) {
-        clearTimeout(timeoutId);
-      }
     };
   }, [apiKey, keyReady, startConnection]);
 
@@ -573,10 +579,23 @@ export function LiveAgent() {
             </div>
 
             {error && (
-              <div className="text-red-400 text-xs flex items-start gap-1.5 p-2 bg-red-400/10 rounded-xl z-10 border border-red-500/20 max-h-24 overflow-y-auto">
+              <div className="text-red-400 text-xs flex items-start gap-1.5 p-2 bg-red-400/10 rounded-xl z-10 border border-red-500/20 max-h-32 overflow-y-auto">
                 <AlertCircle size={14} className="shrink-0 mt-0.5" />
-                <span className="line-clamp-4 whitespace-pre-line">{error}</span>
+                <span className="whitespace-pre-line">{error}</span>
               </div>
+            )}
+
+            {!isConnected && !isConnecting && !error && mediaBlocked && (
+              <p className="text-zinc-400 text-[11px] leading-relaxed z-10">
+                Allow microphone and camera for this site in your browser settings, then tap the mic
+                button below.
+              </p>
+            )}
+
+            {!isConnected && !isConnecting && !error && !mediaBlocked && (
+              <p className="text-zinc-500 text-[11px] leading-relaxed z-10">
+                Tap the mic button — your browser will ask to allow microphone and camera.
+              </p>
             )}
 
             <div className="flex items-center justify-center gap-3 mt-2 z-10">
@@ -635,11 +654,16 @@ export function LiveAgent() {
             return;
           }
           setIsOpen(true);
+          setError(null);
           if (!isConnectedRef.current && !isConnectingRef.current) {
             void startConnection();
           }
         }}
-        aria-label={isOpen ? 'Close Live Agent panel' : 'Open Live Agent'}
+        aria-label={
+          isOpen ?
+            'Close Live Agent panel'
+          : 'Open Live Agent — allow microphone and camera when prompted'
+        }
         aria-expanded={isOpen}
         className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transition-all duration-75 relative border ${
           isOpen

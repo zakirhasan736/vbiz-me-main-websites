@@ -8,6 +8,19 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'app.vbizme.com' },
     ],
   },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'microphone=(self), camera=(self)',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
