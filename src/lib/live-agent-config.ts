@@ -9,21 +9,48 @@ const LIVE_MODELS = [
 
 export { LIVE_MODELS };
 
+export const CONNECT_TIMEOUT_MS = 25000;
+export const MIC_TIMEOUT_MS = 12000;
+
+export function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error(message)), ms);
+    }),
+  ]);
+}
+
 export async function resolveLiveAgentApiKey(): Promise<string> {
   const bakedKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim() || '';
-  if (bakedKey) return bakedKey;
+  const isLocalhost =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-  const response = await fetch('/api/live-agent/config', { cache: 'no-store' });
-  const data = (await response.json()) as { apiKey?: string; message?: string };
+  // Local dev: use baked key when present (fast path).
+  if (isLocalhost && bakedKey) return bakedKey;
 
-  if (!response.ok || !data.apiKey) {
+  // Production/VPS: always prefer server runtime env (GEMINI_API_KEY).
+  try {
+    const response = await fetch('/api/live-agent/config', { cache: 'no-store' });
+    const data = (await response.json()) as { apiKey?: string; message?: string };
+
+    if (response.ok && data.apiKey) {
+      return data.apiKey;
+    }
+
+    if (bakedKey) return bakedKey;
+
     throw new Error(
       data.message ||
-        'Live Agent is not configured on the server. Set GEMINI_API_KEY on your VPS.',
+        'Live Agent is not configured on the server. Set GEMINI_API_KEY on your VPS and restart the app.',
     );
+  } catch (err) {
+    if (bakedKey) return bakedKey;
+    throw err instanceof Error
+      ? err
+      : new Error('Could not load Live Agent configuration from the server.');
   }
-
-  return data.apiKey;
 }
 
 export function createLiveGenAIClient(apiKey: string) {

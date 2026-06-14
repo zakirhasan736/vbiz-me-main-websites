@@ -11,9 +11,12 @@ import {
 } from '@/lib/live-agent-prompt';
 import {
   LIVE_MODELS,
+  CONNECT_TIMEOUT_MS,
+  MIC_TIMEOUT_MS,
   createLiveGenAIClient,
   getLiveAgentSetupError,
   resolveLiveAgentApiKey,
+  withTimeout,
 } from '@/lib/live-agent-config';
 
 const SYSTEM_PROMPT = buildLiveAgentSystemPrompt(DEFAULT_CARD_DATA, undefined, {
@@ -29,6 +32,7 @@ export function LiveAgent() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [keyReady, setKeyReady] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const hasGreetedRef = useRef(false);
   const isConnectingRef = useRef(false);
@@ -162,6 +166,7 @@ export function LiveAgent() {
     setIsConnected(false);
     setIsConnecting(false);
     setIsSpeaking(false);
+    setStatusMessage(null);
   }, []);
 
   const startConnection = useCallback(async () => {
@@ -188,21 +193,85 @@ export function LiveAgent() {
     isConnectingRef.current = true;
     setIsConnecting(true);
     setError(null);
+    setStatusMessage('Connecting to Gemini...');
 
     await initAudioOutput();
 
+    let stream: MediaStream | null = null;
+    let audioContext: AudioContext | null = null;
+    let source: MediaStreamAudioSourceNode | null = null;
+    let silentGain: GainNode | null = null;
+
+    const startMicCapture = async () => {
+      if (!sessionRef.current || processorRef.current) return;
+
+      setStatusMessage('Requesting microphone...');
+
+      try {
+        stream = await withTimeout(
+          navigator.mediaDevices.getUserMedia({ audio: true }),
+          MIC_TIMEOUT_MS,
+          'Microphone permission is required. Click the agent and allow mic access.',
+        );
+        mediaStreamRef.current = stream;
+
+        audioContext = new AudioContext({ sampleRate: 16000, latencyHint: 'interactive' });
+        audioContextRef.current = audioContext;
+        await audioContext.resume();
+
+        source = audioContext.createMediaStreamSource(stream);
+        silentGain = audioContext.createGain();
+        silentGain.gain.value = 0;
+
+        const processor = audioContext.createScriptProcessor(512, 1, 1);
+        processorRef.current = processor;
+        source.connect(processor);
+        processor.connect(silentGain);
+        silentGain.connect(audioContext.destination);
+
+        processor.onaudioprocess = (e) => {
+          if (isMutedRef.current || !sessionRef.current) return;
+
+          const inputData = e.inputBuffer.getChannelData(0);
+          const pcm16 = new Int16Array(inputData.length);
+          let hasAudio = false;
+
+          for (let i = 0; i < inputData.length; i++) {
+            pcm16[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7fff;
+            if (Math.abs(pcm16[i]) > 100) hasAudio = true;
+          }
+
+          if (!hasAudio) return;
+
+          const uint8 = new Uint8Array(pcm16.buffer);
+          let binary = '';
+          for (let i = 0; i < uint8.byteLength; i++) {
+            binary += String.fromCharCode(uint8[i]);
+          }
+
+          try {
+            sessionRef.current.sendRealtimeInput({
+              audio: {
+                mimeType: 'audio/pcm;rate=16000',
+                data: btoa(binary),
+              },
+            });
+          } catch {
+            /* socket closed */
+          }
+        };
+
+        setStatusMessage('Connected');
+      } catch (micErr) {
+        const micMessage =
+          micErr instanceof Error ? micErr.message : 'Microphone access failed.';
+        console.warn('Mic setup failed:', micErr);
+        setError(micMessage);
+        setStatusMessage('Connected (voice reply needs mic)');
+      }
+    };
+
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaStreamRef.current = stream;
-
-      const audioContext = new AudioContext({ sampleRate: 16000, latencyHint: 'interactive' });
-      audioContextRef.current = audioContext;
-      await audioContext.resume();
-
-      const source = audioContext.createMediaStreamSource(stream);
-      const silentGain = audioContext.createGain();
-      silentGain.gain.value = 0;
-
       const liveTools = [
         {
           functionDeclarations: [
@@ -324,19 +393,24 @@ export function LiveAgent() {
       let lastError: Error | null = null;
 
       for (const model of LIVE_MODELS) {
+        setStatusMessage(`Connecting to ${model}...`);
         try {
-          session = await aiRef.current.live.connect({
-            model,
-            config: {
-              responseModalities: [Modality.AUDIO],
-              speechConfig: {
-                voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
+          session = await withTimeout(
+            aiRef.current.live.connect({
+              model,
+              config: {
+                responseModalities: [Modality.AUDIO],
+                speechConfig: {
+                  voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
+                },
+                systemInstruction: SYSTEM_PROMPT,
+                tools: liveTools,
               },
-              systemInstruction: SYSTEM_PROMPT,
-              tools: liveTools,
-            },
-            callbacks,
-          });
+              callbacks,
+            }),
+            CONNECT_TIMEOUT_MS,
+            `Timed out connecting to Gemini (${model}). Check API key and domain restrictions in Google AI Studio.`,
+          );
           break;
         } catch (err) {
           lastError = err instanceof Error ? err : new Error(String(err));
@@ -345,7 +419,12 @@ export function LiveAgent() {
       }
 
       if (!session) {
-        throw lastError ?? new Error('Could not connect to Gemini Live API.');
+        throw (
+          lastError ??
+          new Error(
+            'Could not connect to Gemini Live API. Add your production domain to the API key HTTP referrers in Google AI Studio.',
+          )
+        );
       }
 
       sessionRef.current = session;
@@ -353,51 +432,17 @@ export function LiveAgent() {
       isConnectingRef.current = false;
       setIsConnected(true);
       setIsConnecting(false);
+      setStatusMessage('Starting greeting...');
       checkSpeakingRef.current = requestAnimationFrame(monitorSpeaking);
 
       sendInitialGreeting(session);
 
-      const processor = audioContext.createScriptProcessor(512, 1, 1);
-      processorRef.current = processor;
-      source.connect(processor);
-      processor.connect(silentGain);
-      silentGain.connect(audioContext.destination);
-
-      processor.onaudioprocess = (e) => {
-        if (isMutedRef.current || !sessionRef.current) return;
-
-        const inputData = e.inputBuffer.getChannelData(0);
-        const pcm16 = new Int16Array(inputData.length);
-        let hasAudio = false;
-
-        for (let i = 0; i < inputData.length; i++) {
-          pcm16[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7fff;
-          if (Math.abs(pcm16[i]) > 100) hasAudio = true;
-        }
-
-        if (!hasAudio) return;
-
-        const uint8 = new Uint8Array(pcm16.buffer);
-        let binary = '';
-        for (let i = 0; i < uint8.byteLength; i++) {
-          binary += String.fromCharCode(uint8[i]);
-        }
-
-        try {
-          sessionRef.current.sendRealtimeInput({
-            audio: {
-              mimeType: 'audio/pcm;rate=16000',
-              data: btoa(binary),
-            },
-          });
-        } catch {
-          /* socket closed */
-        }
-      };
+      void startMicCapture();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Could not start voice session.';
       console.error('Failed to start Live API', err);
       setError(message);
+      setStatusMessage(null);
       disconnect();
     }
   }, [apiKey, disconnect, initAudioOutput, keyReady, monitorSpeaking, playChunk, sendInitialGreeting]);
@@ -410,6 +455,7 @@ export function LiveAgent() {
     let mounted = true;
 
     const tryAutoConnect = async () => {
+      setIsOpen(true);
       await startConnection();
       if (mounted && isConnectedRef.current) {
         setIsOpen(true);
@@ -419,6 +465,7 @@ export function LiveAgent() {
       if (!mounted) return;
 
       const handleFirstGesture = async () => {
+        setIsOpen(true);
         await startConnection();
         if (mounted && isConnectedRef.current) {
           setIsOpen(true);
@@ -495,7 +542,11 @@ export function LiveAgent() {
                 <div className="flex flex-col">
                   <span className="font-bold text-sm text-zinc-100 tracking-wide">Live Agent</span>
                   <span className="text-[10px] text-zinc-500 uppercase tracking-widest">
-                    {isConnecting ? 'Connecting...' : isConnected ? 'Connected' : 'Offline'}
+                    {isConnecting
+                      ? statusMessage || 'Connecting...'
+                      : isConnected
+                        ? statusMessage || 'Connected'
+                        : 'Offline'}
                   </span>
                 </div>
               </div>
