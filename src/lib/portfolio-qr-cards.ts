@@ -1,4 +1,4 @@
-/** Portfolio vCard QR cards — only entries with a branded image in `/public`. */
+/** Portfolio vCard QR cards — only entries with a branded image in `/public/portfolio`. */
 export type PortfolioQrCard = {
   id: string;
   name: string;
@@ -13,12 +13,15 @@ export type PortfolioQrCard = {
 
 const vCard = (slug: string) => `https://app.vbizme.com/vCard/${slug}#home`;
 
-/** Every card must have a file in `/public` — no API-generated QR codes. */
+/** WebP QR assets in `/public/portfolio/{slug}.webp` */
+export const portfolioQrImage = (slug: string) => `/portfolio/${slug}.webp`;
+
+/** Every card must have a file in `/public/portfolio` — no API-generated QR codes. */
 export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'michaelangelo',
     name: 'michaelangelo-casanova-2',
-    qrImage: '/QR code Michaelangelo.jpeg',
+    qrImage: portfolioQrImage('michaelangelo-casanova-2'),
     color: 'ffffff',
     icon: 'MAC',
     displayName: 'Michaelangelo Casanova',
@@ -29,7 +32,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'clinton',
     name: 'clinton-h-weston-jr',
-    qrImage: '/QR Code Weston & Hall.png',
+    qrImage: portfolioQrImage('clinton-h-weston-jr'),
     color: 'ffffff',
     icon: 'CW',
     displayName: 'Clinton H. Weston Jr',
@@ -40,7 +43,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'walter',
     name: 'walter-jofre-jr',
-    qrImage: '/QR code Walter.png',
+    qrImage: portfolioQrImage('walter-jofre-jr'),
     color: 'ffffff',
     icon: 'WJ',
     displayName: 'Walter Jofre Jr',
@@ -51,7 +54,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'sabor',
     name: 'sabor-ecuatoriano-3',
-    qrImage: '/QR Code SE3.png',
+    qrImage: portfolioQrImage('sabor-ecuatoriano-3'),
     color: 'ff0000',
     icon: 'SE',
     displayName: 'Sabor Ecuatoriano',
@@ -62,7 +65,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'om-autobody',
     name: 'o-m-autobody-supplies',
-    qrImage: '/OM QR Code.png',
+    qrImage: portfolioQrImage('o-m-autobody-supplies'),
     color: '4f46e5',
     icon: 'OM',
     displayName: 'O&M Autobody Supplies',
@@ -73,7 +76,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'audrey',
     name: 'audrey-garrison',
-    qrImage: '/QR Code Audrey.png',
+    qrImage: portfolioQrImage('audrey-garrison'),
     color: 'ffffff',
     icon: 'AG',
     displayName: 'Audrey Garrison',
@@ -84,7 +87,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'cupcake-factory',
     name: 'ronica-j-keith',
-    qrImage: '/QR Code Cupcake.png',
+    qrImage: portfolioQrImage('ronica-j-keith'),
     color: 'ffffff',
     icon: 'TCF',
     displayName: 'The Cupcake Factory',
@@ -95,7 +98,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'joseph-downer',
     name: 'joseph-downer',
-    qrImage: '/QR Code JDK Trucking.png',
+    qrImage: portfolioQrImage('joseph-downer'),
     color: 'ffffff',
     icon: 'JDK',
     displayName: 'JD&K Trucking',
@@ -106,7 +109,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'dominican-chamber',
     name: 'jennifer-martinez',
-    qrImage: '/QR Code Jenniffer.png',
+    qrImage: portfolioQrImage('jennifer-martinez'),
     color: 'ffffff',
     icon: 'DCC',
     displayName: 'Dominican Chamber of Commerce',
@@ -117,7 +120,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'key-to-life',
     name: 'essence-divine',
-    qrImage: '/QR Code Key To Life.png',
+    qrImage: portfolioQrImage('essence-divine'),
     color: '4f46e5',
     icon: 'KTL',
     displayName: 'Key To Life',
@@ -128,7 +131,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'orygn',
     name: 'michaelanglo-casanova',
-    qrImage: '/QR Code Orygn MC.png',
+    qrImage: portfolioQrImage('michaelanglo-casanova'),
     color: 'ffffff',
     icon: 'OR',
     displayName: 'ORYGN',
@@ -139,7 +142,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'richard-kincaid',
     name: 'richard-kincaid',
-    qrImage: '/QR Code Rain or Shine.png',
+    qrImage: portfolioQrImage('richard-kincaid'),
     color: 'ffffff',
     icon: 'ROS',
     displayName: 'Rain or Shine Movers',
@@ -150,7 +153,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'lp-insurance',
     name: 'hector-torres',
-    qrImage: '/qr-code-Hector.png',
+    qrImage: portfolioQrImage('hector-torres'),
     color: 'ffffff',
     icon: 'LP',
     displayName: 'LP Insurance Marketing Group',
@@ -161,7 +164,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'wil-jacques',
     name: 'wil-jacques',
-    qrImage: '/qr-code-6.png',
+    qrImage: portfolioQrImage('wil-jacques'),
     color: 'ffffff',
     icon: 'EM',
     displayName: 'WILL JACQUES',
@@ -172,7 +175,7 @@ export const PORTFOLIO_QR_CARDS: PortfolioQrCard[] = [
   {
     id: 'gregorz',
     name: 'gregorz-bajek',
-    qrImage: '/quo vadis qr code.png',
+    qrImage: portfolioQrImage('gregorz-bajek'),
     color: 'ff0000',
     icon: 'QV',
     displayName: 'GREGORZ',
