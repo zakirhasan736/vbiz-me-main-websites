@@ -13,6 +13,7 @@ import {
 import {
   buildLiveAgentSystemPrompt,
   DEFAULT_CARD_DATA,
+  LIVE_AGENT_GREETING_TEXT,
   LIVE_AGENT_GREETING_TRIGGER,
 } from '@/lib/live-agent-prompt';
 
@@ -69,6 +70,23 @@ export function LiveAgent() {
   useEffect(() => {
     isMutedRef.current = isMuted;
   }, [isMuted]);
+
+  useEffect(() => {
+    const unlockAudio = () => {
+      void pcmContextRef.current?.resume();
+      void audioContextRef.current?.resume();
+    };
+
+    document.addEventListener('click', unlockAudio, { once: true, passive: true });
+    document.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
+    document.addEventListener('keydown', unlockAudio, { once: true, passive: true });
+
+    return () => {
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('touchstart', unlockAudio);
+      document.removeEventListener('keydown', unlockAudio);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -255,14 +273,15 @@ export function LiveAgent() {
             // start monitoring speaking state
             checkSpeakingRef.current = requestAnimationFrame(monitorSpeaking);
             
-            // Send initial instruction text to the agent
+            // Proactive verbal introduction when the visitor lands on the site
             sessionPromise.then((session: any) => {
               sessionRef.current = session;
               try {
+                const introPrompt = `${LIVE_AGENT_GREETING_TRIGGER} Introduce yourself aloud as the live AI assistant and say exactly: "${LIVE_AGENT_GREETING_TEXT}"`;
                 if (typeof session.sendRealtimeInput === 'function') {
-                  session.sendRealtimeInput({ text: LIVE_AGENT_GREETING_TRIGGER });
+                  session.sendRealtimeInput({ text: introPrompt });
                 } else if (typeof session.send === 'function') {
-                  session.send({ text: LIVE_AGENT_GREETING_TRIGGER });
+                  session.send({ text: introPrompt });
                 }
               } catch (e) {
                 console.error("Could not send initial prompt:", e);
@@ -417,8 +436,10 @@ export function LiveAgent() {
                    )}
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-bold text-sm text-zinc-100 tracking-wide">Live Agent</span>
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-widest">{isConnecting ? 'Connecting...' : isConnected ? 'Connected' : 'Offline'}</span>
+                  <span className="font-bold text-sm text-zinc-100 tracking-wide">Live AI Assistant</span>
+                  <span className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                    {isConnecting ? 'Connecting...' : isConnected ? (isSpeaking ? 'Speaking...' : 'Ask me anything') : 'Offline'}
+                  </span>
                 </div>
               </div>
             </div>
