@@ -6,7 +6,7 @@ import { HeroTrustBar } from '@/components/hero/HeroTrustBar';
 /** Hero shell: SSR banner + CSR video/effects loaded after paint. */
 export function HeroSection() {
   return (
-    <section className="section-hero relative min-h-screen flex flex-col justify-center pt-32 pb-16 overflow-hidden bg-black">
+    <section className="section-hero relative min-h-screen flex flex-col justify-center pt-32 pb-16 z-20 overflow-hidden bg-black">
       <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_center,#111111_0%,black_100%)] opacity-85" />
       <HeroAmbientLazy />
 

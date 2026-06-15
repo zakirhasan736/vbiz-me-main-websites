@@ -50,7 +50,10 @@ export function VCardIframeFrame({
       data-lenis-prevent-wheel
     >
       {loading && (
-        <div className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center z-10 transition-opacity duration-150 pointer-events-none">
+        <div
+          className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center z-20 transition-opacity duration-150 pointer-events-none"
+          aria-hidden="true"
+        >
           <div className="w-9 h-9 rounded-full border-2 border-brand-gold/20 border-t-brand-gold animate-spin mb-3 shadow-[0_0_15px_rgba(212,175,55,0.3)]" />
           <span className="text-[10px] text-neutral-400 tracking-widest uppercase font-semibold">
             {compact ? 'Loading vCard...' : 'Loading Live vCard...'}
@@ -60,11 +63,11 @@ export function VCardIframeFrame({
       <iframe
         key={src}
         src={src}
-        className={`absolute inset-0 w-full h-full ${className}`}
+        className={`absolute inset-0 z-[1] w-full h-full border-0 pointer-events-auto touch-auto ${className}`}
         title={title}
         onLoad={handleLoad}
         loading="eager"
-        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; fullscreen"
       />
     </div>
   );

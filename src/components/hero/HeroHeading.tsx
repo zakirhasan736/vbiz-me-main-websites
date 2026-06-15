@@ -6,7 +6,7 @@ export function HeroHeading() {
   const words = HERO_TITLE.split(' ');
 
   return (
-    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight mb-6 leading-tight text-white text-left">
+    <h1 className="text-4xl sm:text-5xl lg:text-[52px] font-medium tracking-tight mb-6 leading-tight text-white text-left">
       {words.map((word, idx) => {
         const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, '');
         const isHighlighted = HIGHLIGHTED.has(cleanWord.toLowerCase());

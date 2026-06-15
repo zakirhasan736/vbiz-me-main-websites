@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLenis } from '@/components/providers/lenis-context';
+import { LENIS_SCROLL_TO_DURATION } from '@/lib/lenis-config';
 import { VBIZ_LOGO } from '@/lib/site-assets';
 
 const PLATFORM_LINKS = [
@@ -32,7 +33,7 @@ export const Footer = () => {
 
   const scrollToTop = () => {
     if (lenis) {
-      lenis.scrollTo(0, { duration: 1.1 });
+      lenis.scrollTo(0, { duration: LENIS_SCROLL_TO_DURATION });
       return;
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });

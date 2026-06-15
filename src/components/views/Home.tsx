@@ -16,6 +16,11 @@ import { GSAP_DEFAULT_START } from '@/lib/gsap-animation-utils';
 import { LazyQRCodeImage } from '@/components/LazyQRCodeImage';
 import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
 import { INDUSTRY_MOCKUP_IMAGES } from '@/lib/industry-mockup-images';
+import {
+  PORTFOLIO_QR_CARDS,
+  getPortfolioQrImageSrc,
+  type PortfolioQrCard,
+} from '@/lib/portfolio-qr-cards';
 import { InteractiveReveal } from '@/components/InteractiveReveal';
 import {
   RevealText,
@@ -25,192 +30,7 @@ import {
 } from '@/components/animations/reveal';
 gsap.registerPlugin(ScrollTrigger);
 
-// Custom high-contrast realistic SVG-based QR code mockup component
-
-
-// Premium mock showcase items specifically for responsive slider matching the attachments
-const qrSliderItems = [
-  {
-    id: "michaelangelo",
-    name: "michaelangelo-casanova-2",
-    color: "ffffff",
-    icon: "MAC",
-    displayName: "Michaelangelo Casanova",
-    tag: "Art & Luxury",
-    desc: "Luxury business representation and high-caliber portfolio design customized for exclusive creative directors.",
-    demoUrl: "https://app.vbizme.com/vCard/michaelangelo-casanova-2#home"
-  },
-  {
-    id: "chago",
-    name: "chago-vargas",
-    color: "ff0000",
-    icon: "CV",
-    displayName: "Chago Vargas",
-    tag: "Real Estate Broker",
-    desc: "Elite boutique real estate representation and visual walk-through showcasing with instant scheduling pipelines.",
-    demoUrl: "https://app.vbizme.com/vCard/chago-vargas#home"
-  },
-  {
-    id: "alexander",
-    name: "c-alexander-forrest",
-    color: "ffffff",
-    icon: "CAF",
-    displayName: "C. Alexander Forrest",
-    tag: "Financial Advisory",
-    desc: "Prestige wealth preservation and commercial investment strategies mapping for ultra-high-net-worth creators.",
-    demoUrl: "https://app.vbizme.com/vCard/c-alexander-forrest#home"
-  },
-  {
-    id: "melissa",
-    name: "melissa-masse",
-    color: "ffffff",
-    icon: "MM",
-    displayName: "Melissa Masse",
-    tag: "Corporate Law",
-    desc: "Bespoke corporate litigation, strategic counsel, and contract drafting optimized with dynamic contact pathways.",
-    demoUrl: "https://app.vbizme.com/vCard/melissa-masse#home"
-  },
-  {
-    id: "glen",
-    name: "glen-richards",
-    color: "ffffff",
-    icon: "GR",
-    displayName: "Glen Richards",
-    tag: "Asset Management",
-    desc: "Premium sovereign wealth strategies, asset custody diagnostics, and portfolio distribution frameworks.",
-    demoUrl: "https://app.vbizme.com/vCard/glen-richards#home"
-  },
-  {
-    id: "brian",
-    name: "brian-dennis",
-    color: "4f46e5",
-    icon: "BD",
-    displayName: "Brian Dennis",
-    tag: "Enterprise Sales",
-    desc: "High-velocity B2B enterprise pipelines, revenue growth audits, and modern scale consulting.",
-    demoUrl: "https://app.vbizme.com/vCard/brian-dennis#home"
-  },
-  {
-    id: "thomas",
-    name: "thomas-pethigal",
-    color: "ffffff",
-    icon: "TP",
-    displayName: "Thomas Pethigal",
-    tag: "Strategic Consulting",
-    desc: "Dynamic change management, operational alignment, and scaling protocols for technical companies.",
-    demoUrl: "https://app.vbizme.com/vCard/thomas-pethigal#home"
-  },
-  {
-    id: "jessica",
-    name: "jessica-brito",
-    color: "ffffff",
-    icon: "JB",
-    displayName: "Jessica Brito",
-    tag: "Visual Design",
-    desc: "Expert branding overhauls, typography pairing, and luxury physical card representation frameworks.",
-    demoUrl: "https://app.vbizme.com/vCard/jessica-brito#home"
-  },
-  {
-    id: "tony",
-    name: "tony-mint",
-    color: "ffffff",
-    icon: "TM",
-    displayName: "Tony Mint",
-    tag: "Creative Direction",
-    desc: "High-end product design, interactive vector animation, and immersive digital branding systems.",
-    demoUrl: "https://app.vbizme.com/vCard/tony-mint#home"
-  },
-  {
-    id: "matheno",
-    name: "matheno-bey",
-    color: "ffffff",
-    icon: "MB",
-    displayName: "Matheno Bey",
-    tag: "Consulting",
-    desc: "Professional elite coaching, public relations representation, and high-impact partnership design.",
-    demoUrl: "https://app.vbizme.com/vCard/matheno-bey#home"
-  },
-  {
-    id: "sheldon",
-    name: "sheldon-singleton",
-    color: "ffffff",
-    icon: "SS",
-    displayName: "Sheldon Singleton",
-    tag: "Leadership Advisory",
-    desc: "Founders and CEOs growth consulting, systemic team productivity mapping, and global alignment.",
-    demoUrl: "https://app.vbizme.com/vCard/sheldon-singleton#home"
-  },
-  {
-    id: "clinton",
-    name: "clinton-h-weston-jr",
-    color: "ffffff",
-    icon: "CW",
-    displayName: "Clinton H. Weston Jr",
-    tag: "Logistics Expert",
-    desc: "Sovereign global supply chain architecture, port clearing diagnostics, and rapid freight pathways.",
-    demoUrl: "https://app.vbizme.com/vCard/clinton-h-weston-jr#home"
-  },
-  {
-    id: "lisa",
-    name: "lisa-mh-williams",
-    color: "ffffff",
-    icon: "LW",
-    displayName: "Lisa MH Williams",
-    tag: "Sovereign Law",
-    desc: "Bespoke legal advisory, family trust security, and corporate legal risk mitigation structures.",
-    demoUrl: "https://app.vbizme.com/vCard/lisa-mh-williams#home"
-  },
-  {
-    id: "stephan",
-    name: "stephan-brewer",
-    color: "ffffff",
-    icon: "SB",
-    displayName: "Stephan Brewer",
-    tag: "Growth Marketing",
-    desc: "Performance marketing, conversion-focused paid acquisition audits, and scale advisory.",
-    demoUrl: "https://app.vbizme.com/vCard/stephan-brewer#home"
-  },
-  {
-    id: "kenneth",
-    name: "kenneth-pierce",
-    color: "ffffff",
-    icon: "KP",
-    displayName: "Kenneth Pierce",
-    tag: "Corporate Strategy",
-    desc: "Executive recruitment systems, operational performance mapping, and digital transformation.",
-    demoUrl: "https://app.vbizme.com/vCard/kenneth-pierce#home"
-  },
-  {
-    id: "mayan",
-    name: "mayan-botanicals",
-    color: "4f46e5",
-    icon: "MB",
-    displayName: "Mayan Botanicals",
-    tag: "Wellness Boutique",
-    desc: "Custom formulas, specialized raw botanical supply, and premium direct-to-consumer organic lines.",
-    demoUrl: "https://app.vbizme.com/vCard/mayan-botanicals#home"
-  },
-  {
-    id: "walter",
-    name: "walter-jofre-jr",
-    color: "ffffff",
-    icon: "WJ",
-    displayName: "Walter Jofre Jr",
-    tag: "Automotive Executive",
-    desc: "Showroom stocks cataloguing, bespoke wholesale transactions, and fleet financial optimization.",
-    demoUrl: "https://app.vbizme.com/vCard/walter-jofre-jr#home"
-  },
-  {
-    id: "sabor",
-    name: "sabor-ecuatoriano-3",
-    color: "ff0000",
-    icon: "SE",
-    displayName: "Sabor Ecuatoriano",
-    tag: "Gastronomy Boutique",
-    desc: "Signature gourmet catering, fine dining events, and exclusive menus designed with heritage.",
-    demoUrl: "https://app.vbizme.com/vCard/sabor-ecuatoriano-3#home"
-  }
-];
+const qrSliderItems = PORTFOLIO_QR_CARDS;
 
 // Interactive Demo Component ("See It In Action")
 const InteractiveDemoSection = () => {
@@ -220,7 +40,7 @@ const InteractiveDemoSection = () => {
       name: 'Contractor',
       icon: <Briefcase className="w-4 h-4" />,
       company: 'Casanova Carpentry',
-      introTitle: 'Michaelangelo Casanova â€” Master Remodeler',
+      introTitle: 'Michaelangelo Casanova — Master Remodeler',
       videoPlaceholder: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120',
       tagline: 'See our high-end luxury carpentry portfolios and custom remodels.',
@@ -234,7 +54,7 @@ const InteractiveDemoSection = () => {
       name: 'Real Estate',
       icon: <Building className="w-4 h-4" />,
       company: 'Vargas Exclusive',
-      introTitle: 'Chago Vargas â€” Elite Realtor',
+      introTitle: 'Chago Vargas — Elite Realtor',
       videoPlaceholder: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120',
       tagline: 'Tour Connecticut\'s most exclusive residential listings instantly.',
@@ -248,7 +68,7 @@ const InteractiveDemoSection = () => {
       name: 'Auto Sales',
       icon: <Car className="w-4 h-4" />,
       company: 'Premier Luxury Motors',
-      introTitle: 'Walter Jofre Jr â€” VIP Client Advisor',
+      introTitle: 'Walter Jofre Jr — VIP Client Advisor',
       videoPlaceholder: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=120',
       tagline: 'Skip dealership runarounds. Instant showroom inventory VIP access.',
@@ -262,7 +82,7 @@ const InteractiveDemoSection = () => {
       name: 'Master Barber',
       icon: <Scissors className="w-4 h-4" />,
       company: 'Dennis Signature Grooming',
-      introTitle: 'Brian Dennis â€” Master Grooming Expert',
+      introTitle: 'Brian Dennis — Master Grooming Expert',
       videoPlaceholder: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
       tagline: 'Book a premium barber session or straight-razor trim with ease.',
@@ -276,7 +96,7 @@ const InteractiveDemoSection = () => {
       name: 'Executive Coach',
       icon: <Award className="w-4 h-4" />,
       company: 'Singleton Advisory',
-      introTitle: 'Sheldon Singleton â€” Growth Coach',
+      introTitle: 'Sheldon Singleton — Growth Coach',
       videoPlaceholder: 'https://images.unsplash.com/photo-1552581230-c015914626ed?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120',
       tagline: 'Transform operations and scale your company from 10M to 100M.',
@@ -290,7 +110,7 @@ const InteractiveDemoSection = () => {
       name: 'Restaurant',
       icon: <Utensils className="w-4 h-4" />,
       company: 'Sabor Ecuatoriano',
-      introTitle: 'Sabor Ecuatoriano Kitchen â€” Elegant Dining',
+      introTitle: 'Sabor Ecuatoriano Kitchen — Elegant Dining',
       videoPlaceholder: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=400',
       avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120',
       tagline: 'Secure immediate online reservation. Experience authentic culinary flair.',
@@ -432,7 +252,7 @@ const PortfolioSection = () => {
   const [selectedCard, setSelectedCard] = useState<any>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanStep, setScanStep] = useState(0); // 0: loading, 1: video pitch, 2: full card
-  const [selectedQrCard, setSelectedQrCard] = useState<any>(null);
+  const [selectedQrCard, setSelectedQrCard] = useState<PortfolioQrCard | null>(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [showModalPhoneFrame, setShowModalPhoneFrame] = useState(false);
 
@@ -492,17 +312,6 @@ const PortfolioSection = () => {
   const [isMorphing, setIsMorphing] = useState(false);
 
 
-  // Starts the interactive Scanning flow
-  const handleCardClick = (card: any) => {
-    setSelectedCard(card);
-    setIsScanning(true);
-    setContactSaved(false);
-  };
-
-  // Skip video straight to digital card layout
-  const skipToCard = () => {
-    setScanStep(2);
-  };
 
   // Simulate Views Increase on Analytics widget
   const triggerSimulation = () => {
@@ -563,13 +372,13 @@ const PortfolioSection = () => {
             tag="h2"
           />
           <RevealParagraph 
-            text="Share your vCard effortlessly with a QR code or URL link. Scanning or clicking triggers a dynamic intro video, followed by your full vCard, to reflect your unique brand. Our vCards are more than contact informationâ€”they are powerful marketing tools that stand out making an instant and lasting impression."
+            text="Share your vCard effortlessly with a QR code or URL link. Scanning or clicking triggers a dynamic intro video, followed by your full vCard, to reflect your unique brand. Our vCards are more than contact information—they are powerful marketing tools that stand out making an instant and lasting impression."
             className="text-neutral-400 font-light text-base sm:text-lg leading-relaxed max-w-3xl mx-auto"
           />
         </SectionReveal>
 
         {/* TWO INTERACTIVE BENTO GRID TECH FEATURES */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16 max-w-5xl mx-auto">
+        <div className="grid hidden grid-cols-1 md:grid-cols-2 gap-6 mb-16 max-w-5xl mx-auto">
           
           {/* FEATURE 1: Analytics & Tracking Bento Widget */}
           <ScrollRevealCard 
@@ -780,8 +589,6 @@ const PortfolioSection = () => {
           >
             {qrSliderItems.map((item, idx) => {
               const qrBgColor = 'ffffff';
-              const qrFgColor = item.color === 'ff0000' ? 'e50000' : (item.color === '4f46e5' ? '4f46e5' : '000000');
-              const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(item.demoUrl)}&color=${qrFgColor}&bgcolor=${qrBgColor}`;
 
               const isYellow = item.color === 'ffff00' || item.name === 'boat';
               const isRed = item.color === 'ff0000';
@@ -821,42 +628,28 @@ const PortfolioSection = () => {
                   className={`snap-center shrink-0 w-[280px] sm:w-[300px] bg-[#0c0d10] border ${cardStyle.borderColor} ${cardStyle.glowColor} ${cardStyle.hoverGlow} rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col items-center justify-between transition-all duration-500 hover:-translate-y-2 group cursor-pointer`}
                   id={`qr-slider-card-${item.id}`}
                 >
-                  {/* Embedded custom high-resolution white QR Container with glowing drop-shadow */}
-                  <div className="w-full aspect-square bg-white p-5 rounded-2xl relative overflow-hidden flex items-center justify-center shadow-[inset_0_0_12px_rgba(0,0,0,0.05),0_10px_25px_rgba(0,0,0,0.85)] group-hover:scale-[1.02] transition-transform duration-500">
+                  {/* Branded QR from /public */}
+                  <div className="w-full aspect-square bg-white p-3 sm:p-4 rounded-2xl relative overflow-hidden flex items-center justify-center shadow-[inset_0_0_12px_rgba(0,0,0,0.05),0_10px_25px_rgba(0,0,0,0.85)] group-hover:scale-[1.02] transition-transform duration-500">
                     <div 
-                      className="w-full h-full rounded-xl overflow-hidden relative shadow-inner bg-white"
+                      className="w-full h-full rounded-xl overflow-hidden relative bg-white"
                       style={{
                         backgroundColor: '#' + qrBgColor
                       }}
                     >
                       <LazyQRCodeImage
-                        src={qrUrl}
-                        alt={item.displayName}
-                        className="w-full h-full object-cover mix-blend-multiply"
+                        src={getPortfolioQrImageSrc(item)}
+                        alt={`QR Code — ${item.displayName}`}
+                        className="w-full h-full object-contain"
                         bgcolor={qrBgColor}
                       />
-                      
-                      {/* Center Brand icon simulation matching our-work page */}
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        {item.name !== 'bitcoin' && (
-                           <div className="w-[18%] h-[18%] max-w-[50px] max-h-[50px] bg-white rounded-lg flex items-center justify-center shadow-md border border-gray-100 overflow-hidden transform group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
-                             <div className="text-[7.5px] sm:text-[9.5px] font-bold text-center text-black px-0.5 uppercase w-full break-words leading-tight">{item.icon}</div>
-                           </div>
-                        )}
-                        {item.name === 'bitcoin' && (
-                           <div className="w-[18%] h-[18%] max-w-[50px] max-h-[50px] bg-orange-500 rounded-full flex items-center justify-center shadow-lg border-2 border-white transform group-hover:scale-110 -rotate-12 transition-transform duration-500">
-                              <span className="text-white text-sm sm:text-base font-bold -ml-[1.5px] mt-[0.5px]">â‚¿</span>
-                           </div>
-                        )}
-                      </div>
                     </div>
                   </div>
 
-                  {/* Styled Badge Pill below the QR */}
-                  <div className="mt-5 flex flex-col items-center">
-                    <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-neutral-900/95 border border-white/10 text-white text-[11px] font-medium tracking-wide shadow-xl group-hover:border-brand-gold/40 transition-colors">
-                      <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse" />
-                      {item.tag}
+                  {/* Name label below QR (matches branded vCard QR layout) */}
+                  <div className="mt-5 flex flex-col items-center px-1">
+                    <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-neutral-900/95 border border-white/10 text-white text-[10.5px] sm:text-[11px] font-medium tracking-wide text-center leading-snug shadow-xl group-hover:border-brand-gold/40 transition-colors max-w-full">
+                      <span className="w-1.5 h-1.5 shrink-0 rounded-full bg-brand-gold animate-pulse" />
+                      <span className="line-clamp-2">{item.displayName}</span>
                     </span>
                   </div>
                 </motion.div>
@@ -884,7 +677,7 @@ const PortfolioSection = () => {
               </div>
 
               <a
-                href="/examples"
+                href="/our-work"
                 className="relative z-10 w-full mt-auto py-3.5 px-4 rounded-xl bg-brand-gold hover:bg-yellow-400 text-black font-semibold text-xs text-center uppercase tracking-wider flex items-center justify-center gap-2 transition-colors duration-300"
               >
                 Explore Template Library <ChevronRight size={14} />
@@ -918,8 +711,6 @@ const PortfolioSection = () => {
       <AnimatePresence>
         {isQrModalOpen && selectedQrCard && (() => {
           const qrBgColor = 'ffffff';
-          const qrFgColor = selectedQrCard.color === 'ff0000' ? 'e50000' : (selectedQrCard.color === '4f46e5' ? '4f46e5' : '000000');
-          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=${encodeURIComponent(selectedQrCard.demoUrl)}&color=${qrFgColor}&bgcolor=${qrBgColor}`;
 
           return (
             <motion.div 
@@ -941,8 +732,9 @@ const PortfolioSection = () => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 onClick={(e) => e.stopPropagation()}
-                className={`relative w-full ${showModalPhoneFrame ? 'max-w-[380px]' : 'max-w-[360px]'} bg-[#0c0d10] border border-white/10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.9)] py-6 px-4 md:py-8 md:px-6 overflow-hidden flex flex-col text-center transition-all duration-300`}
+                className={`relative w-full ${showModalPhoneFrame ? 'max-w-[380px]' : 'max-w-[360px]'} portfolio-vcard-modal bg-[#0c0d10] border border-white/10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.9)] py-6 px-4 md:py-8 md:px-6 overflow-hidden flex flex-col text-center transition-all duration-300 pointer-events-auto`}
                 id="qr-popup-modal"
+                style={{ pointerEvents: 'auto' }}
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 blur-[50px] pointer-events-none" />
 
@@ -952,7 +744,7 @@ const PortfolioSection = () => {
                     onClick={() => setShowModalPhoneFrame(false)}
                     className="absolute top-5 left-5 text-neutral-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors z-50 font-sans text-xs font-semibold"
                   >
-                    â† Back
+                    ← Back
                   </button>
                 )}
 
@@ -970,16 +762,20 @@ const PortfolioSection = () => {
                 </button>
 
                 {showModalPhoneFrame ? (
-                  <div className="flex flex-col items-center justify-center mt-6">
+                  <div
+                    className="flex flex-col items-center justify-center mt-6 pointer-events-auto relative z-10 vcard-iframe-zone"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <h3 className="text-white font-bold text-lg mb-1 tracking-tight">
                       {selectedQrCard.displayName} Live View
                     </h3>
-                    <p className="text-neutral-400 font-light text-[11px] mb-4">
-                      Interact with the live digital business card mockup below inside this secure preview frame.
+                    <p className="text-neutral-400 font-light text-[11px] mb-4 px-2">
+                      Tap and scroll inside the phone preview to explore the live vCard.
                     </p>
                     
                     <PhoneMockupFrame
-                      src={selectedQrCard.demoUrl || 'https://app.vbizme.com/vCard/michaelangelo-casanova-2#home'}
+                      src={selectedQrCard.demoUrl}
                       title={`${selectedQrCard.displayName} Live Card Interface`}
                       size="modal"
                     />
@@ -987,33 +783,19 @@ const PortfolioSection = () => {
                 ) : (
                   <>
                     {/* Massive White Card containing QR */}
-                    <div className="w-full aspect-square bg-white py-6 px-4 md:py-8 md:px-6 rounded-3xl relative overflow-hidden flex items-center justify-center mx-auto mb-6 max-w-[270px] border border-neutral-100 shadow-[0_15px_35px_rgba(0,0,0,0.65)] mt-4">
+                    <div className="w-full aspect-square bg-white p-3 sm:p-4 rounded-3xl relative overflow-hidden flex items-center justify-center mx-auto mb-6 max-w-[270px] border border-neutral-100 shadow-[0_15px_35px_rgba(0,0,0,0.65)] mt-4">
                       <div 
-                        className="w-full h-full rounded-2xl overflow-hidden relative shadow-inner bg-white"
+                        className="w-full h-full rounded-2xl overflow-hidden relative bg-white"
                         style={{
                           backgroundColor: '#' + qrBgColor
                         }}
                       >
                         <LazyQRCodeImage
-                          src={qrUrl}
-                          alt={selectedQrCard.displayName}
-                          className="w-full h-full object-cover mix-blend-multiply"
+                          src={getPortfolioQrImageSrc(selectedQrCard)}
+                          alt={`QR Code — ${selectedQrCard.displayName}`}
+                          className="w-full h-full object-contain"
                           bgcolor={qrBgColor}
                         />
-                        
-                        {/* Center Brand icon simulation matching our-work page */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          {selectedQrCard.name !== 'bitcoin' && (
-                             <div className="w-[18%] h-[18%] max-w-[65px] max-h-[65px] bg-white rounded-xl flex items-center justify-center shadow-[0_5px_15px_rgba(0,0,0,0.15)] border-2 border-white overflow-hidden">
-                               <div className="text-[9px] sm:text-[11px] font-bold text-center text-black px-0.5 uppercase w-full break-words leading-tight">{selectedQrCard.icon}</div>
-                             </div>
-                          )}
-                          {selectedQrCard.name === 'bitcoin' && (
-                             <div className="w-[18%] h-[18%] max-w-[65px] max-h-[65px] bg-orange-500 rounded-full flex items-center justify-center shadow-[0_5px_15px_rgba(249,115,22,0.35)] border-4 border-white">
-                                <span className="text-white text-lg sm:text-xl font-bold -ml-[2px] mt-[0.5px]">â‚¿</span>
-                             </div>
-                          )}
-                        </div>
                       </div>
                     </div>
 
@@ -1025,10 +807,10 @@ const PortfolioSection = () => {
                       {selectedQrCard.desc}
                     </p>
 
-                    {/* Golden button exactly matching Attachment mockup */}
-                    <button 
+                    <button
+                      type="button"
                       onClick={() => setShowModalPhoneFrame(true)}
-                      className="bg-brand-gold hover:bg-yellow-400 text-black font-semibold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full flex items-center justify-center gap-2 transition-all mt-6 shadow-[0_4px_20px_rgba(212,175,55,0.25)] hover:shadow-[0_4px_25px_rgba(212,175,55,0.4)] active:scale-95 duration-300 mx-auto w-[220px] cursor-pointer"
+                      className="bg-brand-gold hover:bg-yellow-400 text-black font-semibold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full inline-flex items-center justify-center gap-2 transition-all mt-6 shadow-[0_4px_20px_rgba(212,175,55,0.25)] hover:shadow-[0_4px_25px_rgba(212,175,55,0.4)] active:scale-95 duration-300 mx-auto w-[220px] cursor-pointer"
                       id="qr-popup-visit-btn"
                     >
                       <ExternalLink size={13} /> Visit Demo Card
@@ -1082,7 +864,7 @@ const PortfolioSection = () => {
                   {selectedCard.name}
                 </h3>
                 <p className="text-neutral-500 font-light text-[10px] mb-4 text-center max-w-[240px]">
-                  {selectedCard.role} â€¢ {selectedCard.company}
+                  {selectedCard.role} • {selectedCard.company}
                 </p>
                 
                 <PhoneMockupFrame
@@ -1118,7 +900,7 @@ const PortfolioSection = () => {
 
 const InvisibleAdvantageTeaser = () => {
   return (
-    <section className="site-section bg-neutral-950 border-b border-white/5 relative z-10 overflow-hidden text-center sm:text-left">
+    <section className="site-section hidden bg-neutral-950 border-b border-white/5 relative z-10 overflow-hidden text-center sm:text-left">
       <div className="absolute bottom-0 right-1/4 w-[450px] h-[450px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -1147,28 +929,28 @@ const InvisibleAdvantageTeaser = () => {
 
             <div className="grid grid-cols-2 gap-4 mb-8">
               <ScrollRevealCard direction="up" className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">âœ“ Emotion</span>
+                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Emotion</span>
                 <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
                   Humanize the initial handshake with a 9s looping intro video.
                 </p>
               </ScrollRevealCard>
               
               <ScrollRevealCard direction="right" delay={0.1} className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">âœ“ Identity</span>
+                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Identity</span>
                 <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
                   Displays official corporate role, badges, and background seamlessly.
                 </p>
               </ScrollRevealCard>
               
               <ScrollRevealCard direction="left" delay={0.2} className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">âœ“ Proof</span>
+                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Proof</span>
                 <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
                   Verified customer experience reviews loaded direct onto the card.
                 </p>
               </ScrollRevealCard>
               
               <ScrollRevealCard direction="down" delay={0.3} className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">âœ“ Action</span>
+                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Action</span>
                 <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
                   Smart call-to-actions (Book Now, Call Now) configured dynamically.
                 </p>
@@ -1497,7 +1279,7 @@ const SocialProof = () => {
                   })()}
                 </div>
                 <p className="text-neutral-400 font-light text-[12.5px] italic leading-relaxed line-clamp-5">
-                  â€œ{reviews[prevIdx].quote}â€
+                  “{reviews[prevIdx].quote}”
                 </p>
               </div>
               <div className="border-t border-white/5 pt-5 mt-6 flex gap-3.5 items-center">
@@ -1506,7 +1288,7 @@ const SocialProof = () => {
                 </div>
                 <div className="overflow-hidden">
                   <span className="text-neutral-300 font-semibold text-xs block truncate">{reviews[prevIdx].rater}</span>
-                  <span className="text-neutral-500 text-[10.5px] font-light block truncate mt-0.5">{reviews[prevIdx].role} â€” {reviews[prevIdx].comp}</span>
+                  <span className="text-neutral-500 text-[10.5px] font-light block truncate mt-0.5">{reviews[prevIdx].role} — {reviews[prevIdx].comp}</span>
                 </div>
               </div>
             </div>
@@ -1528,7 +1310,7 @@ const SocialProof = () => {
                 
                 {/* Elegant giant background quotation mark */}
                 <span className="absolute top-10 right-10 text-[190px] font-serif text-brand-gold/[0.035] select-none pointer-events-none leading-none font-extrabold">
-                  â€
+                  ”
                 </span>
 
                 <div>
@@ -1554,7 +1336,7 @@ const SocialProof = () => {
                   </div>
 
                   <p className="text-base sm:text-lg md:text-[19px] text-white font-light leading-relaxed tracking-wide italic mb-8 relative z-10 font-sans">
-                    â€œ{reviews[currentIdx].quote}â€
+                    “{reviews[currentIdx].quote}”
                   </p>
                 </div>
 
@@ -1567,7 +1349,7 @@ const SocialProof = () => {
                     <div>
                       <span className="text-white font-bold text-base block tracking-tight">{reviews[currentIdx].rater}</span>
                       <span className="text-neutral-400 text-xs font-light block mt-0.5">
-                        {reviews[currentIdx].role} â€” <strong className="text-brand-gold/90 font-medium">{reviews[currentIdx].comp}</strong>
+                        {reviews[currentIdx].role} — <strong className="text-brand-gold/90 font-medium">{reviews[currentIdx].comp}</strong>
                       </span>
                     </div>
                   </div>
@@ -1615,7 +1397,7 @@ const SocialProof = () => {
                   })()}
                 </div>
                 <p className="text-neutral-400 font-light text-[12.5px] italic leading-relaxed line-clamp-5">
-                  â€œ{reviews[nextIdx].quote}â€
+                  “{reviews[nextIdx].quote}”
                 </p>
               </div>
               <div className="border-t border-white/5 pt-5 mt-6 flex gap-3.5 items-center">
@@ -1624,7 +1406,7 @@ const SocialProof = () => {
                 </div>
                 <div className="overflow-hidden">
                   <span className="text-neutral-300 font-semibold text-xs block truncate">{reviews[nextIdx].rater}</span>
-                  <span className="text-neutral-500 text-[10.5px] font-light block truncate mt-0.5">{reviews[nextIdx].role} â€” {reviews[nextIdx].comp}</span>
+                  <span className="text-neutral-500 text-[10.5px] font-light block truncate mt-0.5">{reviews[nextIdx].role} — {reviews[nextIdx].comp}</span>
                 </div>
               </div>
             </div>
@@ -1673,7 +1455,7 @@ const SocialProof = () => {
 // Big bold final call to action at the bottom
 const FinalCTA = () => {
   return (
-    <section className="site-section bg-gradient-to-b from-neutral-950 to-black relative z-10 overflow-hidden text-center">
+    <section className="site-section  hidden bg-gradient-to-b from-neutral-950 to-black relative z-10 overflow-hidden text-center">
       <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
       <motion.div 
         initial={{ opacity: 0, y: 35 }}
@@ -1689,7 +1471,7 @@ const FinalCTA = () => {
           highlightedWords={["Thrown", "Away"]}
         />
         <RevealParagraph 
-          text="Start making every single introduction count â€” starting today."
+          text="Start making every single introduction count — starting today."
           className="text-neutral-400 font-light text-base leading-relaxed mb-8 max-w-2xl mx-auto text-center block"
         />
         
@@ -1731,7 +1513,7 @@ const HowCanWeHelp = () => {
     },
     {
       title: "Engagement Features",
-      desc: "Include call-to-action buttons, such as â€œBook Nowâ€ to drive immediate engagement.",
+      desc: "Include call-to-action buttons, such as “Book Now” to drive immediate engagement.",
       icon: <Sparkles size={22} />,
       index: "03"
     },

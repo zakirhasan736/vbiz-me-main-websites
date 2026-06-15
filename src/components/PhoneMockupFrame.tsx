@@ -47,7 +47,7 @@ export function PhoneMockupFrame({
 
   return (
     <div
-      className={`vcard-phone-mockup bg-neutral-950 border-neutral-800 relative z-10 flex flex-col overflow-hidden ${styles.shell} ${className}`}
+      className={`vcard-phone-mockup bg-neutral-950 border-neutral-800 relative z-10 flex flex-col overflow-hidden pointer-events-auto touch-auto ${styles.shell} ${className}`}
       data-lenis-prevent
       data-lenis-prevent-touch
       data-lenis-prevent-wheel
@@ -60,7 +60,7 @@ export function PhoneMockupFrame({
       </div>
 
       <div
-        className={`vcard-phone-screen w-full flex-1 min-h-0 bg-[#080808] ${styles.screen} overflow-hidden flex flex-col relative`}
+        className={`vcard-phone-screen w-full flex-1 min-h-0 bg-[#080808] ${styles.screen} overflow-hidden flex flex-col relative pointer-events-auto touch-auto`}
         data-lenis-prevent
         data-lenis-prevent-touch
         data-lenis-prevent-wheel

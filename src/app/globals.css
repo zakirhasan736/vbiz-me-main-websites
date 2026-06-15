@@ -85,10 +85,17 @@ html.lenis body {
 }
 
 /* Keep iframe demo cards interactive — Lenis must not steal touch/pointer on embedded vCards */
+.portfolio-vcard-modal,
+.portfolio-vcard-modal .vcard-iframe-zone,
+.portfolio-vcard-modal .vcard-phone-mockup,
+.portfolio-vcard-modal .vcard-phone-screen,
+.portfolio-vcard-modal .vcard-iframe-shell,
+.portfolio-vcard-modal .vcard-iframe-shell iframe,
 .vcard-phone-mockup,
 .vcard-phone-screen,
 .vcard-iframe-shell,
 .vcard-iframe-zone,
+.vcard-iframe-zone .vcard-phone-mockup,
 .vcard-iframe-shell iframe {
   touch-action: auto;
   pointer-events: auto;

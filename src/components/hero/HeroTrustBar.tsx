@@ -9,7 +9,7 @@ export function HeroTrustBar() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
-      className="w-full border-t border-b border-white/5 bg-neutral-950/40 backdrop-blur-md py-6 z-10 relative"
+      className="w-full border-t border-b border-white/5 bg-neutral-950/40 backdrop-blur-md py-6  relative"
     >
       <div className="max-w-7xl mx-auto px-4 text-center">
         <p className="text-xs uppercase tracking-[0.2em] text-neutral-500 font-semibold mb-3">
