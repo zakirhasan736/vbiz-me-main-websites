@@ -1,7 +1,6 @@
 const HERO_TITLE = 'The Virtual Business Card That Sells Before You Even Speak';
 const HIGHLIGHTED = new Set(['sells']);
 
-/** Server-rendered hero H1 — paints immediately for LCP (no client JS / motion delay). */
 export function HeroHeading() {
   const words = HERO_TITLE.split(' ');
 
@@ -14,9 +13,16 @@ export function HeroHeading() {
         return (
           <span
             key={idx}
-            className={`inline-block mr-[0.22em] ${isHighlighted ? 'text-brand-gold font-semibold' : ''}`}
+            className="inline-block overflow-hidden align-bottom mr-[0.22em] py-[0.05em] -my-[0.05em]"
+            aria-hidden={false}
           >
-            {word}
+            <span
+              className={`hero-title-word inline-block will-change-transform ${
+                isHighlighted ? 'text-brand-gold font-semibold' : ''
+              }`}
+            >
+              {word}
+            </span>
           </span>
         );
       })}

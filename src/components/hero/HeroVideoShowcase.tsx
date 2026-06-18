@@ -1,17 +1,39 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'motion/react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { Pause, Play, Sparkles, Volume2, VolumeX } from 'lucide-react';
-import { usePageTransition } from '@/components/providers/page-transition-context';
 import { FOUNDER_INTRO_VIDEO } from '@/lib/site-assets';
+import { useHeroAnimateReady } from '@/components/hero/useHeroAnimateReady';
+import { buildHeroVideoTimeline, prefersReducedMotion } from '@/lib/hero-gsap-animation';
 
-/** CSR-only hero video showcase — does not block SSR banner / LCP. */
+/** CSR hero video — enters from the right when panel mounts */
 export default function HeroVideoShowcase() {
-  const { revealReady } = usePageTransition();
+  const { animateReady, animationKey } = useHeroAnimateReady();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useGSAP(
+    () => {
+      if (!animateReady || !rootRef.current) return;
+
+      timelineRef.current?.kill();
+      timelineRef.current = buildHeroVideoTimeline(
+        rootRef.current,
+        prefersReducedMotion(),
+      );
+
+      return () => {
+        timelineRef.current?.kill();
+        timelineRef.current = null;
+      };
+    },
+    { scope: rootRef, dependencies: [animateReady, animationKey] },
+  );
 
   useEffect(() => {
     const video = videoRef.current;
@@ -28,17 +50,15 @@ export default function HeroVideoShowcase() {
   }, [isPlaying, isMuted]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={revealReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="lg:col-span-6 flex justify-center lg:justify-end relative md:pr-4 w-full"
+    <div
+      ref={rootRef}
+      className="hero-banner-right lg:col-span-6 flex justify-center lg:justify-end relative md:pr-4 w-full"
     >
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(100%,380px)] aspect-square bg-brand-gold/15 blur-[100px] rounded-full pointer-events-none" />
-      <div className="absolute top-1/3 left-2/3 -translate-x-1/2 -translate-y-1/2 w-[min(100%,250px)] aspect-square bg-blue-500/10 blur-[90px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/3 left-2/3 -translate-x-1/2 -translate-y-1/2 w-[min(100%,250px)] aspect-square bg-emerald-500/10 blur-[90px] rounded-full pointer-events-none" />
 
-      <div className="relative w-full max-w-[620px] bg-neutral-950/70 backdrop-blur-md rounded-2xl border border-white/10 hover:border-brand-gold/30 transition-all duration-500 group shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_40px_rgba(212,175,55,0.05)] overflow-hidden z-10">
-        <div className="relative w-full aspect-video bg-black">
+      <div className="hero-video-enter hero-video-await relative w-full max-w-[620px] bg-brand-surface/75 backdrop-blur-md rounded-2xl border border-emerald-500/15 hover:border-brand-gold/30 transition-all duration-500 group shadow-[0_20px_50px_rgba(0,0,0,0.45),0_0_40px_rgba(16,185,129,0.08)] overflow-hidden z-10 will-change-transform">
+        <div className="relative w-full aspect-video bg-brand-deep">
           <div className="absolute top-0 inset-x-0 h-10 sm:h-12 bg-gradient-to-b from-black/80 to-transparent z-20 px-3 sm:px-4 flex items-center justify-between text-[9px] sm:text-[10px] text-white/60 font-mono tracking-widest uppercase">
             <span className="flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
@@ -59,7 +79,7 @@ export default function HeroVideoShowcase() {
               e.currentTarget.muted = true;
               e.currentTarget.play().catch(() => {});
             }}
-            className={`absolute inset-0 w-full h-full object-contain bg-black transition-opacity duration-700 ${isPlaying ? 'opacity-100' : 'opacity-30'}`}
+            className={`absolute inset-0 w-full h-full object-contain bg-brand-deep transition-opacity duration-700 ${isPlaying ? 'opacity-100' : 'opacity-30'}`}
           />
 
           <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none z-10" />
@@ -122,6 +142,6 @@ export default function HeroVideoShowcase() {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

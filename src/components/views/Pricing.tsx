@@ -3,7 +3,9 @@
 import { CheckCircle2, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
-import { RevealText, RevealParagraph, ScrollRevealCard } from '@/components/animations/reveal';
+import { RevealText, BannerDescription, ScrollRevealCard } from '@/components/animations/reveal';
+import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
+import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 
 export default function Pricing() {
   const plans = [
@@ -61,29 +63,13 @@ export default function Pricing() {
   ];
 
   return (
-    <div className="bg-black">
+    <div className="bg-brand-dark">
       {/* Hero Section */}
-      <section className="section-hero relative pt-32 pb-20 overflow-hidden min-h-[50vh] flex flex-col justify-center items-center">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,#1a1a1a_0%,black_100%)] opacity-80" />
-          <motion.div 
-            animate={{ opacity: [0.05, 0.15, 0.05], scale: [1, 1.2, 1] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-gold/20 blur-[150px] rounded-full pointer-events-none mix-blend-screen"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_80%)]" />
-        </div>
+      <section className="section-hero relative pt-32 pb-20 overflow-hidden min-h-[50vh] flex flex-col justify-center items-center bg-brand-dark">
+        <PageHeroBackground />
 
         <div className="max-w-4xl mx-auto px-4 relative z-10 pt-10 text-center">
-          <div className="inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl mb-10 shadow-[0_0_20px_rgba(212,175,55,0.15)] relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/0 via-brand-gold/10 to-brand-gold/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
-            <motion.span 
-              animate={{ opacity: [1, 0.5, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-2 h-2 rounded-full bg-brand-gold shadow-[0_0_10px_rgba(212,175,55,1)]" 
-            />
-            <span className="text-[12px] font-medium tracking-[0.15em] uppercase text-neutral-200">Transparent Pricing</span>
-          </div>
+          <SectionEyebrow label="Transparent Pricing" variant="hero" />
           
           <RevealText 
             text="Find the Right Plan"
@@ -92,15 +78,15 @@ export default function Pricing() {
             highlightedWords={["Plan"]}
           />
           
-          <RevealParagraph 
+          <BannerDescription 
             text="Explore flexible plans for every budget, with discounts, expanded features, and dedicated support tailored to your needs."
-            className="text-neutral-400 text-lg md:text-xl font-light mt-4 max-w-3xl mx-auto leading-relaxed block"
+            className="text-neutral-400 text-lg md:text-xl font-light mt-4 max-w-3xl leading-relaxed"
           />
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section className="site-section bg-black relative">
+      <section className="site-section bg-brand-dark relative">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-brand-gold/10 blur-[150px] rounded-full z-0 pointer-events-none"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">

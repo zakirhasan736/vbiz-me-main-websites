@@ -21,7 +21,7 @@ const PLATFORM_LINKS = [
   ['/', 'Home'],
   ['/about', 'About Us'],
   ['/our-card', 'vCards'],
-  ['/our-work', 'Our Work'],
+  ['/portfolio', 'Portfolio'],
   ['/compare', 'Paper vs vBiz'],
   ['/navigation-bar', 'Nav Bar'],
   ['/advantage', 'Advantage'],
@@ -40,15 +40,19 @@ export const Footer = () => {
   };
 
   return (
-    <footer className="bg-black border-t border-white/5 pt-12 md:pt-20 pb-6 md:pb-8 relative overflow-hidden flex flex-col items-center">
+    <footer className="bg-brand-dark border-t border-emerald-500/10 pt-12 md:pt-20 pb-6 md:pb-8 relative overflow-hidden flex flex-col items-center">
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,#1a1a1a_0%,black_100%)] opacity-80" />
+        {/* Dark theme ambient */}
+        <div className="footer-ambient-dark absolute inset-0 bg-[radial-gradient(circle_at_top_center,#2f3f38_0%,#1e2a24_100%)] opacity-60" />
         <motion.div
           animate={{ opacity: [0.05, 0.15, 0.05], scale: [1, 1.2, 1] }}
           transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-gold/20 blur-[150px] rounded-full mix-blend-screen"
+          className="footer-ambient-dark absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-gold/20 blur-[150px] rounded-full mix-blend-screen"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_100%)]" />
+        <div className="footer-ambient-dark absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_100%)]" />
+        {/* Light theme ambient */}
+        <div className="footer-ambient-light absolute inset-0 opacity-0 bg-[radial-gradient(circle_at_top_center,rgba(212,175,55,0.06)_0%,transparent_60%)]" />
+        <div className="footer-ambient-light absolute inset-0 opacity-0 bg-[linear-gradient(rgba(11,16,32,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(11,16,32,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
       </div>
 
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4 md:pt-10">
@@ -69,7 +73,7 @@ export const Footer = () => {
               ],
             }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className="inline-flex items-center justify-center gap-2 md:gap-3 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl mb-5 md:mb-8 relative overflow-hidden group"
+            className="site-eyebrow site-eyebrow--hero mb-5 md:mb-8 relative overflow-hidden group"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/0 via-brand-gold/10 to-brand-gold/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
             <motion.span
@@ -86,7 +90,7 @@ export const Footer = () => {
               transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
               className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full"
             />
-            <span className="text-[10px] md:text-[12px] font-medium tracking-[0.15em] uppercase text-neutral-200">
+            <span className="text-[10px] md:text-[12px] font-medium tracking-[0.15em] uppercase site-eyebrow__label">
               Start Connecting
             </span>
           </motion.div>
@@ -101,9 +105,9 @@ export const Footer = () => {
 
           <Link
             href="/contact"
-            className="relative group bg-white text-black h-11 md:h-12 px-7 md:px-8 rounded-full font-semibold text-sm tracking-wide transition-all overflow-hidden inline-flex items-center justify-center shadow-[0_0_30px_rgba(255,255,255,0.1)] gap-2 md:gap-3 hover:scale-105 w-full max-w-xs sm:w-auto"
+            className="relative group bg-brand-gold text-[#0b1020] h-11 md:h-12 px-7 md:px-8 rounded-full font-semibold text-sm tracking-wide transition-all overflow-hidden inline-flex items-center justify-center shadow-[0_4px_20px_rgba(212,175,55,0.25)] gap-2 md:gap-3 hover:scale-105 w-full max-w-xs sm:w-auto"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#eeca53] to-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity" />
             <span className="relative flex items-center gap-2">
               Get Your vCard
               <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />

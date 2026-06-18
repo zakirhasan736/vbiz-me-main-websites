@@ -200,8 +200,6 @@ export const ScrollRevealCard = ({
     () => {
       if (!revealReady || !cardRef.current) return;
 
-      gsap.set(cardRef.current, { opacity: 0 });
-
       animateGSAPReveal(cardRef.current, {
         direction,
         delay,
@@ -245,3 +243,5 @@ export const SectionReveal = ({
     {children}
   </div>
 );
+
+export { BannerDescription } from '@/components/animations/BannerDescription';

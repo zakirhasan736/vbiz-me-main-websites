@@ -1,5 +1,6 @@
-import OurWork from '@/components/views/OurWork';
+import { redirect } from 'next/navigation';
 
-export default function OurWorkPage() {
-  return <OurWork />;
+/** Legacy URL — portfolio lives at /portfolio */
+export default function OurWorkRedirectPage() {
+  redirect('/portfolio');
 }

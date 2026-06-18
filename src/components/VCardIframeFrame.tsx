@@ -6,15 +6,18 @@ interface VCardIframeFrameProps {
   src: string;
   title: string;
   className?: string;
-  /** Hard cap so loader never sticks if onLoad is missed */
   maxLoaderMs?: number;
   compact?: boolean;
 }
 
+/**
+ * Live vCard iframe — no transform on ancestors (transform breaks clicks in WebKit).
+ * Fills the phone screen; shell width targets ~375px via PhoneMockupFrame.
+ */
 export function VCardIframeFrame({
   src,
   title,
-  className = 'border-0 bg-black',
+  className = 'border-0 bg-brand-deep',
   maxLoaderMs = 6000,
   compact = false,
 }: VCardIframeFrameProps) {
@@ -44,7 +47,7 @@ export function VCardIframeFrame({
 
   return (
     <div
-      className="vcard-iframe-shell relative w-full h-full min-h-0 flex-1 touch-auto pointer-events-auto"
+      className="vcard-iframe-shell relative w-full h-full min-h-0 flex-1 touch-auto pointer-events-auto overflow-hidden"
       data-lenis-prevent
       data-lenis-prevent-touch
       data-lenis-prevent-wheel

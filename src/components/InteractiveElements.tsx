@@ -1,62 +1,34 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
+import Link from 'next/link';
 import { motion } from 'motion/react';
+import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 
 interface GlowCardProps {
   children: React.ReactNode;
   className?: string;
   glowColor?: string;
+  radius?: number;
   onClick?: () => void;
 }
 
-export const GlowCard: React.FC<GlowCardProps> = ({ 
-  children, 
-  className = '', 
-  glowColor = 'rgba(212,175,55,0.18)',
-  onClick
-}) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-  
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setMouseCoords({ x, y });
-  };
-  
-  return (
-    <div
-      ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={onClick}
-      className={`relative overflow-hidden transition-all duration-500 border border-white/5 bg-[#080808]/85 ${onClick ? 'cursor-pointer' : ''} ${className}`}
-    >
-      {/* Radial Hover Glow Overlay */}
-      <div
-        className="absolute pointer-events-none transition-opacity duration-500 ease-out z-0"
-        style={{
-          width: '380px',
-          height: '380px',
-          background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`,
-          left: `${mouseCoords.x - 190}px`,
-          top: `${mouseCoords.y - 190}px`,
-          opacity: isHovered ? 1 : 0,
-          mixBlendMode: 'screen',
-        }}
-      />
-      {/* Inner Content Wrapper */}
-      <div className="relative z-10 w-full h-full">
-        {children}
-      </div>
-    </div>
-  );
-};
+export const GlowCard: React.FC<GlowCardProps> = ({
+  children,
+  className = '',
+  glowColor,
+  radius = 40,
+  onClick,
+}) => (
+  <SiteGlowCard
+    className={className}
+    glowColor={glowColor}
+    radius={radius}
+    onClick={onClick}
+  >
+    {children}
+  </SiteGlowCard>
+);
 
 interface MagneticButtonProps {
   children: React.ReactNode;
@@ -206,5 +178,86 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
     >
       {renderContent()}
     </motion.button>
+  );
+};
+
+interface MagneticNavLinkProps {
+  href: string;
+  children: React.ReactNode;
+  active?: boolean;
+  onClick?: () => void;
+}
+
+/** Desktop navbar link — bold type + cursor-following magnetic pull & glow */
+export const MagneticNavLink: React.FC<MagneticNavLinkProps> = ({
+  href,
+  children,
+  active = false,
+  onClick,
+}) => {
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const [magneticPos, setMagneticPos] = useState({ x: 0, y: 0 });
+  const [coords, setCoords] = useState({ x: 0, y: 0 });
+  const [hovered, setHovered] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!linkRef.current) return;
+    const rect = linkRef.current.getBoundingClientRect();
+    setCoords({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    setMagneticPos({
+      x: (e.clientX - rect.left - rect.width / 2) * 0.16,
+      y: (e.clientY - rect.top - rect.height / 2) * 0.18,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setHovered(false);
+    setMagneticPos({ x: 0, y: 0 });
+  };
+
+  return (
+    <motion.div
+      animate={{ x: magneticPos.x, y: magneticPos.y }}
+      transition={{ type: 'spring', stiffness: 190, damping: 17, mass: 0.12 }}
+      className="relative"
+    >
+      <Link
+        ref={linkRef}
+        href={href}
+        onClick={onClick}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={handleMouseLeave}
+        className={`navbar-nav-link relative block px-2.5 py-2 xl:px-3 xl:py-2 text-[13px] xl:text-[15px] font-bold tracking-wide transition-colors duration-300 rounded-full outline-none whitespace-nowrap overflow-hidden ${
+          active
+            ? 'text-white navbar-nav-link--active'
+            : 'text-neutral-400 hover:text-white'
+        }`}
+      >
+        <span
+          className="absolute rounded-full pointer-events-none -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"
+          style={{
+            left: coords.x,
+            top: coords.y,
+            width: hovered ? 260 : 0,
+            height: hovered ? 260 : 0,
+            background:
+              'radial-gradient(circle, rgba(212,175,55,0.22) 0%, rgba(212,175,55,0.06) 45%, transparent 70%)',
+          }}
+          aria-hidden
+        />
+        <span className="relative z-10">{children}</span>
+        {active && (
+          <motion.div
+            layoutId="navbar-indicator"
+            className="absolute inset-0 border border-brand-gold/25 bg-brand-gold/8 rounded-full shadow-[inset_0_1px_2px_rgba(255,255,255,0.12)]"
+            initial={false}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          >
+            <div className="absolute -bottom-px inset-x-3 h-px bg-gradient-to-r from-transparent via-[#FFDF65] to-transparent opacity-100 shadow-[0_0_12px_rgba(212,175,55,0.75)]" />
+          </motion.div>
+        )}
+      </Link>
+    </motion.div>
   );
 };

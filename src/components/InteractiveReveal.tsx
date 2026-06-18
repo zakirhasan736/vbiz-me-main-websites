@@ -48,7 +48,7 @@ export function InteractiveReveal({
     <div
       ref={ref}
       id={id}
-      className={`vcard-iframe-zone ${className}`}
+      className={`vcard-iframe-zone pointer-events-auto ${className}`}
       style={{ opacity: 0 }}
     >
       {children}

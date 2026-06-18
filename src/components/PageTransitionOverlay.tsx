@@ -273,12 +273,12 @@ export function PageTransitionOverlay({ children }: { children: ReactNode }) {
       >
         <div
           ref={topPanelRef}
-          className="absolute left-0 w-full h-1/2 scale-y-0 will-change-transform bg-[#12141d] z-[1]"
+          className="absolute left-0 w-full h-1/2 scale-y-0 will-change-transform bg-brand-dark z-[1]"
           style={{ top: 0 }}
         />
         <div
           ref={bottomPanelRef}
-          className="absolute left-0 w-full h-1/2 scale-y-0 will-change-transform bg-[#0e1018] z-[1]"
+          className="absolute left-0 w-full h-1/2 scale-y-0 will-change-transform bg-brand-dark z-[1]"
           style={{ top: '50%' }}
         />
         <div

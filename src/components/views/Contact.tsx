@@ -3,7 +3,9 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, MapPin, Phone, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
-import { RevealText, RevealParagraph, ScrollRevealCard } from '@/components/animations/reveal';
+import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
+import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
+import { RevealText, BannerDescription, ScrollRevealCard } from '@/components/animations/reveal';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -64,29 +66,13 @@ export default function Contact() {
   };
 
   return (
-    <div className="bg-black min-h-screen">
+    <div className="bg-brand-dark min-h-screen">
       {/* Hero Section */}
-      <section className="section-hero relative pt-32 pb-20 overflow-hidden flex flex-col justify-center items-center min-h-[50vh]">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,#1a1a1a_0%,black_100%)] opacity-80" />
-          <motion.div 
-            animate={{ opacity: [0.05, 0.15, 0.05], scale: [1, 1.2, 1] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-gold/20 blur-[150px] rounded-full pointer-events-none mix-blend-screen"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_80%)]" />
-        </div>
+      <section className="section-hero relative pt-32 pb-20 overflow-hidden flex flex-col justify-center items-center min-h-[50vh] bg-brand-dark">
+        <PageHeroBackground />
 
         <div className="max-w-4xl mx-auto px-4 relative z-10 pt-10 text-center w-full">
-          <div className="inline-flex items-center justify-center gap-3 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl mb-10 shadow-[0_0_20px_rgba(212,175,55,0.15)] relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/0 via-brand-gold/10 to-brand-gold/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
-            <motion.span 
-              animate={{ opacity: [1, 0.5, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-2 h-2 rounded-full bg-brand-gold shadow-[0_0_10px_rgba(212,175,55,1)]" 
-            />
-            <span className="text-[12px] font-medium tracking-[0.15em] uppercase text-neutral-200">Connect With Us</span>
-          </div>
+          <SectionEyebrow label="Connect With Us" variant="hero" />
           
           <RevealText 
             text="Get in Touch"
@@ -95,9 +81,9 @@ export default function Contact() {
             highlightedWords={["Touch"]}
           />
           
-          <RevealParagraph 
+          <BannerDescription 
             text="Ready to elevate your professional presence? Connect with us for premium digital networking solutions."
-            className="text-neutral-400 text-lg md:text-xl font-light mt-4 max-w-2xl mx-auto leading-relaxed block"
+            className="text-neutral-400 text-lg md:text-xl font-light mt-4 max-w-2xl leading-relaxed"
           />
         </div>
       </section>
@@ -121,7 +107,7 @@ export default function Contact() {
 
                 <div className="space-y-8 bg-neutral-900/30 border border-white/5 rounded-3xl py-6 px-4 md:py-8 md:px-6 backdrop-blur-md">
                   <div className="flex gap-6 group">
-                    <div className="w-14 h-14 rounded-full border border-white/10 bg-[#0A0A0A] flex items-center justify-center shrink-0 group-hover:border-brand-gold/50 group-hover:bg-brand-gold/5 transition-colors">
+                    <div className="w-14 h-14 rounded-full border border-white/10 bg-brand-surface flex items-center justify-center shrink-0 group-hover:border-brand-gold/50 group-hover:bg-brand-gold/5 transition-colors">
                       <MapPin className="text-brand-gold" />
                     </div>
                     <div>
@@ -133,7 +119,7 @@ export default function Contact() {
                   <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-4" />
 
                   <div className="flex gap-6 group">
-                    <div className="w-14 h-14 rounded-full border border-white/10 bg-[#0A0A0A] flex items-center justify-center shrink-0 group-hover:border-brand-gold/50 group-hover:bg-brand-gold/5 transition-colors">
+                    <div className="w-14 h-14 rounded-full border border-white/10 bg-brand-surface flex items-center justify-center shrink-0 group-hover:border-brand-gold/50 group-hover:bg-brand-gold/5 transition-colors">
                       <Phone className="text-brand-gold" />
                     </div>
                     <div>
@@ -145,7 +131,7 @@ export default function Contact() {
                   <div className="w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent my-4" />
 
                   <div className="flex gap-6 group">
-                    <div className="w-14 h-14 rounded-full border border-white/10 bg-[#0A0A0A] flex items-center justify-center shrink-0 group-hover:border-brand-gold/50 group-hover:bg-brand-gold/5 transition-colors">
+                    <div className="w-14 h-14 rounded-full border border-white/10 bg-brand-surface flex items-center justify-center shrink-0 group-hover:border-brand-gold/50 group-hover:bg-brand-gold/5 transition-colors">
                       <Mail className="text-brand-gold" />
                     </div>
                     <div>
@@ -159,7 +145,7 @@ export default function Contact() {
 
             {/* Contact Form */}
             <ScrollRevealCard direction="right" className="w-full">
-              <div className="bg-[#0A0A0A]/80 backdrop-blur-xl py-6 px-4 md:py-8 md:px-6 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden group hover:border-brand-gold/30 transition-colors duration-500 text-left">
+              <div className="bg-brand-surface/80 backdrop-blur-xl py-6 px-4 md:py-8 md:px-6 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden group hover:border-brand-gold/30 transition-colors duration-500 text-left">
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
                 <h3 className="text-3xl font-medium text-white mb-8 tracking-tight relative z-10">Send a Message</h3>

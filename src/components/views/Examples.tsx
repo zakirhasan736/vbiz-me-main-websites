@@ -8,10 +8,11 @@ import {
   Calendar, Star, User, Smartphone, Play, Pause, Volume2, VolumeX, Mail
 } from 'lucide-react';
 import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
-import { RevealText, RevealParagraph, ScrollRevealCard } from '@/components/animations/reveal';
+import { RevealText, BannerDescription, ScrollRevealCard } from '@/components/animations/reveal';
 import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
-import { INDUSTRY_MOCKUP_IMAGES } from '@/lib/industry-mockup-images';
-import { InteractiveReveal } from '@/components/InteractiveReveal';
+import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
+import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
+import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 
 interface IndustryData {
   id: string;
@@ -155,16 +156,15 @@ export default function Examples() {
   const activeInd = industries.find(i => i.id === selectedIndId) || industries[0];
 
   return (
-    <div className="section-hero pt-32 pb-24 bg-black relative min-h-screen text-white overflow-hidden">
+    <div className="section-hero pt-32 pb-24 bg-brand-dark relative min-h-screen text-white overflow-hidden">
+      <PageHeroBackground />
       {/* Background radial glow */}
       <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-brand-gold/5 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-sky-500/5 blur-[150px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/20 text-brand-gold text-xs font-semibold uppercase tracking-wider mb-4 animate-pulse">
-            <Sparkles size={14} /> Industry Demo Library
-          </div>
+          <SectionEyebrow label="Industry Demo Library" variant="hero" className="mb-4" />
           
           <RevealText 
             text="See Exactly What Your Customers Will Experience"
@@ -173,9 +173,9 @@ export default function Examples() {
             highlightedWords={["Customers"]}
           />
           
-          <RevealParagraph 
-            text="vBiz Me isn’t a standard static profile page — it is an elegant, structured sequence that turns simple phone scans into high-value relationships. Toggle through real industries below."
-            className="text-neutral-400 font-light text-lg leading-relaxed block text-center"
+          <BannerDescription 
+            text="vBiz Me isn't a standard static profile page — it is an elegant, structured sequence that turns simple phone scans into high-value relationships. Toggle through real industries below."
+            className="text-neutral-400 font-light text-lg leading-relaxed"
           />
         </div>
 
@@ -192,34 +192,40 @@ export default function Examples() {
               {industries.map((ind) => {
                 const isActive = ind.id === selectedIndId;
                 return (
-                  <button
+                  <motion.button
                     key={ind.id}
+                    type="button"
+                    layout
                     onClick={() => {
                       setSelectedIndId(ind.id);
                       setIsPlaying(true);
                     }}
-                    className={`flex items-center gap-3 text-left p-4 rounded-2xl border text-sm transition-all duration-300 relative overflow-hidden group ${
-                      isActive 
-                        ? 'bg-neutral-900 border-brand-gold/30 text-white shadow-[0_0_20px_rgba(212,175,55,0.1)]' 
-                        : 'bg-neutral-950/40 border-white/5 text-neutral-400 hover:text-white hover:border-white/10 hover:bg-neutral-900/30'
+                    whileTap={{ scale: 0.98 }}
+                    className={`relative flex items-center gap-3 text-left p-4 rounded-2xl border text-sm transition-colors duration-300 overflow-hidden group ${
+                      isActive
+                        ? 'border-brand-gold/50 text-brand-text shadow-[0_4px_20px_rgba(212,175,55,0.12)]'
+                        : 'bg-brand-card border-white/10 text-brand-text-muted hover:border-brand-gold/25 hover:bg-brand-gold/5'
                     }`}
                   >
-                    {/* Side highlight line */}
                     {isActive && (
-                      <div className="absolute left-0 inset-y-0 w-1 bg-brand-gold" />
+                      <motion.div
+                        layoutId="examples-industry-active"
+                        className="absolute inset-0 bg-brand-gold/15 border border-brand-gold/30 rounded-2xl"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
                     )}
-                    
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-300 ${
-                      isActive ? 'bg-brand-gold/15 text-brand-gold' : 'bg-white/5 text-neutral-400 group-hover:text-white'
+
+                    <div className={`relative z-10 w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-300 ${
+                      isActive ? 'bg-brand-gold/15 text-brand-gold' : 'bg-white/5 text-brand-text-muted group-hover:text-brand-gold'
                     }`}>
                       {ind.icon}
                     </div>
-                    
-                    <div className="truncate">
+
+                    <div className="relative z-10 truncate min-w-0">
                       <span className="font-semibold block text-xs tracking-wide uppercase">{ind.name}</span>
-                      <span className="text-xs text-neutral-500 font-light truncate block">{ind.company}</span>
+                      <span className="text-xs text-brand-text-muted font-light truncate block">{ind.company}</span>
                     </div>
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -239,18 +245,42 @@ export default function Examples() {
             </div>
           </ScrollRevealCard>
 
-          {/* Right Column: Stunning Realistic iPhone Mockup */}
-          <InteractiveReveal className="lg:col-span-7 flex flex-col items-center justify-center relative">
-            {/* Phone Container Backdrop Ring */}
+          {/* Right Column: live vCard phone — no transform on iframe ancestors */}
+          <div className="lg:col-span-7 flex flex-col items-center justify-center relative gap-5 pointer-events-auto z-10">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] bg-gradient-to-tr from-brand-gold/10 to-transparent blur-[80px] rounded-full pointer-events-none" />
 
-            <PhoneMockupFrame
-              src={activeInd.demoUrl || 'https://app.vbizme.com/vCard/michaelangelo-casanova-2#home'}
-              previewImage={INDUSTRY_MOCKUP_IMAGES[activeInd.id as keyof typeof INDUSTRY_MOCKUP_IMAGES]}
-              title={`${activeInd.name} Live View`}
-              size="hero"
-              className="shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_40px_rgba(212,175,55,0.15)]"
-            />
+            <div
+              key={activeInd.id}
+              className="flex flex-col items-center gap-3 w-full max-w-[375px] mx-auto relative z-10"
+            >
+              <div className="w-full px-4 py-2.5 rounded-xl border border-brand-gold/25 bg-brand-card text-center">
+                <span className="text-[9px] uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
+                  Live Demo URL
+                </span>
+                <a
+                  href={activeInd.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] font-mono text-brand-gold hover:underline break-all leading-snug"
+                >
+                  {activeInd.demoUrl}
+                </a>
+              </div>
+
+              <VCardInteractiveLane className="w-full">
+                <PhoneMockupFrame
+                  key={activeInd.demoUrl}
+                  src={activeInd.demoUrl || 'https://app.vbizme.com/vCard/michaelangelo-casanova-2#home'}
+                  title={`${activeInd.name} Live View`}
+                  size="hero"
+                  className="shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9),0_0_40px_rgba(212,175,55,0.15)]"
+                />
+              </VCardInteractiveLane>
+
+              <p className="text-[11px] text-brand-text-muted text-center font-light">
+                Tap and scroll inside the phone to explore the live vCard.
+              </p>
+            </div>
 
             {/* Simulated QR Code Scan */}
             <div className="mt-8 flex items-center gap-4 bg-neutral-900/60 backdrop-blur-md py-6 px-4 md:py-8 md:px-6 rounded-2xl border border-white/5 relative max-w-sm text-left">
@@ -262,7 +292,7 @@ export default function Examples() {
                       key={i} 
                       className={`rounded-xs ${
                         i % 5 === 0 || i === 1 || i === 3 || i === 10 || i === 12 || i === 15 
-                          ? 'bg-black' 
+                          ? 'bg-brand-deep' 
                           : 'bg-transparent'
                       }`} 
                     />
@@ -276,7 +306,7 @@ export default function Examples() {
                 </p>
               </div>
             </div>
-          </InteractiveReveal>
+          </div>
 
         </div>
 

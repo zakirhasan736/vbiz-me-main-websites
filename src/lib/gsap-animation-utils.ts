@@ -10,12 +10,14 @@ export const GSAP_DEFAULT_START = 'top 78%';
 
 /** Shared timing tokens — tune here to affect the whole site */
 export const GSAP_CONSTANTS = {
-  DURATION: 0.88,
-  EASE: 'power3.out',
+  DURATION: 1.05,
+  EASE: 'power4.out',
   STAGGER: 0.075,
   ROW_STAGGER: 0.11,
-  DISTANCE: 96,
-  BLUR: 10,
+  DISTANCE: 72,
+  EDGE_X: 140,
+  BLUR: 14,
+  SCALE_FROM: 0.94,
 };
 
 /** Framer Motion helpers used by RevealText / RevealParagraph */
@@ -59,17 +61,19 @@ export const animateGSAPReveal = (
     blur = GSAP_CONSTANTS.BLUR,
   } = options;
 
+  const edgeX = GSAP_CONSTANTS.EDGE_X;
   const fromVars: gsap.TweenVars = {
     opacity: 0,
     filter: `blur(${blur}px)`,
+    scale: GSAP_CONSTANTS.SCALE_FROM,
   };
 
   if (direction === 'up') fromVars.y = distance;
   else if (direction === 'down') fromVars.y = -distance;
-  else if (direction === 'left') fromVars.x = distance;
-  else if (direction === 'right') fromVars.x = -distance;
+  else if (direction === 'left') fromVars.x = -edgeX;
+  else if (direction === 'right') fromVars.x = edgeX;
 
-  gsap.set(element, { opacity: 0, filter: `blur(${blur}px)` });
+  gsap.set(element, fromVars);
 
   const resolvedTrigger =
     typeof trigger === 'string'
@@ -83,6 +87,7 @@ export const animateGSAPReveal = (
       opacity: 1,
       x: 0,
       y: 0,
+      scale: 1,
       filter: 'blur(0px)',
       duration,
       delay,
@@ -92,7 +97,10 @@ export const animateGSAPReveal = (
         start,
         once: true,
       },
-    }
+      onComplete: () => {
+        gsap.set(element, { clearProps: 'transform,filter' });
+      },
+    },
   );
 };
 

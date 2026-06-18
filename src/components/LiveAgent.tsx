@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bot, Mic, Square, Loader2, Volume2, MicOff, AlertCircle } from 'lucide-react';
+import { Mic, Square, Loader2, Volume2, MicOff, AlertCircle } from 'lucide-react';
 import { GoogleGenAI, LiveServerMessage, Modality, Type, StartSensitivity, EndSensitivity } from '@google/genai';
 import {
   createMicProcessingChain,
@@ -16,6 +17,7 @@ import {
   LIVE_AGENT_GREETING_TEXT,
   LIVE_AGENT_GREETING_TRIGGER,
 } from '@/lib/live-agent-prompt';
+import { LIVE_AGENT_AVATAR, LIVE_AGENT_VOICE } from '@/lib/site-assets';
 
 const SYSTEM_PROMPT = buildLiveAgentSystemPrompt(DEFAULT_CARD_DATA, undefined, {
   voice: true,
@@ -218,7 +220,7 @@ export function LiveAgent() {
         config: {
           responseModalities: [Modality.AUDIO],
           speechConfig: {
-             voiceConfig: { prebuiltVoiceConfig: { voiceName: "Zephyr" } },
+             voiceConfig: { prebuiltVoiceConfig: { voiceName: LIVE_AGENT_VOICE } },
           },
           realtimeInputConfig: {
             automaticActivityDetection: {
@@ -428,12 +430,21 @@ export function LiveAgent() {
 
             <div className="flex items-center justify-between z-10 w-full">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isConnected ? 'bg-zinc-100 text-zinc-950' : 'bg-zinc-900 text-zinc-500'}`}>
-                   {isSpeaking ? (
-                       <Volume2 size={18} className="animate-pulse" />
-                   ) : (
-                       <Bot size={18} />
-                   )}
+                <div className="relative w-10 h-10 shrink-0">
+                  <Image
+                    src={LIVE_AGENT_AVATAR}
+                    alt="Live AI assistant"
+                    width={40}
+                    height={40}
+                    className={`w-10 h-10 rounded-full object-cover border ${
+                      isConnected ? 'border-zinc-100' : 'border-zinc-700'
+                    } ${isSpeaking ? 'ring-2 ring-zinc-100/80 ring-offset-2 ring-offset-zinc-950' : ''}`}
+                  />
+                  {isSpeaking && (
+                    <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-zinc-950 border border-zinc-700 flex items-center justify-center">
+                      <Volume2 size={10} className="text-zinc-100 animate-pulse" />
+                    </span>
+                  )}
                 </div>
                 <div className="flex flex-col">
                   <span className="font-bold text-sm text-zinc-100 tracking-wide">Live AI Assistant</span>
@@ -484,11 +495,18 @@ export function LiveAgent() {
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 relative border ${
+        className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 relative border overflow-hidden ${
           isOpen ? 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 border-zinc-800 shadow-sm' : 'bg-zinc-100 text-zinc-950 border-white hover:scale-105 shadow-sm active:scale-95'
         }`}
+        aria-label={isOpen ? 'Close live AI assistant' : 'Open live AI assistant'}
       >
-        <Bot size={24} />
+        <Image
+          src={LIVE_AGENT_AVATAR}
+          alt="Live AI assistant"
+          width={56}
+          height={56}
+          className="w-full h-full object-cover"
+        />
         {isConnected && !isOpen && (
           <span className="absolute top-0 right-0 w-3 h-3 bg-zinc-400 rounded-full border-2 border-zinc-900 animate-ping" />
         )}

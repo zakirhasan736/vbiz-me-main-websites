@@ -1,4 +1,4 @@
-﻿export interface LiveAgentCardData {
+export interface LiveAgentCardData {
   ownerName: string;
   title?: string;
   company?: string;

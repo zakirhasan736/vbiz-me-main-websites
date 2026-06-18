@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className={`${inter.className} theme-midnight antialiased`}>
+      <body className={`${inter.className} theme-light antialiased`}>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

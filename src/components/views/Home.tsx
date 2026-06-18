@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { 
   ArrowRight, BarChart, Edit, Lightbulb, Play, Scan, Send, Video, 
@@ -9,25 +9,28 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import React, { useRef, useState, useEffect } from 'react';
-import { GlowCard } from '@/components/InteractiveElements';
+import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { GSAP_DEFAULT_START } from '@/lib/gsap-animation-utils';
 import { LazyQRCodeImage } from '@/components/LazyQRCodeImage';
 import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
-import { INDUSTRY_MOCKUP_IMAGES } from '@/lib/industry-mockup-images';
+import { PortfolioVCardModal } from '@/components/PortfolioVCardModal';
 import {
   PORTFOLIO_QR_CARDS,
   getPortfolioQrImageSrc,
   type PortfolioQrCard,
 } from '@/lib/portfolio-qr-cards';
-import { InteractiveReveal } from '@/components/InteractiveReveal';
+import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
 import {
   RevealText,
   RevealParagraph,
   ScrollRevealCard,
   SectionReveal,
 } from '@/components/animations/reveal';
+import { CapabilityCard } from '@/components/ui/CapabilityCard';
+import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
+import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 gsap.registerPlugin(ScrollTrigger);
 
 const qrSliderItems = PORTFOLIO_QR_CARDS;
@@ -126,22 +129,14 @@ const InteractiveDemoSection = () => {
   const activeObj = industries.find(ind => ind.id === activeIndId) || industries[2];
 
   return (
-    <section id="see-in-action" className="site-section bg-black border-b border-white/5 relative z-10 overflow-hidden">
+    <section id="see-in-action" className="site-section bg-brand-dark border-b border-white/5 relative z-10 overflow-hidden">
       <div className="absolute top-1/2 left-1/4 w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/20 text-brand-gold text-xs font-semibold uppercase tracking-wider mb-4"
-          >
-            <Sparkles size={14} /> See It In Action
-          </motion.div>
+          <SectionEyebrow label="See It In Action" className="mb-4" />
           <RevealText 
             text="See Exactly What Your Customers Will Experience"
             className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight mb-4 text-white"
@@ -166,28 +161,35 @@ const InteractiveDemoSection = () => {
               {industries.map((ind) => {
                 const isActive = activeIndId === ind.id;
                 return (
-                  <button
+                  <motion.button
                     key={ind.id}
+                    type="button"
+                    layout
                     onClick={() => setActiveIndId(ind.id)}
-                    className={`flex items-center gap-3 p-4 rounded-xl border text-left text-xs uppercase font-bold tracking-wider transition-all duration-300 relative ${
-                      isActive 
-                        ? 'bg-neutral-900 border-brand-gold/30 text-white shadow-xl' 
-                        : 'bg-neutral-950/40 border-white/5 text-neutral-500 hover:text-white hover:border-white/10'
+                    whileTap={{ scale: 0.98 }}
+                    className={`relative flex items-center gap-3 p-4 rounded-xl border text-left text-xs uppercase font-bold tracking-wider transition-colors duration-300 overflow-hidden ${
+                      isActive
+                        ? 'border-brand-gold/50 text-brand-text shadow-[0_4px_20px_rgba(212,175,55,0.12)]'
+                        : 'bg-brand-card border-white/10 text-brand-text-muted hover:border-brand-gold/25 hover:bg-brand-gold/5'
                     }`}
                   >
                     {isActive && (
-                      <div className="absolute left-0 inset-y-0 w-1 bg-brand-gold" />
+                      <motion.div
+                        layoutId="home-industry-active"
+                        className="absolute inset-0 bg-brand-gold/15 border border-brand-gold/30 rounded-xl"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                      />
                     )}
-                    <span className={isActive ? 'text-brand-gold' : 'text-neutral-600'}>
+                    <span className={`relative z-10 shrink-0 ${isActive ? 'text-brand-gold' : 'text-brand-text-muted'}`}>
                       {ind.icon}
                     </span>
-                    <div>
-                      <span>{ind.name}</span>
-                      <span className="text-[9px] text-neutral-500 font-light block normal-case mt-0.5">
+                    <div className="relative z-10 min-w-0">
+                      <span className={isActive ? 'text-brand-text' : ''}>{ind.name}</span>
+                      <span className="text-[9px] text-brand-text-muted font-light block normal-case mt-0.5 truncate">
                         {ind.company}
                       </span>
                     </div>
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -202,15 +204,40 @@ const InteractiveDemoSection = () => {
             </div>
           </ScrollRevealCard>
 
-          {/* Interactive Screen Mockup column */}
-          <InteractiveReveal className="lg:col-span-12 xl:col-span-7 flex justify-center relative">
-            <PhoneMockupFrame
-              src={activeObj.demoUrl}
-              previewImage={INDUSTRY_MOCKUP_IMAGES[activeObj.id as keyof typeof INDUSTRY_MOCKUP_IMAGES]}
-              title={`${activeObj.name} Demo`}
-              size="hero"
-            />
-          </InteractiveReveal>
+          {/* Interactive Screen Mockup column — iframe lane has no transform ancestors */}
+          <div className="lg:col-span-12 xl:col-span-7 flex flex-col items-center justify-center relative gap-5 pointer-events-auto z-10">
+            <div
+              key={activeObj.id}
+              className="flex flex-col items-center gap-3 w-full max-w-[375px] mx-auto relative z-10"
+            >
+              <div className="w-full px-4 py-2.5 rounded-xl border border-brand-gold/25 bg-brand-card text-center">
+                <span className="text-[9px] uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
+                  Live Demo URL
+                </span>
+                <a
+                  href={activeObj.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] font-mono text-brand-gold hover:underline break-all leading-snug"
+                >
+                  {activeObj.demoUrl}
+                </a>
+              </div>
+
+              <VCardInteractiveLane className="w-full" id="industries-vcard-lane">
+                <PhoneMockupFrame
+                  key={activeObj.demoUrl}
+                  src={activeObj.demoUrl}
+                  title={`${activeObj.name} Demo`}
+                  size="hero"
+                />
+              </VCardInteractiveLane>
+
+              <p className="text-[11px] text-brand-text-muted text-center font-light">
+                Tap and scroll inside the phone to explore the live vCard.
+              </p>
+            </div>
+          </div>
 
         </div>
 
@@ -254,7 +281,6 @@ const PortfolioSection = () => {
   const [scanStep, setScanStep] = useState(0); // 0: loading, 1: video pitch, 2: full card
   const [selectedQrCard, setSelectedQrCard] = useState<PortfolioQrCard | null>(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-  const [showModalPhoneFrame, setShowModalPhoneFrame] = useState(false);
 
   const sliderRef = useRef<HTMLDivElement>(null);
   const [activeSliderIdx, setActiveSliderIdx] = useState(0);
@@ -348,7 +374,7 @@ const PortfolioSection = () => {
   };
 
   return (
-    <section id="portfolio-section" className="site-section bg-black border-b border-white/5 relative z-99 overflow-hidden">
+    <section id="portfolio-section" className="site-section bg-brand-dark border-b border-white/5 relative z-99 overflow-hidden">
       {/* Background ambient lighting */}
       <div className="absolute top-1/2 left-3/4 w-[600px] h-[600px] bg-brand-gold/5 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute top-1/4 left-10 w-[450px] h-[450px] bg-indigo-500/5 blur-[130px] rounded-full pointer-events-none" />
@@ -357,15 +383,7 @@ const PortfolioSection = () => {
         
         {/* SECTION HEADER BLOCK */}
         <SectionReveal id="portfolio-header" className="text-center max-w-4xl mx-auto mb-16">
-          <motion.div 
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-gold/10 border border-brand-gold/20 text-brand-gold text-xs font-semibold uppercase tracking-wider mb-4"
-          >
-            <Layers size={14} /> Live Showcases
-          </motion.div>
+          <SectionEyebrow label="Live Showcases" className="mb-4" />
           <RevealText 
             text="Portfolio"
             className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight mb-6 text-white text-center"
@@ -375,6 +393,18 @@ const PortfolioSection = () => {
             text="Share your vCard effortlessly with a QR code or URL link. Scanning or clicking triggers a dynamic intro video, followed by your full vCard, to reflect your unique brand. Our vCards are more than contact information—they are powerful marketing tools that stand out making an instant and lasting impression."
             className="text-neutral-400 font-light text-base sm:text-lg leading-relaxed max-w-3xl mx-auto"
           />
+
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <MagneticButton
+              href="/portfolio"
+              className="h-12 px-7 bg-brand-gold text-black text-sm font-bold tracking-wide shadow-[0_4px_24px_rgba(212,175,55,0.25)] hover:shadow-[0_4px_28px_rgba(212,175,55,0.4)]"
+            >
+              View Full Portfolio <ArrowRight size={16} aria-hidden="true" />
+            </MagneticButton>
+            <span className="text-neutral-500 text-xs sm:text-sm font-light">
+              {qrSliderItems.length} live client showcases — tap any card below or open the gallery
+            </span>
+          </div>
         </SectionReveal>
 
         {/* TWO INTERACTIVE BENTO GRID TECH FEATURES */}
@@ -408,7 +438,7 @@ const PortfolioSection = () => {
             </p>
 
             {/* Simulated Live Analytics Graph Block */}
-            <div className="bg-[#090909] p-5 rounded-2xl border border-white/5 relative mb-6">
+            <div className="bg-brand-surface p-5 rounded-2xl border border-white/5 relative mb-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex gap-4">
                   <div className="flex flex-col">
@@ -507,7 +537,7 @@ const PortfolioSection = () => {
               </p>
 
               {/* Real-time reactive simulator */}
-              <div className="flex flex-col sm:flex-row items-center gap-6 bg-[#090909] py-6 px-4 md:py-8 md:px-6 rounded-2xl border border-white/5 mb-6">
+              <div className="flex flex-col sm:flex-row items-center gap-6 bg-brand-surface py-6 px-4 md:py-8 md:px-6 rounded-2xl border border-white/5 mb-6">
                 
                 {/* Dynamically Jittering QR grid to look simulated */}
                 <div className="w-24 h-24 bg-white p-2 rounded-xl flex-shrink-0 flex items-center justify-center border border-brand-gold/30 shadow-[0_0_20px_rgba(211,175,55,0.08)] relative overflow-hidden">
@@ -623,9 +653,8 @@ const PortfolioSection = () => {
                   onClick={() => {
                     setSelectedQrCard(item);
                     setIsQrModalOpen(true);
-                    setShowModalPhoneFrame(false);
                   }}
-                  className={`snap-center shrink-0 w-[280px] sm:w-[300px] bg-[#0c0d10] border ${cardStyle.borderColor} ${cardStyle.glowColor} ${cardStyle.hoverGlow} rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col items-center justify-between transition-all duration-500 hover:-translate-y-2 group cursor-pointer`}
+                  className={`snap-center shrink-0 w-[280px] sm:w-[300px] bg-[#2c3a34] border ${cardStyle.borderColor} ${cardStyle.glowColor} ${cardStyle.hoverGlow} rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col items-center justify-between transition-all duration-500 hover:-translate-y-2 group cursor-pointer`}
                   id={`qr-slider-card-${item.id}`}
                 >
                   {/* Branded QR from /public */}
@@ -663,24 +692,24 @@ const PortfolioSection = () => {
               whileInView="visible"
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: qrSliderItems.length * 0.1 }}
-              className="snap-center shrink-0 w-[280px] sm:w-[300px] bg-gradient-to-br from-[#0c0d10] to-black border border-white/5 rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col justify-between"
+              className="snap-center shrink-0 w-[280px] sm:w-[300px] bg-gradient-to-br from-[#2c3a34] to-brand-dark border border-white/5 rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col justify-between"
               id="qr-slider-explore-card"
             >
               <div className="relative z-10 pt-4 text-left">
                 <div className="w-10 h-10 rounded-xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold flex items-center justify-center mb-6">
                   <Sparkles size={20} />
                 </div>
-                <h3 className="text-white font-semibold text-lg mb-2">Build Yours Now</h3>
+                <h3 className="text-white font-semibold text-lg mb-2">Full Portfolio Gallery</h3>
                 <p className="text-neutral-400 text-xs font-light leading-relaxed mb-4">
-                  Access our interactive vCard simulator matrix featuring contractor builders, real estate listings, sales executives, and custom branding integrations.
+                  Browse every live vCard showcase, QR design, and branded client demo in one dedicated portfolio view.
                 </p>
               </div>
 
               <a
-                href="/our-work"
-                className="relative z-10 w-full mt-auto py-3.5 px-4 rounded-xl bg-brand-gold hover:bg-yellow-400 text-black font-semibold text-xs text-center uppercase tracking-wider flex items-center justify-center gap-2 transition-colors duration-300"
+                href="/portfolio"
+                className="relative z-10 w-full mt-auto py-3.5 px-4 rounded-xl bg-brand-gold hover:bg-yellow-400 text-black font-bold text-xs text-center uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] shadow-[0_4px_20px_rgba(212,175,55,0.2)] hover:shadow-[0_4px_24px_rgba(212,175,55,0.35)]"
               >
-                Explore Template Library <ChevronRight size={14} />
+                View Full Portfolio <ChevronRight size={14} />
               </a>
             </motion.div>
           </div>
@@ -703,125 +732,43 @@ const PortfolioSection = () => {
               );
             })}
           </div>
+
+          <ScrollRevealCard
+            direction="up"
+            trigger="#portfolio-slider-container"
+            className="mt-10 max-w-3xl mx-auto"
+          >
+            <div className="relative overflow-hidden rounded-2xl border border-brand-gold/25 bg-gradient-to-r from-brand-card via-brand-surface to-brand-card py-5 px-5 md:py-6 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-5 text-center sm:text-left shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+              <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/5 via-transparent to-brand-gold/5 pointer-events-none" />
+              <div className="relative z-10">
+                <p className="text-white font-semibold text-base md:text-lg mb-1">
+                  Explore the complete portfolio gallery
+                </p>
+                <p className="text-neutral-400 text-xs md:text-sm font-light leading-relaxed max-w-md">
+                  Every branded QR, live vCard demo, and client showcase in one browsable grid.
+                </p>
+              </div>
+              <MagneticButton
+                href="/portfolio"
+                className="relative z-10 shrink-0 h-11 px-6 border border-brand-gold/40 bg-brand-gold/10 text-brand-gold text-xs font-bold uppercase tracking-wider hover:bg-brand-gold hover:text-black transition-colors"
+              >
+                Open Portfolio Page <ExternalLink size={14} aria-hidden="true" />
+              </MagneticButton>
+            </div>
+          </ScrollRevealCard>
         </div>
 
       </div>
 
-      {/* EXCLUSIVE CUSTOM QR CARD POPUP MODAL (MINIC CARD 2 MATCH) */}
-      <AnimatePresence>
-        {isQrModalOpen && selectedQrCard && (() => {
-          const qrBgColor = 'ffffff';
-
-          return (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => {
-                setIsQrModalOpen(false);
-                setSelectedQrCard(null);
-              }}
-              className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl"
-              id="qr-popup-backdrop"
-              data-lenis-prevent
-            >
-              {/* Modal outer element wrapper */}
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                onClick={(e) => e.stopPropagation()}
-                className={`relative w-full ${showModalPhoneFrame ? 'max-w-[380px]' : 'max-w-[360px]'} portfolio-vcard-modal bg-[#0c0d10] border border-white/10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.9)] py-6 px-4 md:py-8 md:px-6 overflow-hidden flex flex-col text-center transition-all duration-300 pointer-events-auto`}
-                id="qr-popup-modal"
-                style={{ pointerEvents: 'auto' }}
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 blur-[50px] pointer-events-none" />
-
-                {/* Back button */}
-                {showModalPhoneFrame && (
-                  <button 
-                    onClick={() => setShowModalPhoneFrame(false)}
-                    className="absolute top-5 left-5 text-neutral-400 hover:text-white flex items-center gap-1 cursor-pointer transition-colors z-50 font-sans text-xs font-semibold"
-                  >
-                    ← Back
-                  </button>
-                )}
-
-                {/* Top closing rounded button */}
-                <button 
-                  onClick={() => {
-                    setIsQrModalOpen(false);
-                    setSelectedQrCard(null);
-                  }}
-                  className="absolute top-5 right-5 w-8 h-8 rounded-full bg-black/60 border border-white/10 text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer active:scale-90 transition-transform z-50"
-                  title="Close"
-                  id="qr-popup-close-btn"
-                >
-                  <X size={14} />
-                </button>
-
-                {showModalPhoneFrame ? (
-                  <div
-                    className="flex flex-col items-center justify-center mt-6 pointer-events-auto relative z-10 vcard-iframe-zone"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <h3 className="text-white font-bold text-lg mb-1 tracking-tight">
-                      {selectedQrCard.displayName} Live View
-                    </h3>
-                    <p className="text-neutral-400 font-light text-[11px] mb-4 px-2">
-                      Tap and scroll inside the phone preview to explore the live vCard.
-                    </p>
-                    
-                    <PhoneMockupFrame
-                      src={selectedQrCard.demoUrl}
-                      title={`${selectedQrCard.displayName} Live Card Interface`}
-                      size="modal"
-                    />
-                  </div>
-                ) : (
-                  <>
-                    {/* Massive White Card containing QR */}
-                    <div className="w-full aspect-square bg-white p-3 sm:p-4 rounded-3xl relative overflow-hidden flex items-center justify-center mx-auto mb-6 max-w-[270px] border border-neutral-100 shadow-[0_15px_35px_rgba(0,0,0,0.65)] mt-4">
-                      <div 
-                        className="w-full h-full rounded-2xl overflow-hidden relative bg-white"
-                        style={{
-                          backgroundColor: '#' + qrBgColor
-                        }}
-                      >
-                        <LazyQRCodeImage
-                          src={getPortfolioQrImageSrc(selectedQrCard)}
-                          alt={`QR Code — ${selectedQrCard.displayName}`}
-                          className="w-full h-full object-contain"
-                          bgcolor={qrBgColor}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Selected QR Card Info details */}
-                    <h3 className="text-white font-bold text-xl mb-1 tracking-tight">
-                      {selectedQrCard.displayName}
-                    </h3>
-                    <p className="text-neutral-400 font-light text-[12.5px] leading-relaxed px-3">
-                      {selectedQrCard.desc}
-                    </p>
-
-                    <button
-                      type="button"
-                      onClick={() => setShowModalPhoneFrame(true)}
-                      className="bg-brand-gold hover:bg-yellow-400 text-black font-semibold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full inline-flex items-center justify-center gap-2 transition-all mt-6 shadow-[0_4px_20px_rgba(212,175,55,0.25)] hover:shadow-[0_4px_25px_rgba(212,175,55,0.4)] active:scale-95 duration-300 mx-auto w-[220px] cursor-pointer"
-                      id="qr-popup-visit-btn"
-                    >
-                      <ExternalLink size={13} /> Visit Demo Card
-                    </button>
-                  </>
-                )}
-              </motion.div>
-            </motion.div>
-          );
-        })()}
-      </AnimatePresence>
+      <PortfolioVCardModal
+        card={selectedQrCard}
+        isOpen={isQrModalOpen}
+        onClose={() => {
+          setIsQrModalOpen(false);
+          setSelectedQrCard(null);
+        }}
+        modalId="qr-popup"
+      />
 
       {/* IMMERSIVE LIVE CARD SCAN SIMULATOR POPUP HANDLER */}
       <AnimatePresence>
@@ -911,9 +858,7 @@ const InvisibleAdvantageTeaser = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="inline-flex items-center justify-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] uppercase tracking-wider font-extrabold text-brand-gold mb-4">
-              <Award size={12} /> Strategic Advantage
-            </div>
+            <SectionEyebrow label="Strategic Advantage" className="mb-4" />
             
             <RevealText 
               text="Most digital cards are just links vBiz Me is a sales sequence."
@@ -928,32 +873,40 @@ const InvisibleAdvantageTeaser = () => {
             />
 
             <div className="grid grid-cols-2 gap-4 mb-8">
-              <ScrollRevealCard direction="up" className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Emotion</span>
-                <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
-                  Humanize the initial handshake with a 9s looping intro video.
-                </p>
+              <ScrollRevealCard direction="up" className="h-full">
+                <SiteGlowCard radius={12} className="py-6 px-4 md:py-8 md:px-6 text-left h-full">
+                  <span className="text-brand-gold text-lg font-bold block mb-1">✓ Emotion</span>
+                  <p className="text-[11px] text-brand-text-muted leading-relaxed font-light">
+                    Humanize the initial handshake with a 9s looping intro video.
+                  </p>
+                </SiteGlowCard>
               </ScrollRevealCard>
               
-              <ScrollRevealCard direction="right" delay={0.1} className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Identity</span>
-                <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
-                  Displays official corporate role, badges, and background seamlessly.
-                </p>
+              <ScrollRevealCard direction="right" delay={0.1} className="h-full">
+                <SiteGlowCard radius={12} className="py-6 px-4 md:py-8 md:px-6 text-left h-full">
+                  <span className="text-brand-gold text-lg font-bold block mb-1">✓ Identity</span>
+                  <p className="text-[11px] text-brand-text-muted leading-relaxed font-light">
+                    Displays official corporate role, badges, and background seamlessly.
+                  </p>
+                </SiteGlowCard>
               </ScrollRevealCard>
               
-              <ScrollRevealCard direction="left" delay={0.2} className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Proof</span>
-                <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
-                  Verified customer experience reviews loaded direct onto the card.
-                </p>
+              <ScrollRevealCard direction="left" delay={0.2} className="h-full">
+                <SiteGlowCard radius={12} className="py-6 px-4 md:py-8 md:px-6 text-left h-full">
+                  <span className="text-brand-gold text-lg font-bold block mb-1">✓ Proof</span>
+                  <p className="text-[11px] text-brand-text-muted leading-relaxed font-light">
+                    Verified customer experience reviews loaded direct onto the card.
+                  </p>
+                </SiteGlowCard>
               </ScrollRevealCard>
               
-              <ScrollRevealCard direction="down" delay={0.3} className="py-6 px-4 md:py-8 md:px-6 rounded-xl bg-black border border-white/5 text-left">
-                <span className="text-brand-gold text-lg font-bold block mb-1">✓ Action</span>
-                <p className="text-[11px] text-neutral-400 leading-relaxed font-light">
-                  Smart call-to-actions (Book Now, Call Now) configured dynamically.
-                </p>
+              <ScrollRevealCard direction="down" delay={0.3} className="h-full">
+                <SiteGlowCard radius={12} className="py-6 px-4 md:py-8 md:px-6 text-left h-full">
+                  <span className="text-brand-gold text-lg font-bold block mb-1">✓ Action</span>
+                  <p className="text-[11px] text-brand-text-muted leading-relaxed font-light">
+                    Smart call-to-actions (Book Now, Call Now) configured dynamically.
+                  </p>
+                </SiteGlowCard>
               </ScrollRevealCard>
             </div>
 
@@ -968,7 +921,7 @@ const InvisibleAdvantageTeaser = () => {
           {/* Visual comparative diagram/infographic */}
           <ScrollRevealCard 
             direction="left"
-            className="bg-black/90 py-6 px-4 md:py-8 md:px-6 rounded-3xl border border-white/10 relative overflow-hidden flex flex-col justify-center text-center"
+            className="bg-brand-elevated/90 py-6 px-4 md:py-8 md:px-6 rounded-3xl border border-emerald-500/15 relative overflow-hidden flex flex-col justify-center text-center"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 blur-[50px]" />
             <h3 className="text-white font-semibold text-lg mb-4 tracking-tight">Structured Direct Comparison</h3>
@@ -1046,27 +999,19 @@ const HowItWorks = () => {
   };
 
   return (
-    <section className="site-section bg-black border-b border-white/5 relative z-10 overflow-hidden text-center">
+    <section className="site-section bg-brand-dark border-b border-white/5 relative z-10 overflow-hidden text-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <motion.span 
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.5 }}
-            className="text-xs uppercase tracking-widest text-[#777] font-bold block mb-2"
-          >
-            Four Simple Stages
-          </motion.span>
+          <SectionEyebrow label="Four Simple Stages" className="mb-4 mx-auto" />
           <RevealText 
             text="How vBiz Me Works"
-            className="text-3xl sm:text-4xl lg:text-5xl font-medium text-white mb-4"
+            className="text-3xl sm:text-4xl lg:text-5xl font-medium text-brand-text mb-4"
             tag="h2"
           />
           <RevealParagraph 
             text="Revolutionizing physical relationships is frictionless. We made sure setup, sharing, and capturing deals takes seconds."
-            className="text-neutral-400 text-sm font-light leading-relaxed"
+            className="text-brand-text-muted text-sm font-light leading-relaxed"
           />
         </div>
 
@@ -1079,373 +1024,22 @@ const HowItWorks = () => {
                 key={index}
                 direction={direction}
                 delay={delay}
-                className="bg-neutral-950 py-6 px-4 md:py-8 md:px-6 rounded-2xl border border-white/5 relative group hover:border-brand-gold/30 transition-all duration-300 text-left h-full"
+                className="h-full"
               >
-                {/* Giant number indicator */}
-                <div className="text-brand-gold font-mono font-extrabold text-3xl mb-4 opacity-40 group-hover:opacity-100 transition-opacity">
-                  {step.num}
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">{step.title}</h3>
-                <p className="text-neutral-400 text-xs font-light leading-relaxed">{step.desc}</p>
+                <SiteGlowCard
+                  radius={16}
+                  className="py-6 px-4 md:py-8 md:px-6 text-left h-full"
+                >
+                  <div className="text-brand-gold font-mono font-extrabold text-3xl mb-4 opacity-50 group-hover:opacity-100 transition-opacity">
+                    {step.num}
+                  </div>
+                  <h3 className="text-lg font-bold text-brand-text mb-2">{step.title}</h3>
+                  <p className="text-brand-text-muted text-xs font-light leading-relaxed">{step.desc}</p>
+                </SiteGlowCard>
               </ScrollRevealCard>
             );
           })}
         </div>
-
-      </div>
-    </section>
-  );
-};
-
-// Social Proof & Results (Direct from Redesign brief context)
-const SocialProof = () => {
-  const reviews = [
-    {
-      rater: "Dave K.",
-      role: "Sales Executive",
-      comp: "Subaru of Hartford",
-      quote: "Closed 3 extra vehicle sales in my first 10 days using vBiz Me. Prospects absolutely love watching a quick welcoming greeting before checking inventory.",
-      val: "5-Star Experience",
-      initial: "D",
-      icon: Car,
-      color: "from-brand-gold via-amber-400 to-orange-500"
-    },
-    {
-      rater: "Samantha L.",
-      role: "Sales Advisor",
-      comp: "Gallagher Buick/GMC",
-      quote: "No one throws my card away anymore. It sits perfectly mapped in their active iPhone Wallet. My referral rate surged 47% in two months.",
-      val: "5-Star Experience",
-      initial: "S",
-      icon: TrendingUp,
-      color: "from-amber-400 via-brand-gold to-yellow-500"
-    },
-    {
-      rater: "Marcus Vance",
-      role: "CEO / Contractor",
-      comp: "Vance Custom Builders",
-      quote: "Clients take a 9-second tour of my recent kitchen additions, tap direct to call, are highly impressed, and schedule estimates instantly without email delays.",
-      val: "5-Star Experience",
-      initial: "M",
-      icon: Building,
-      color: "from-orange-500 via-brand-gold to-amber-500"
-    },
-    {
-      rater: "Clarissa Thorne",
-      role: "Lead Broker",
-      comp: "Apex Luxury Properties",
-      quote: "The brand integration is immaculate. Clients watch our high-production digital greetings, browse our latest listings directly on the card, and schedule viewings seamlessly.",
-      val: "5-Star Experience",
-      initial: "C",
-      icon: Award,
-      color: "from-yellow-400 via-amber-500 to-brand-gold"
-    },
-    {
-      rater: "Dr. Raymond Miller",
-      role: "Founder",
-      comp: "Align Chiropractic Clinic",
-      quote: "Our missed appointments plummeted to zero. Clients scan our desk QR, save our smart contact entry directly, and can book real-time adjustments with one tap.",
-      val: "5-Star Experience",
-      initial: "R",
-      icon: Briefcase,
-      color: "from-brand-gold via-orange-400 to-yellow-500"
-    },
-    {
-      rater: "Sophie Dubois",
-      role: "Creative Director",
-      comp: "Atelier Design Co.",
-      quote: "My digital card acts as an active, high-converting portfolio deck. We've secured multiple premium design retainers within active networking circles using this platform.",
-      val: "5-Star Experience",
-      initial: "S",
-      icon: Sparkles,
-      color: "from-amber-500 via-brand-gold to-orange-500"
-    }
-  ];
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
-
-  useEffect(() => {
-    if (!isPlaying) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % reviews.length);
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [isPlaying, reviews.length]);
-
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % reviews.length);
-  };
-
-  const handlePrev = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + reviews.length) % reviews.length);
-  };
-
-  // Indices for three visible cards
-  const prevIdx = (currentIndex - 1 + reviews.length) % reviews.length;
-  const currentIdx = currentIndex;
-  const nextIdx = (currentIndex + 1) % reviews.length;
-
-  return (
-    <section className="site-section bg-black border-b border-white/5 relative z-10 overflow-hidden text-center animate-fade-in">
-      {/* Background ambient halos */}
-      <div className="absolute top-1/2 right-1/4 w-[600px] h-[600px] bg-brand-gold/[0.03] blur-[150px] rounded-full pointer-events-none" />
-      <div className="absolute top-10 left-10 w-[300px] h-[300px] bg-brand-gold/[0.015] blur-[120px] rounded-full pointer-events-none" />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-gold/[0.04] border border-brand-gold/15 backdrop-blur-md mb-4"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-pulse" />
-            <span className="text-[9px] font-mono tracking-[0.25em] text-brand-gold uppercase font-semibold">Social Proof & Impact</span>
-          </motion.div>
-          <RevealText 
-            text="Real Results from Real Professionals"
-            className="text-3xl sm:text-4xl lg:text-5xl font-medium text-white mb-4 tracking-tight leading-tight"
-            tag="h2"
-          />
-          <RevealParagraph 
-            text="Hear from leading sales representatives and small businesses who completely digitized their high-value client acquisitions."
-            className="text-neutral-400 text-sm font-light leading-relaxed"
-          />
-        </div>
-
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-20 max-w-5xl mx-auto text-left relative z-10">
-          <ScrollRevealCard direction="up" className="py-6 px-4 md:py-8 md:px-6 rounded-[2rem] bg-gradient-to-br from-[#0c0d10] to-[#040405] border border-white/5 relative overflow-hidden group hover:border-brand-gold/20 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] h-full">
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-gold/[0.02] to-transparent pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-brand-gold/10 to-transparent" />
-            <span className="text-4xl sm:text-5xl font-extrabold text-brand-gold block mb-1">0%</span>
-            <span className="text-xs text-neutral-400 font-semibold uppercase tracking-wider block">Trash-Bin Waste Rate</span>
-          </ScrollRevealCard>
-          
-          <ScrollRevealCard direction="right" delay={0.12} className="py-6 px-4 md:py-8 md:px-6 rounded-[2rem] bg-gradient-to-br from-[#0c0d10] to-[#040405] border border-white/5 relative overflow-hidden group hover:border-brand-gold/20 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] h-full">
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-gold/[0.02] to-transparent pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-brand-gold/10 to-transparent" />
-            <span className="text-4xl sm:text-5xl font-extrabold text-brand-gold block mb-1">+47%</span>
-            <span className="text-xs text-neutral-400 font-semibold uppercase tracking-wider block">Average Referral Surge</span>
-          </ScrollRevealCard>
-          
-          <ScrollRevealCard direction="left" delay={0.24} className="py-6 px-4 md:py-8 md:px-6 rounded-[2rem] bg-gradient-to-br from-[#0c0d10] to-[#040405] border border-white/5 relative overflow-hidden group hover:border-brand-gold/20 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] h-full">
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-gold/[0.02] to-transparent pointer-events-none" />
-            <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-brand-gold/10 to-transparent" />
-            <span className="text-4xl sm:text-5xl font-extrabold text-brand-gold block mb-1">&lt; 2s</span>
-            <span className="text-xs text-neutral-400 font-semibold uppercase tracking-wider block">Frictionless Load Time</span>
-          </ScrollRevealCard>
-        </div>
-
-        {/* Testimonials 3-Card Carousel Area */}
-        <motion.div 
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="relative max-w-6xl mx-auto px-4 md:px-12"
-          onMouseEnter={() => setIsPlaying(false)}
-          onMouseLeave={() => setIsPlaying(true)}
-        >
-          {/* Main layout row holding the 3 cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch justify-center relative min-h-[440px] pointer-events-auto">
-            
-            {/* Left flank card (prior card on deck) */}
-            <div 
-              className="hidden md:flex flex-col justify-between py-6 px-4 md:py-8 md:px-6 rounded-[2.25rem] bg-gradient-to-br from-[#0a0a0d] to-[#040405] border border-white/5 opacity-35 hover:opacity-70 scale-[0.93] blur-[0.5px] cursor-pointer hover:scale-[0.96] transition-all duration-500 text-left hover:border-brand-gold/25 relative overflow-hidden" 
-              onClick={handlePrev}
-            >
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.02),transparent)] pointer-events-none" />
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-1.5 bg-neutral-900/60 py-1.5 px-3 rounded-full border border-white/5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={11} fill="#D4AF37" className="opacity-50" strokeWidth={0} />
-                    ))}
-                    <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-400 ml-1.5">
-                      Verified
-                    </span>
-                  </div>
-                  {(() => {
-                    const PrevIcon = reviews[prevIdx].icon;
-                    return (
-                      <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 text-neutral-500 flex items-center justify-center">
-                        <PrevIcon size={14} />
-                      </div>
-                    );
-                  })()}
-                </div>
-                <p className="text-neutral-400 font-light text-[12.5px] italic leading-relaxed line-clamp-5">
-                  “{reviews[prevIdx].quote}”
-                </p>
-              </div>
-              <div className="border-t border-white/5 pt-5 mt-6 flex gap-3.5 items-center">
-                <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${reviews[prevIdx].color} flex items-center justify-center text-black font-extrabold text-sm shadow-md`}>
-                  {reviews[prevIdx].initial}
-                </div>
-                <div className="overflow-hidden">
-                  <span className="text-neutral-300 font-semibold text-xs block truncate">{reviews[prevIdx].rater}</span>
-                  <span className="text-neutral-500 text-[10.5px] font-light block truncate mt-0.5">{reviews[prevIdx].role} — {reviews[prevIdx].comp}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Active focused center card */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentIndex}
-                initial={{ opacity: 0, scale: 0.98, y: 15 }}
-                animate={{ opacity: 1, scale: 1.04, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98, y: -15 }}
-                transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                className="bg-gradient-to-br from-[#0f1014] to-[#040405] border border-brand-gold/25 py-6 px-4 md:py-8 md:px-6 rounded-[2.5rem] relative shadow-[0_25px_60px_-15px_rgba(212,175,55,0.12),0_15px_30px_rgba(0,0,0,0.85)] overflow-hidden text-left flex flex-col justify-between group z-10 hover:border-brand-gold/40 transition-colors"
-                id="active-testimonial-card"
-              >
-                {/* Micro gold borders and styling */}
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-brand-gold to-transparent" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(212,175,55,0.034),transparent)] pointer-events-none" />
-                
-                {/* Elegant giant background quotation mark */}
-                <span className="absolute top-10 right-10 text-[190px] font-serif text-brand-gold/[0.035] select-none pointer-events-none leading-none font-extrabold">
-                  ”
-                </span>
-
-                <div>
-                  <div className="flex items-center justify-between mb-8 relative z-20">
-                    <div className="flex items-center gap-2 bg-brand-gold/[0.04] py-1.5 px-3.5 rounded-full border border-brand-gold/20 backdrop-blur-md">
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={12} fill="#D4AF37" strokeWidth={0} />
-                        ))}
-                      </div>
-                      <span className="text-[9.5px] font-mono uppercase tracking-wider text-brand-gold font-bold ml-1">
-                        {reviews[currentIdx].val}
-                      </span>
-                    </div>
-                    {(() => {
-                      const ActiveIcon = reviews[currentIdx].icon;
-                      return (
-                        <div className="w-10 h-10 rounded-2xl bg-brand-gold/10 border border-brand-gold/25 text-brand-gold flex items-center justify-center shadow-[0_0_15px_rgba(212,175,55,0.12)]">
-                          <ActiveIcon size={18} />
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  <p className="text-base sm:text-lg md:text-[19px] text-white font-light leading-relaxed tracking-wide italic mb-8 relative z-10 font-sans">
-                    “{reviews[currentIdx].quote}”
-                  </p>
-                </div>
-
-                <div className="border-t border-white/5 pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-auto relative z-10">
-                  <div className="flex gap-4 items-center">
-                    <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${reviews[currentIdx].color} flex items-center justify-center text-black font-extrabold text-base shadow-[0_4px_20px_rgba(212,175,55,0.22)] relative overflow-hidden group-hover:scale-105 transition-transform duration-300`}>
-                      <div className="absolute inset-0 bg-white/10 opacity-30 mix-blend-overlay" />
-                      {reviews[currentIdx].initial}
-                    </div>
-                    <div>
-                      <span className="text-white font-bold text-base block tracking-tight">{reviews[currentIdx].rater}</span>
-                      <span className="text-neutral-400 text-xs font-light block mt-0.5">
-                        {reviews[currentIdx].role} — <strong className="text-brand-gold/90 font-medium">{reviews[currentIdx].comp}</strong>
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center">
-                    <button 
-                      onClick={() => setIsPlaying(!isPlaying)}
-                      className="px-3.5 py-2 rounded-full bg-neutral-900 border border-white/10 text-[9px] font-mono text-neutral-400 hover:text-white transition-all flex items-center gap-2 shadow-[0_4px_15px_rgba(0,0,0,0.5)] hover:border-brand-gold/30 cursor-pointer active:scale-95"
-                      id="autoplay-toggle-btn"
-                    >
-                      <span className="relative flex h-1.5 w-1.5">
-                        {isPlaying && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-75"></span>}
-                        <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${isPlaying ? 'bg-brand-gold' : 'bg-neutral-600'}`}></span>
-                      </span>
-                      {isPlaying ? 'LIVE STREAM' : 'PAUSED'}
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* Right flank card (next card on deck) */}
-            <div 
-              className="hidden md:flex flex-col justify-between py-6 px-4 md:py-8 md:px-6 rounded-[2.25rem] bg-gradient-to-br from-[#0a0a0d] to-[#040405] border border-white/5 opacity-35 hover:opacity-70 scale-[0.93] blur-[0.5px] cursor-pointer hover:scale-[0.96] transition-all duration-500 text-left hover:border-brand-gold/25 relative overflow-hidden" 
-              onClick={handleNext}
-            >
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.02),transparent)] pointer-events-none" />
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-1.5 bg-neutral-900/60 py-1.5 px-3 rounded-full border border-white/5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={11} fill="#D4AF37" className="opacity-50" strokeWidth={0} />
-                    ))}
-                    <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-400 ml-1.5">
-                      Verified
-                    </span>
-                  </div>
-                  {(() => {
-                    const NextIcon = reviews[nextIdx].icon;
-                    return (
-                      <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 text-neutral-500 flex items-center justify-center">
-                        <NextIcon size={14} />
-                      </div>
-                    );
-                  })()}
-                </div>
-                <p className="text-neutral-400 font-light text-[12.5px] italic leading-relaxed line-clamp-5">
-                  “{reviews[nextIdx].quote}”
-                </p>
-              </div>
-              <div className="border-t border-white/5 pt-5 mt-6 flex gap-3.5 items-center">
-                <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${reviews[nextIdx].color} flex items-center justify-center text-black font-extrabold text-sm shadow-md`}>
-                  {reviews[nextIdx].initial}
-                </div>
-                <div className="overflow-hidden">
-                  <span className="text-neutral-300 font-semibold text-xs block truncate">{reviews[nextIdx].rater}</span>
-                  <span className="text-neutral-500 text-[10.5px] font-light block truncate mt-0.5">{reviews[nextIdx].role} — {reviews[nextIdx].comp}</span>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Slider Floating Navigation Arrows */}
-          <button 
-            onClick={handlePrev}
-            className="absolute -left-2 md:-left-6 lg:-left-20 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-neutral-950/90 border border-white/10 hover:border-brand-gold/40 text-neutral-400 hover:text-white flex items-center justify-center transition-all duration-300 pointer-events-auto backdrop-blur-md shadow-2xl z-20 group cursor-pointer"
-            aria-label="Previous Testimonial"
-            id="prev-testimonial-btn"
-          >
-            <ChevronLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
-          </button>
-
-          <button 
-            onClick={handleNext}
-            className="absolute -right-2 md:-right-6 lg:-right-20 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-neutral-950/90 border border-white/10 hover:border-brand-gold/40 text-neutral-400 hover:text-white flex items-center justify-center transition-all duration-300 pointer-events-auto backdrop-blur-md shadow-2xl z-20 group cursor-pointer"
-            aria-label="Next Testimonial"
-            id="next-testimonial-btn"
-          >
-            <ChevronRight size={20} className="group-hover:translate-x-0.5 transition-transform" />
-          </button>
-
-          {/* Active indicator indicators / Page Selectors */}
-          <div className="flex justify-center items-center gap-2.5 mt-12">
-            {reviews.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`h-1.5 rounded-full transition-all duration-500 cursor-pointer ${idx === currentIndex ? 'w-10 bg-brand-gold' : 'w-2 bg-neutral-800 hover:bg-neutral-600'}`}
-                aria-label={`Go to slide ${idx + 1}`}
-                id={`testimonial-dot-${idx}`}
-              />
-            ))}
-          </div>
-
-        </motion.div>
 
       </div>
     </section>
@@ -1579,7 +1173,7 @@ const HowCanWeHelp = () => {
   };
 
   return (
-    <section id="how-we-help" className="site-section bg-neutral-950/40 border-b border-white/5 relative z-10 overflow-hidden">
+    <section id="how-we-help" className="site-section site-section-band border-b relative z-10 overflow-visible">
       {/* Decorative cyber grid lines and soft gradient ambient back-glows */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-brand-gold/15 to-transparent pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-brand-gold/[0.03] blur-[150px] rounded-full pointer-events-none" />
@@ -1587,13 +1181,7 @@ const HowCanWeHelp = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center max-w-4xl mx-auto mb-20">
           {/* Executive pre-header badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-gold/[0.04] border border-brand-gold/20 backdrop-blur-md mb-6">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-gold opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-gold"></span>
-            </span>
-            <span className="text-[10px] font-mono tracking-[0.25em] text-brand-gold uppercase font-medium">Platform Capabilities</span>
-          </div>
+          <SectionEyebrow label="Platform Capabilities" />
 
           <RevealText 
             text="Created to Convert & Captivate"
@@ -1608,7 +1196,7 @@ const HowCanWeHelp = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto capability-card-grid">
           {features.map((feat, idx) => {
             const direction = idx % 4 === 0 ? "up" : idx % 4 === 1 ? "right" : idx % 4 === 2 ? "left" : "down";
             const delay = (idx % 3) * 0.08;
@@ -1617,29 +1205,26 @@ const HowCanWeHelp = () => {
                 key={idx}
                 direction={direction}
                 delay={delay}
-                className="py-6 px-4 md:py-8 md:px-6 bg-[#070707]/90 border border-white/5 rounded-[32px] relative overflow-hidden transition-all duration-300 flex flex-col items-start text-left group shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-lg h-full hover:border-brand-gold/40 hover:-translate-y-1.5"
+                className="h-full"
               >
-                {/* Luxury dot matrix texture for high tech premium look */}
-                <div className="bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none absolute inset-0 opacity-40 group-hover:opacity-100 transition-opacity duration-500" />
+                <CapabilityCard index={idx} className="py-6 px-4 md:py-8 md:px-6 flex flex-col items-start text-left h-full">
+                <div className="bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none absolute inset-0 opacity-40 group-hover:opacity-100 transition-opacity duration-500 rounded-[31px]" />
 
-                {/* Radial card corner highlight glow on hover */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-brand-gold/[0.015] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-brand-gold/[0.015] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-[31px]" />
                 
-                {/* Elegant Index Counter */}
-                <span className="font-mono text-[10px] text-brand-gold/20 tracking-wider absolute top-8 right-8 group-hover:text-brand-gold/60 transition-colors duration-300">
+                <span className="font-mono text-[10px] text-brand-gold/30 tracking-wider absolute top-8 right-8 group-hover:text-brand-gold/70 transition-colors duration-300">
                   // CAP.{feat.index}
                 </span>
 
-                {/* Visual Anchor Indicator bar */}
-                <div className="h-[2px] w-8 bg-brand-gold/20 group-hover:w-16 group-hover:bg-brand-gold/50 transition-all duration-500 mb-6" />
+                <div className="h-[2px] w-8 bg-brand-gold/25 group-hover:w-16 group-hover:bg-brand-gold/60 transition-all duration-500 mb-6" />
 
-                {/* Icon component with custom interactive frame */}
-                <div className="p-3.5 rounded-2xl bg-brand-gold/[0.04] border border-brand-gold/15 text-brand-gold mb-6 group-hover:scale-110 group-hover:bg-brand-gold/[0.12] group-hover:rotate-3 transition-all duration-300 inline-block">
+                <div className="capability-card__icon p-3.5 rounded-2xl bg-brand-gold/[0.06] border border-brand-gold/20 text-brand-gold mb-6 group-hover:bg-brand-gold/[0.12] inline-block">
                   {feat.icon}
                 </div>
                 
-                <h3 className="text-white font-medium text-lg tracking-wide mb-3 group-hover:text-brand-gold transition-colors duration-300">{feat.title}</h3>
-                <p className="text-neutral-400 text-sm font-light leading-relaxed">{feat.desc}</p>
+                <h3 className="text-brand-text font-medium text-lg tracking-wide mb-3 group-hover:text-brand-gold transition-colors duration-300">{feat.title}</h3>
+                <p className="text-brand-text-muted text-sm font-light leading-relaxed">{feat.desc}</p>
+                </CapabilityCard>
               </ScrollRevealCard>
             );
           })}
@@ -1651,14 +1236,14 @@ const HowCanWeHelp = () => {
 
 export default function Home() {
   return (
-    <div className="bg-black">
+    <div className="bg-brand-dark">
       <HowCanWeHelp />
       <InteractiveDemoSection />
-      <PortfolioSection />
       <HowItWorks />
-      <InvisibleAdvantageTeaser />
-      <SocialProof />
-      <FinalCTA />
+      <PortfolioSection />
+      {/* <InvisibleAdvantageTeaser /> */}
+      {/* <SocialProof /> */}
+      {/* <FinalCTA /> */}
     </div>
   );
 }

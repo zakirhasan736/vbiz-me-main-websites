@@ -9,8 +9,10 @@ import {
 import React from 'react';
 import { motion } from 'motion/react';
 import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
-import { RevealText, RevealParagraph, ScrollRevealCard } from '@/components/animations/reveal';
+import { RevealText, RevealParagraph, BannerDescription, ScrollRevealCard } from '@/components/animations/reveal';
 import { usePageTransition } from '@/components/providers/page-transition-context';
+import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
+import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 
 export default function NavigationBar() {
   const { revealReady } = usePageTransition();
@@ -75,26 +77,14 @@ export default function NavigationBar() {
       animate={{ opacity: revealReady ? 1 : 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-black min-h-screen"
+      className="bg-brand-dark min-h-screen"
     >
       {/* Hero Section */}
-      <section className="section-hero relative pt-32 pb-20 overflow-hidden flex flex-col justify-center items-center min-h-[50vh]">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,#1a1a1a_0%,black_100%)] opacity-80" />
-          <motion.div 
-            animate={{ opacity: [0.05, 0.15, 0.05], scale: [1, 1.2, 1] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-gold/20 blur-[150px] rounded-full pointer-events-none mix-blend-screen"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_80%)]" />
-        </div>
+      <section className="section-hero relative pt-32 pb-20 overflow-hidden flex flex-col justify-center items-center min-h-[50vh] bg-brand-dark">
+        <PageHeroBackground />
 
         <div className="max-w-4xl mx-auto px-4 relative z-10 pt-10 text-center w-full">
-          <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl mb-10 shadow-[0_0_20px_rgba(212,175,55,0.15)] relative overflow-hidden group">
-             <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/0 via-brand-gold/10 to-brand-gold/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
-             <Sparkles size={14} className="text-brand-gold" />
-             <span className="text-[12px] font-medium tracking-[0.15em] uppercase text-neutral-200">The Ultimate Tool</span>
-          </div>
+          <SectionEyebrow label="The Ultimate Tool" variant="hero" />
           
           <RevealText 
             text="Seamless. Smart."
@@ -103,15 +93,15 @@ export default function NavigationBar() {
             highlightedWords={["Smart."]}
           />
           
-          <RevealParagraph 
+          <BannerDescription 
             text="The vBiz Me Navigation Bar is more than just links—it's a powerful tool that allows your potential clients to make an informed decision in seconds."
-            className="text-neutral-400 text-lg md:text-xl font-light mt-4 max-w-3xl mx-auto leading-relaxed block text-center"
+            className="text-neutral-400 text-lg md:text-xl font-light mt-4 max-w-3xl leading-relaxed"
           />
         </div>
       </section>
 
       {/* Overview Section */}
-      <section className="site-section bg-black relative">
+      <section className="site-section bg-brand-dark relative">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_left,rgba(212,175,55,0.03)_0%,transparent_50%)] pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col lg:flex-row gap-20 items-center">
@@ -139,7 +129,7 @@ export default function NavigationBar() {
               </div>
             </ScrollRevealCard>
             <ScrollRevealCard direction="right" className="lg:w-1/2 w-full">
-              <div className="w-full bg-[#0A0A0A] aspect-[16/9] rounded-[2rem] overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5 group">
+              <div className="w-full bg-brand-surface aspect-[16/9] rounded-[2rem] overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/5 group">
                 <div className="absolute inset-0 bg-brand-gold/10 mix-blend-overlay pointer-events-none group-hover:opacity-0 transition-opacity duration-700" />
                 <video 
                    className="w-full h-full object-cover opacity-80" 
@@ -158,7 +148,7 @@ export default function NavigationBar() {
       </section>
 
       {/* Key Features */}
-      <section className="site-section bg-neutral-900/20 relative overflow-hidden">
+      <section className="site-section hidden bg-neutral-900/20 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
             <RevealText 
@@ -177,7 +167,7 @@ export default function NavigationBar() {
                 delay={idx * 0.05}
                 className="h-full"
               >
-                <div className="bg-[#0A0A0A] py-6 px-4 md:py-8 md:px-6 rounded-[2rem] shadow-2xl flex flex-col items-center justify-center text-center relative overflow-hidden border border-white/5 hover:border-brand-gold/30 transition-all duration-500 group h-full">
+                <div className="bg-brand-surface py-6 px-4 md:py-8 md:px-6 rounded-[2rem] shadow-2xl flex flex-col items-center justify-center text-center relative overflow-hidden border border-white/5 hover:border-brand-gold/30 transition-all duration-500 group h-full">
                   <div className="absolute inset-0 bg-gradient-to-b from-brand-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                   <div className="w-16 h-16 rounded-full bg-brand-gold/5 flex items-center justify-center mb-6 text-brand-gold group-hover:scale-110 group-hover:bg-brand-gold/10 transition-all duration-500 relative z-10">
                     <feature.icon size={28} strokeWidth={1.5} />
@@ -192,7 +182,7 @@ export default function NavigationBar() {
       </section>
 
       {/* Navigation Bar Topics */}
-      <section className="site-section bg-black relative">
+      <section className="site-section bg-brand-dark relative">
         <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
@@ -215,7 +205,7 @@ export default function NavigationBar() {
                 delay={(idx % 5) * 0.04}
                 className="h-full"
               >
-                <div className="bg-[#0A0A0A] py-6 px-4 md:py-8 md:px-6 rounded-[2rem] border border-white/5 flex flex-col items-center justify-center text-center aspect-square group hover:border-brand-gold/40 transition-all duration-500 relative overflow-hidden h-full">
+                <div className="bg-brand-surface py-6 px-4 md:py-8 md:px-6 rounded-[2rem] border border-white/5 flex flex-col items-center justify-center text-center aspect-square group hover:border-brand-gold/40 transition-all duration-500 relative overflow-hidden h-full">
                   <div className="absolute inset-0 bg-gradient-to-br from-brand-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                   <topic.icon size={40} strokeWidth={1.5} className="text-brand-gold mb-5 group-hover:scale-110 transition-transform duration-500 relative z-10" />
                   <h3 className="text-white font-medium text-base md:text-lg mb-2 leading-tight tracking-tight relative z-10">{topic.title}</h3>
@@ -228,13 +218,13 @@ export default function NavigationBar() {
       </section>
 
       {/* Ready to Experience the Future of Networking CTA Section */}
-      <section className="site-section bg-black relative">
+      <section className="site-section bg-brand-dark relative">
         <div className="absolute inset-x-0 bottom-10 h-[300px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10">
           <ScrollRevealCard direction="up" className="w-full">
             <GlowCard 
               glowColor="rgba(212,175,55,0.25)"
-              className="border border-brand-gold/30 rounded-[2.5rem] bg-[#070707]/90 py-6 px-4 md:py-8 md:px-6 shadow-[0_0_60px_rgba(212,175,55,0.08)] relative overflow-hidden"
+              className="border border-brand-gold/30 rounded-[2.5rem] bg-brand-surface/90 py-6 px-4 md:py-8 md:px-6 shadow-[0_0_60px_rgba(212,175,55,0.08)] relative overflow-hidden"
             >
               {/* Decorative background grid pattern */}
               <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-45" />

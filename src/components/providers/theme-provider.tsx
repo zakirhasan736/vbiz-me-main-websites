@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 
-type Theme = 'midnight' | 'ocean';
+type Theme = 'midnight' | 'ocean' | 'light';
 
 interface ThemeContextValue {
   theme: Theme;
@@ -16,20 +16,18 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'midnight',
+  theme: 'light',
   setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('midnight');
-  const [mounted, setMounted] = useState(false);
+  const [theme, setThemeState] = useState<Theme>('light');
 
   useEffect(() => {
     const saved = localStorage.getItem('vbizme-theme');
-    if (saved === 'ocean' || saved === 'midnight') {
+    if (saved === 'ocean' || saved === 'midnight' || saved === 'light') {
       setThemeState(saved);
     }
-    setMounted(true);
   }, []);
 
   const setTheme = (next: Theme) => {
@@ -38,11 +36,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    if (!mounted) return;
     const body = document.body;
-    body.classList.remove('theme-midnight', 'theme-ocean');
-    body.classList.add(theme === 'ocean' ? 'theme-ocean' : 'theme-midnight');
-  }, [theme, mounted]);
+    body.classList.remove('theme-midnight', 'theme-ocean', 'theme-light');
+    body.classList.add(
+      theme === 'ocean' ? 'theme-ocean' : theme === 'light' ? 'theme-light' : 'theme-midnight',
+    );
+  }, [theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>

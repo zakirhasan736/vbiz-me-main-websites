@@ -1,9 +1,12 @@
 'use client';
 
-import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { ChevronDown, ChevronUp, Pause, Play, Sparkles, Volume2, VolumeX } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { RevealText, RevealParagraph, ScrollRevealCard } from '@/components/animations/reveal';
+import { RevealText, RevealParagraph, BannerDescription, ScrollRevealCard } from '@/components/animations/reveal';
+import { INVISIBLE_ADVANTAGE_VIDEO } from '@/lib/site-assets';
+import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
+import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 
 export default function InvisibleAdvantage() {
   const [activeAccordion, setActiveAccordion] = useState<number | null>(0);
@@ -32,43 +35,42 @@ export default function InvisibleAdvantage() {
   ];
 
   return (
-    <div className="bg-black min-h-screen">
-      {/* Hero Section */}
-      <section className="section-hero relative pt-32 pb-20 overflow-hidden flex flex-col justify-center items-center min-h-[50vh]">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,#1a1a1a_0%,black_100%)] opacity-80" />
-          <motion.div 
-            animate={{ opacity: [0.05, 0.15, 0.05], scale: [1, 1.2, 1] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-gold/20 blur-[150px] rounded-full pointer-events-none mix-blend-screen"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_80%)]" />
-        </div>
+    <div className="bg-brand-dark min-h-screen">
+      {/* Hero + featured video — single column, video first interaction */}
+      <section className="section-hero relative pt-32 pb-16 overflow-hidden bg-brand-dark">
+        <PageHeroBackground />
 
-        <div className="max-w-4xl mx-auto px-4 relative z-10 pt-10 text-center w-full">
-          <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-xl mb-10 shadow-[0_0_20px_rgba(212,175,55,0.15)] relative overflow-hidden group">
-             <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/0 via-brand-gold/10 to-brand-gold/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out" />
-             <Sparkles size={14} className="text-brand-gold" />
-             <span className="text-[12px] font-medium tracking-[0.15em] uppercase text-neutral-200">The Secret Weapon</span>
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col items-center text-center mb-8 md:mb-10">
+            <SectionEyebrow label="The Secret Weapon" variant="hero" className="mb-6" />
+
+            <RevealText
+              text="Invisible Advantage"
+              className="text-4xl sm:text-5xl md:text-6xl font-sans font-medium text-white mb-4 tracking-tight leading-[1.1] text-center"
+              tag="h1"
+              highlightedWords={['Advantage']}
+            />
+
+            <BannerDescription
+              text="The Advantage You Can't See... But Your Clients Feel Immediately"
+              className="text-neutral-400 text-base md:text-lg font-light max-w-2xl leading-relaxed"
+            />
           </div>
-          
-          <RevealText 
-            text="Invisible Advantage"
-            className="text-5xl md:text-7xl font-sans font-medium text-white mb-6 tracking-tight leading-[1.1] text-center"
-            tag="h1"
-            highlightedWords={["Advantage"]}
-          />
-          
-          <RevealParagraph 
-            text="The Advantage You Can't See... But Your Clients Feel Immediately"
-            className="text-neutral-400 text-lg md:text-xl font-light mt-4 max-w-2xl mx-auto leading-relaxed block text-center"
+
+          <ScrollRevealCard direction="up" className="w-full">
+            <AdvantageVideoPlayer />
+          </ScrollRevealCard>
+
+          <BannerDescription
+            text="See how strategy, psychology, and technology combine behind every vBiz Me card — turning a simple scan into trust, engagement, and real business momentum."
+            className="text-neutral-500 text-sm md:text-base font-light leading-relaxed max-w-2xl mt-8"
           />
         </div>
       </section>
 
       {/* Content Section */}
-      <section className="site-section bg-black relative">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.03)_0%,transparent_70%)] pointer-events-none" />
+      <section className="site-section bg-brand-dark relative">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.04)_0%,transparent_70%)] pointer-events-none" />
         <div className="max-w-4xl mx-auto px-4 relative z-10">
           
           <div className="text-center mb-16">
@@ -90,7 +92,7 @@ export default function InvisibleAdvantage() {
                   delay={delay}
                   className="w-full"
                 >
-                  <div className="bg-[#0A0A0A] rounded-2xl overflow-hidden border border-white/5 transition-colors hover:border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+                  <div className="bg-brand-surface rounded-2xl overflow-hidden border border-emerald-500/10 transition-colors hover:border-emerald-500/20 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
                     <button 
                       onClick={() => setActiveAccordion(activeAccordion === index ? null : index)}
                       className="w-full flex items-center justify-between py-6 px-4 md:py-8 md:px-6 text-left focus:outline-none group relative overflow-hidden"
@@ -130,6 +132,111 @@ export default function InvisibleAdvantage() {
 
         </div>
       </section>
+    </div>
+  );
+}
+
+function AdvantageVideoPlayer() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.muted = isMuted;
+
+    if (isPlaying) {
+      video.play().catch(() => setIsPlaying(false));
+    } else {
+      video.pause();
+    }
+  }, [isMuted, isPlaying]);
+
+  const tryPlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = isMuted;
+    video.play().catch(() => setIsPlaying(false));
+  };
+
+  return (
+    <div className="relative w-full bg-brand-surface/80 rounded-[2rem] border border-emerald-500/15 overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.55),0_0_40px_rgba(16,185,129,0.08)] group hover:border-brand-gold/25 transition-colors duration-500">
+      <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-brand-gold/40 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.04),transparent_55%)] pointer-events-none" />
+
+      <div className="relative aspect-video bg-brand-deep">
+        <div className="absolute top-0 inset-x-0 h-11 bg-gradient-to-b from-black/80 to-transparent z-20 px-4 flex items-center justify-between text-[10px] text-white/60 font-mono tracking-widest uppercase">
+          <span className="flex items-center gap-1.5">
+            <Sparkles size={10} className="text-brand-gold" />
+            Invisible Advantage
+          </span>
+          <span className="text-brand-gold/80 hidden sm:inline">Full Breakdown</span>
+        </div>
+
+        <video
+          ref={videoRef}
+          src={INVISIBLE_ADVANTAGE_VIDEO}
+          autoPlay
+          muted={isMuted}
+          playsInline
+          preload="auto"
+          controls={isPlaying}
+          onLoadedMetadata={tryPlay}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onEnded={() => setIsPlaying(false)}
+          className={`absolute inset-0 w-full h-full object-contain bg-brand-deep transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-80'}`}
+          aria-label="The Invisible Advantage presentation video"
+        />
+
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none z-10" />
+
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-2 z-30">
+          <button
+            type="button"
+            onClick={() => setIsMuted(!isMuted)}
+            className="w-9 h-9 rounded-full bg-black/70 border border-white/10 flex items-center justify-center text-white hover:text-brand-gold hover:bg-black/90 active:scale-95 transition-all cursor-pointer shadow-lg backdrop-blur-sm"
+            aria-label={isMuted ? 'Unmute video' : 'Mute video'}
+          >
+            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsPlaying(!isPlaying)}
+            className="w-9 h-9 rounded-full bg-brand-gold flex items-center justify-center text-black hover:bg-yellow-400 active:scale-95 transition-all cursor-pointer shadow-lg"
+            aria-label={isPlaying ? 'Pause video' : 'Play video'}
+          >
+            {isPlaying ? <Pause size={13} fill="currentColor" /> : <Play size={13} fill="currentColor" className="ml-0.5" />}
+          </button>
+        </div>
+
+        {!isPlaying && (
+          <button
+            type="button"
+            onClick={() => setIsPlaying(true)}
+            className="absolute inset-0 w-full h-full bg-black/45 flex flex-col items-center justify-center z-20 transition-colors cursor-pointer border-none outline-none group/play"
+            aria-label="Play The Invisible Advantage video"
+          >
+            <div className="w-16 h-16 rounded-full bg-brand-gold/95 flex items-center justify-center text-black shadow-[0_0_35px_rgba(212,175,55,0.35)] group-hover/play:scale-110 transition-transform mb-4">
+              <Play size={24} fill="currentColor" className="ml-1 text-black" />
+            </div>
+            <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-white/70">
+              Play Presentation
+            </span>
+          </button>
+        )}
+      </div>
+
+      <div className="px-4 sm:px-5 py-4 border-t border-emerald-500/10 bg-brand-elevated/90 flex items-center justify-between gap-4">
+        <p className="text-[11px] text-neutral-400 font-light leading-relaxed text-left">
+          A quick walkthrough of the hidden psychology and technology powering every vBiz Me card.
+        </p>
+        <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold/70 shrink-0 hidden sm:inline">
+          HD • Tap to unmute
+        </span>
+      </div>
     </div>
   );
 }
