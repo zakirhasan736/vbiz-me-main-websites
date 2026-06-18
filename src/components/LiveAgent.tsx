@@ -12,6 +12,15 @@ import {
   LIVE_AGENT_VAD,
 } from '@/lib/live-agent-audio';
 import {
+  buildAgentSilenceRecoveryNudge,
+  buildUserSilenceNudge,
+  detectUserSpeechLevel,
+  LIVE_AGENT_AGENT_SILENCE_MS,
+  LIVE_AGENT_NUDGE_COOLDOWN_MS,
+  LIVE_AGENT_USER_SILENCE_MS,
+  LIVE_AGENT_USER_SPEECH_THRESHOLD,
+} from '@/lib/live-agent-conversation';
+import {
   buildLiveAgentSystemPrompt,
   DEFAULT_CARD_DATA,
   LIVE_AGENT_GREETING_TEXT,
@@ -65,13 +74,97 @@ export function LiveAgent() {
   const checkSpeakingRef = useRef<number>(0);
   const _lastAudioTime = useRef<number>(0);
   const isMutedRef = useRef(false);
+  const isSpeakingRef = useRef(false);
   const aiRef = useRef<GoogleGenAI | null>(null);
   const isConnectedRef = useRef(false);
   const isConnectingRef = useRef(false);
+  const lastUserActivityRef = useRef(0);
+  const lastNudgeSentRef = useRef(0);
+  const userSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const agentSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const nudgeCountRef = useRef(0);
 
   useEffect(() => {
     isMutedRef.current = isMuted;
   }, [isMuted]);
+
+  useEffect(() => {
+    isSpeakingRef.current = isSpeaking;
+  }, [isSpeaking]);
+
+  const clearSilenceTimers = () => {
+    if (userSilenceTimerRef.current) {
+      clearTimeout(userSilenceTimerRef.current);
+      userSilenceTimerRef.current = null;
+    }
+    if (agentSilenceTimerRef.current) {
+      clearTimeout(agentSilenceTimerRef.current);
+      agentSilenceTimerRef.current = null;
+    }
+  };
+
+  const sendConversationNudge = (text: string) => {
+    if (!sessionRef.current || !isConnectedRef.current) return;
+
+    const now = Date.now();
+    if (now - lastNudgeSentRef.current < LIVE_AGENT_NUDGE_COOLDOWN_MS) return;
+    if (isSpeakingRef.current) return;
+
+    lastNudgeSentRef.current = now;
+    nudgeCountRef.current += 1;
+
+    try {
+      if (typeof sessionRef.current.sendRealtimeInput === 'function') {
+        sessionRef.current.sendRealtimeInput({ text });
+      } else if (typeof sessionRef.current.send === 'function') {
+        sessionRef.current.send({ text });
+      }
+    } catch (e) {
+      console.error('Could not send conversation nudge:', e);
+    }
+  };
+
+  const scheduleUserSilenceNudge = () => {
+    if (userSilenceTimerRef.current) {
+      clearTimeout(userSilenceTimerRef.current);
+    }
+
+    userSilenceTimerRef.current = setTimeout(() => {
+      userSilenceTimerRef.current = null;
+      const quietFor = Date.now() - lastUserActivityRef.current;
+      if (quietFor < LIVE_AGENT_USER_SILENCE_MS - 800) return;
+      if (isSpeakingRef.current || isMutedRef.current) return;
+      sendConversationNudge(buildUserSilenceNudge());
+    }, LIVE_AGENT_USER_SILENCE_MS);
+  };
+
+  const scheduleAgentSilenceRecovery = () => {
+    if (agentSilenceTimerRef.current) {
+      clearTimeout(agentSilenceTimerRef.current);
+    }
+
+    agentSilenceTimerRef.current = setTimeout(() => {
+      agentSilenceTimerRef.current = null;
+      if (isSpeakingRef.current) return;
+      const sinceUser = Date.now() - lastUserActivityRef.current;
+      if (sinceUser > LIVE_AGENT_AGENT_SILENCE_MS + 3000) return;
+      sendConversationNudge(buildAgentSilenceRecoveryNudge());
+    }, LIVE_AGENT_AGENT_SILENCE_MS);
+  };
+
+  const noteUserSpeech = () => {
+    const wasIdle = Date.now() - lastUserActivityRef.current > 900;
+    lastUserActivityRef.current = Date.now();
+
+    if (userSilenceTimerRef.current) {
+      clearTimeout(userSilenceTimerRef.current);
+      userSilenceTimerRef.current = null;
+    }
+
+    if (wasIdle && !isSpeakingRef.current && !isMutedRef.current) {
+      scheduleAgentSilenceRecovery();
+    }
+  };
 
   useEffect(() => {
     const unlockAudio = () => {
@@ -134,6 +227,11 @@ export function LiveAgent() {
     const pcmContext = pcmContextRef.current;
     if (!pcmContext) return;
 
+    if (agentSilenceTimerRef.current) {
+      clearTimeout(agentSilenceTimerRef.current);
+      agentSilenceTimerRef.current = null;
+    }
+
     if (pcmContext.state === 'suspended') void pcmContext.resume();
     const source = pcmContext.createBufferSource();
     source.buffer = audioBuffer;
@@ -156,11 +254,15 @@ export function LiveAgent() {
     const isCurrentlySpeaking = Date.now() < _lastAudioTime.current;
     if (isCurrentlySpeaking !== isSpeaking) {
       setIsSpeaking(isCurrentlySpeaking);
+      if (!isCurrentlySpeaking && isConnectedRef.current) {
+        scheduleUserSilenceNudge();
+      }
     }
     checkSpeakingRef.current = requestAnimationFrame(monitorSpeaking);
   };
 
   const disconnect = () => {
+    clearSilenceTimers();
     try {
       if (sessionRef.current) {
         sessionRef.current.close();
@@ -271,6 +373,8 @@ export function LiveAgent() {
             isConnectingRef.current = false;
             setIsConnected(true);
             setIsConnecting(false);
+            lastUserActivityRef.current = Date.now();
+            nudgeCountRef.current = 0;
             
             // start monitoring speaking state
             checkSpeakingRef.current = requestAnimationFrame(monitorSpeaking);
@@ -297,6 +401,11 @@ export function LiveAgent() {
               if (isMutedRef.current) return;
 
               const inputData = e.inputBuffer.getChannelData(0);
+
+              if (detectUserSpeechLevel(inputData) >= LIVE_AGENT_USER_SPEECH_THRESHOLD) {
+                noteUserSpeech();
+              }
+
               const payload = { audio: encodeMicChunk(inputData, audioContext.sampleRate) };
 
               try {
@@ -377,6 +486,14 @@ export function LiveAgent() {
                      _lastAudioTime.current = 0;
                  }
              }
+
+             if (message.serverContent?.inputTranscription?.text) {
+               noteUserSpeech();
+             }
+
+             if (message.serverContent?.turnComplete) {
+               scheduleUserSilenceNudge();
+             }
           },
           onerror: (err: any) => {
             const errDetails = err ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : "unknown";
@@ -449,7 +566,15 @@ export function LiveAgent() {
                 <div className="flex flex-col">
                   <span className="font-bold text-sm text-zinc-100 tracking-wide">Live AI Assistant</span>
                   <span className="text-[10px] text-zinc-500 uppercase tracking-widest">
-                    {isConnecting ? 'Connecting...' : isConnected ? (isSpeaking ? 'Speaking...' : 'Ask me anything') : 'Offline'}
+                    {isConnecting
+                      ? 'Connecting...'
+                      : isConnected
+                        ? isSpeaking
+                          ? 'Speaking...'
+                          : isMuted
+                            ? 'Mic muted'
+                            : 'Listening — ask me anything'
+                        : 'Offline'}
                   </span>
                 </div>
               </div>

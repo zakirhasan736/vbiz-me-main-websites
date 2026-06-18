@@ -20,7 +20,7 @@ export const MOBILE_FRAME_SIZES: Record<
   hero: {
     maxWidth: 375,
     shell:
-      'w-full max-w-[375px] h-[min(760px,78dvh)] min-h-[540px] rounded-[48px] p-3 border-[4px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_rgba(212,175,55,0.1)]',
+      'w-full max-w-[385px]  h-[min(760px,80dvh)] min-h-[540px] rounded-[48px] p-3 border-[4px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_rgba(212,175,55,0.1)]',
     screen: 'rounded-[36px]',
     notch: 'top-3 w-28 h-5 rounded-b-2xl',
     notchBar: 'w-10 h-0.5',

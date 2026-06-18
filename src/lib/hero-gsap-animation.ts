@@ -107,9 +107,15 @@ export function buildHeroLeftTimeline(root: HTMLElement, reduced: boolean) {
   return tl;
 }
 
+/** Distance to push video panel past the right viewport edge (measured from layout position) */
+function getHeroVideoOffscreenX(panel: HTMLElement): number {
+  const rect = panel.getBoundingClientRect();
+  return Math.max(window.innerWidth - rect.left + 64, 160);
+}
+
 /** Right column — slide in from off-screen right + fade + deblur */
 export function buildHeroVideoTimeline(root: HTMLElement, reduced: boolean) {
-  const panel = root.querySelector('.hero-video-enter');
+  const panel = root.querySelector('.hero-video-enter') as HTMLElement | null;
   const tl = gsap.timeline({ defaults: { ease: HERO_GSAP.ease } });
 
   if (!panel) return tl;
@@ -120,14 +126,17 @@ export function buildHeroVideoTimeline(root: HTMLElement, reduced: boolean) {
     return tl;
   }
 
+  gsap.set(panel, { x: 0 });
+  const startX = getHeroVideoOffscreenX(panel);
+
   tl.fromTo(
     panel,
-    { x: 120, opacity: 0, filter: 'blur(18px)' },
+    { x: startX, opacity: 0, filter: 'blur(18px)' },
     {
       x: 0,
       opacity: 1,
       filter: 'blur(0px)',
-      duration: 1.1,
+      duration: 1.28,
       ease: 'power3.out',
     },
     0.1,

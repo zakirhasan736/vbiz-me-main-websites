@@ -291,6 +291,39 @@ body.theme-light .hover\:text-white:hover {
   color: var(--color-brand-gold) !important;
 }
 
+/* Portfolio QR slider — label readable in light theme (dark pill + remapped text-white = invisible) */
+.portfolio-qr-slider-card__label {
+  color: #ffffff;
+  background-color: rgba(23, 23, 23, 0.95);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.theme-light .portfolio-qr-slider-card__label {
+  color: var(--color-brand-text) !important;
+  background-color: rgba(11, 16, 32, 0.06) !important;
+  border-color: rgba(11, 16, 32, 0.12) !important;
+}
+
+.portfolio-qr-explore-card__title {
+  color: #ffffff;
+}
+
+body.theme-light .portfolio-qr-explore-card__title {
+  color: var(--color-brand-text) !important;
+}
+
+.portfolio-qr-explore-card__copy {
+  color: rgb(163 163 163);
+}
+
+body.theme-light .portfolio-qr-explore-card__copy {
+  color: var(--color-brand-text-muted) !important;
+}
+
+body.theme-light .portfolio-qr-slider-card {
+  box-shadow: 0 8px 32px rgba(11, 16, 32, 0.08);
+}
+
 /* Navbar — bold links + light-mode logo shell */
 .navbar-logo-shell {
   line-height: 0;
@@ -835,6 +868,60 @@ footer,
       padding-right: 1.5rem;
     }
   }
+
+/* Footer cinematic reveal — hidden until GSAP scroll trigger */
+footer [data-footer-cta-item],
+footer [data-footer-brand-item],
+footer [data-footer-nav-item],
+footer [data-footer-contact-item],
+footer [data-footer-bottom-item] {
+  opacity: 0;
+}
+
+.footer-social-icon {
+  position: relative;
+  isolation: isolate;
+}
+
+.footer-social-icon::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.45) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.footer-social-icon:hover::before,
+.footer-social-icon:focus-visible::before {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.footer-social-icon__inner {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  footer [data-footer-cta-item],
+  footer [data-footer-brand-item],
+  footer [data-footer-nav-item],
+  footer [data-footer-contact-item],
+  footer [data-footer-bottom-item] {
+    opacity: 1;
+  }
+
+  .footer-social-icon::before {
+    display: none;
+  }
+}
 
   .gsap-reveal {
     opacity: 0;

@@ -654,7 +654,7 @@ const PortfolioSection = () => {
                     setSelectedQrCard(item);
                     setIsQrModalOpen(true);
                   }}
-                  className={`snap-center shrink-0 w-[280px] sm:w-[300px] bg-[#2c3a34] border ${cardStyle.borderColor} ${cardStyle.glowColor} ${cardStyle.hoverGlow} rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col items-center justify-between transition-all duration-500 hover:-translate-y-2 group cursor-pointer`}
+                  className={`portfolio-qr-slider-card snap-center shrink-0 w-[280px] sm:w-[300px] bg-[#2c3a34] border ${cardStyle.borderColor} ${cardStyle.glowColor} ${cardStyle.hoverGlow} rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col items-center justify-between transition-all duration-500 hover:-translate-y-2 group cursor-pointer`}
                   id={`qr-slider-card-${item.id}`}
                 >
                   {/* Branded QR from /public */}
@@ -676,7 +676,7 @@ const PortfolioSection = () => {
 
                   {/* Name label below QR (matches branded vCard QR layout) */}
                   <div className="mt-5 flex flex-col items-center px-1">
-                    <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-neutral-900/95 border border-white/10 text-white text-[10.5px] sm:text-[11px] font-medium tracking-wide text-center leading-snug shadow-xl group-hover:border-brand-gold/40 transition-colors max-w-full">
+                    <span className="portfolio-qr-slider-card__label inline-flex items-center gap-1.5 px-4 py-2 rounded-full border text-[10.5px] sm:text-[11px] font-medium tracking-wide text-center leading-snug shadow-xl group-hover:border-brand-gold/40 transition-colors max-w-full">
                       <span className="w-1.5 h-1.5 shrink-0 rounded-full bg-brand-gold animate-pulse" />
                       <span className="line-clamp-2">{item.displayName}</span>
                     </span>
@@ -692,15 +692,15 @@ const PortfolioSection = () => {
               whileInView="visible"
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: qrSliderItems.length * 0.1 }}
-              className="snap-center shrink-0 w-[280px] sm:w-[300px] bg-gradient-to-br from-[#2c3a34] to-brand-dark border border-white/5 rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col justify-between"
+              className="portfolio-qr-slider-card snap-center shrink-0 w-[280px] sm:w-[300px] bg-gradient-to-br from-[#2c3a34] to-brand-dark border border-white/5 rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col justify-between"
               id="qr-slider-explore-card"
             >
               <div className="relative z-10 pt-4 text-left">
                 <div className="w-10 h-10 rounded-xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold flex items-center justify-center mb-6">
                   <Sparkles size={20} />
                 </div>
-                <h3 className="text-white font-semibold text-lg mb-2">Full Portfolio Gallery</h3>
-                <p className="text-neutral-400 text-xs font-light leading-relaxed mb-4">
+                <h3 className="portfolio-qr-explore-card__title font-semibold text-lg mb-2">Full Portfolio Gallery</h3>
+                <p className="portfolio-qr-explore-card__copy text-xs font-light leading-relaxed mb-4">
                   Browse every live vCard showcase, QR design, and branded client demo in one dedicated portfolio view.
                 </p>
               </div>

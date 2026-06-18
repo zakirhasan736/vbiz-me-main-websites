@@ -11,11 +11,15 @@ import {
   Phone,
   ArrowRight,
   ArrowUp,
+  type LucideIcon,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLenis } from '@/components/providers/lenis-context';
 import { LENIS_SCROLL_TO_DURATION } from '@/lib/lenis-config';
 import { VBIZ_LOGO } from '@/lib/site-assets';
+import { RevealText } from '@/components/animations/reveal';
+import { BannerDescription } from '@/components/animations/BannerDescription';
+import { useFooterCinematicAnimations } from '@/components/footer/useFooterCinematic';
 
 const PLATFORM_LINKS = [
   ['/', 'Home'],
@@ -28,8 +32,35 @@ const PLATFORM_LINKS = [
   ['/pricing', 'Pricing'],
 ] as const;
 
+const CTA_DESCRIPTION =
+  'Share your professional identity in one tap—built for founders, creators, and teams who move fast.';
+
+function FooterSocialLink({
+  href,
+  label,
+  icon: Icon,
+}: {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+}) {
+  return (
+    <a
+      href={href}
+      aria-label={label}
+      data-footer-brand-item
+      className="footer-social-icon w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/5 text-neutral-400 hover:text-brand-gold hover:bg-brand-gold/10 hover:border-brand-gold/40 hover:shadow-[0_0_24px_rgba(212,175,55,0.35)] transition-all duration-300"
+    >
+      <span className="footer-social-icon__inner flex items-center justify-center">
+        <Icon size={15} fill="currentColor" strokeWidth={0} />
+      </span>
+    </a>
+  );
+}
+
 export const Footer = () => {
   const lenis = useLenis();
+  const footerRef = useFooterCinematicAnimations();
 
   const scrollToTop = () => {
     if (lenis) {
@@ -40,9 +71,11 @@ export const Footer = () => {
   };
 
   return (
-    <footer className="bg-brand-dark border-t border-emerald-500/10 pt-12 md:pt-20 pb-6 md:pb-8 relative overflow-hidden flex flex-col items-center">
+    <footer
+      ref={footerRef}
+      className="bg-brand-dark border-t border-emerald-500/10 pt-12 md:pt-20 pb-6 md:pb-8 relative overflow-hidden flex flex-col items-center"
+    >
       <div className="absolute inset-0 z-0 pointer-events-none">
-        {/* Dark theme ambient */}
         <div className="footer-ambient-dark absolute inset-0 bg-[radial-gradient(circle_at_top_center,#2f3f38_0%,#1e2a24_100%)] opacity-60" />
         <motion.div
           animate={{ opacity: [0.05, 0.15, 0.05], scale: [1, 1.2, 1] }}
@@ -50,15 +83,18 @@ export const Footer = () => {
           className="footer-ambient-dark absolute top-[-10%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-brand-gold/20 blur-[150px] rounded-full mix-blend-screen"
         />
         <div className="footer-ambient-dark absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_top,black_40%,transparent_100%)]" />
-        {/* Light theme ambient */}
         <div className="footer-ambient-light absolute inset-0 opacity-0 bg-[radial-gradient(circle_at_top_center,rgba(212,175,55,0.06)_0%,transparent_60%)]" />
         <div className="footer-ambient-light absolute inset-0 opacity-0 bg-[linear-gradient(rgba(11,16,32,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(11,16,32,0.04)_1px,transparent_1px)] bg-[size:64px_64px]" />
       </div>
 
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4 md:pt-10">
         {/* CTA strip */}
-        <div className="flex flex-col items-center text-center mb-10 md:mb-24 pb-10 md:pb-20 border-b border-white/5 gsap-reveal">
+        <div
+          data-footer-cta
+          className="flex flex-col items-center text-center mb-10 md:mb-24 pb-10 md:pb-20 border-b border-white/5"
+        >
           <motion.div
+            data-footer-cta-item
             animate={{
               scale: [1, 1.03, 1],
               boxShadow: [
@@ -95,31 +131,45 @@ export const Footer = () => {
             </span>
           </motion.div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-sans font-medium tracking-tight text-white mb-5 md:mb-8 leading-snug md:leading-[1.1] max-w-md md:max-w-none mx-auto">
-            Ready to{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-brand-gold/80 to-white">
-              digitize
-            </span>{' '}
-            your network?
-          </h2>
+          <div data-footer-cta-item className="w-full max-w-3xl mx-auto mb-4 md:mb-6">
+            <RevealText
+              tag="h2"
+              text="Ready to digitize your network?"
+              highlightedWords={['digitize']}
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-sans font-medium tracking-tight text-white leading-snug md:leading-[1.1]"
+            />
+          </div>
 
-          <Link
-            href="/contact"
-            className="relative group bg-brand-gold text-[#0b1020] h-11 md:h-12 px-7 md:px-8 rounded-full font-semibold text-sm tracking-wide transition-all overflow-hidden inline-flex items-center justify-center shadow-[0_4px_20px_rgba(212,175,55,0.25)] gap-2 md:gap-3 hover:scale-105 w-full max-w-xs sm:w-auto"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-[#eeca53] to-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity" />
-            <span className="relative flex items-center gap-2">
-              Get Your vCard
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </span>
-          </Link>
+          <div className="w-full max-w-xl mx-auto mb-5 md:mb-8">
+            <BannerDescription
+              text={CTA_DESCRIPTION}
+              scrollOnEnter
+              className="text-neutral-400 text-sm md:text-base font-light leading-relaxed"
+            />
+          </div>
+
+          <div data-footer-cta-item>
+            <Link
+              href="/contact"
+              className="relative group bg-brand-gold text-[#0b1020] h-11 md:h-12 px-7 md:px-8 rounded-full font-semibold text-sm tracking-wide transition-all overflow-hidden inline-flex items-center justify-center shadow-[0_4px_20px_rgba(212,175,55,0.25)] gap-2 md:gap-3 hover:scale-105 w-full max-w-xs sm:w-auto"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-[#eeca53] to-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity" />
+              <span className="relative flex items-center gap-2">
+                Get Your vCard
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </span>
+            </Link>
+          </div>
         </div>
 
-        {/* Main footer grid — compact 2-col on mobile */}
-        <div className="grid grid-cols-2 md:grid-cols-12 gap-8 md:gap-8 lg:gap-8 mb-10 md:mb-20 text-left gsap-reveal">
-          {/* Brand — full width on mobile */}
-          <div className="col-span-2 md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left border-b border-white/5 pb-8 md:border-0 md:pb-0">
-            <Link href="/" className="group flex items-center mb-4 md:mb-8">
+        {/* Main footer grid */}
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-8 md:gap-8 lg:gap-8 mb-10 md:mb-20 text-left">
+          {/* Brand */}
+          <div
+            data-footer-brand
+            className="col-span-2 md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left border-b border-white/5 pb-8 md:border-0 md:pb-0"
+          >
+            <Link href="/" data-footer-brand-item className="group flex items-center mb-4 md:mb-8">
               <Image
                 src={VBIZ_LOGO.src}
                 alt="vBiz Me Logo"
@@ -129,31 +179,32 @@ export const Footer = () => {
                 className={`${VBIZ_LOGO.footer.className} transition-transform duration-500 group-hover:scale-105`}
               />
             </Link>
-            <p className="text-neutral-400 text-xs md:text-sm font-light max-w-sm leading-relaxed mb-5 md:mb-8 mx-auto md:mx-0">
-              Elevate your professional identity with the most advanced digital business card platform engineered for visionaries.
+            <p
+              data-footer-brand-item
+              className="text-neutral-400 text-xs md:text-sm font-light max-w-sm leading-relaxed mb-5 md:mb-8 mx-auto md:mx-0"
+            >
+              Elevate your professional identity with the most advanced digital business card platform
+              engineered for visionaries.
             </p>
             <div className="flex space-x-3 md:space-x-4 justify-center md:justify-start">
-              <a href="#" aria-label="Facebook" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/5 text-neutral-400 hover:text-brand-gold hover:bg-brand-gold/10 hover:border-brand-gold/40 transition-all duration-300">
-                <Facebook size={15} fill="currentColor" strokeWidth={0} />
-              </a>
-              <a href="#" aria-label="Twitter" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/5 text-neutral-400 hover:text-brand-gold hover:bg-brand-gold/10 hover:border-brand-gold/40 transition-all duration-300">
-                <Twitter size={15} fill="currentColor" strokeWidth={0} />
-              </a>
-              <a href="#" aria-label="YouTube" className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/5 text-neutral-400 hover:text-brand-gold hover:bg-brand-gold/10 hover:border-brand-gold/40 transition-all duration-300">
-                <Youtube size={15} fill="currentColor" strokeWidth={0} />
-              </a>
+              <FooterSocialLink href="#" label="Facebook" icon={Facebook} />
+              <FooterSocialLink href="#" label="Twitter" icon={Twitter} />
+              <FooterSocialLink href="#" label="YouTube" icon={Youtube} />
             </div>
           </div>
 
           {/* Platform links */}
-          <div className="col-span-1 md:col-span-3 md:col-start-6">
-            <h4 className="text-white font-medium text-[10px] md:text-xs tracking-widest uppercase mb-4 md:mb-8 flex items-center gap-2 opacity-80">
+          <div data-footer-platform className="col-span-1 md:col-span-3 md:col-start-6">
+            <h4
+              data-footer-nav-item
+              className="text-white font-medium text-[10px] md:text-xs tracking-widest uppercase mb-4 md:mb-8 flex items-center gap-2 opacity-80"
+            >
               <span className="w-3 h-px bg-brand-gold hidden md:block" />
               Platform
             </h4>
             <ul className="space-y-2 md:space-y-3 text-xs md:text-sm text-neutral-400 font-light">
               {PLATFORM_LINKS.map(([href, label]) => (
-                <li key={href}>
+                <li key={href} data-footer-nav-item>
                   <Link
                     href={href}
                     className="group hover:text-brand-gold transition-colors duration-300 inline-flex items-center gap-2"
@@ -166,14 +217,17 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Get in touch + back to top */}
-          <div className="col-span-1 md:col-span-4 flex flex-col">
-            <h4 className="text-white font-medium text-[10px] md:text-xs tracking-widest uppercase mb-4 md:mb-8 flex items-center gap-2 opacity-80">
+          {/* Get in touch */}
+          <div data-footer-contact className="col-span-1 md:col-span-4 flex flex-col">
+            <h4
+              data-footer-contact-item
+              className="text-white font-medium text-[10px] md:text-xs tracking-widest uppercase mb-4 md:mb-8 flex items-center gap-2 opacity-80"
+            >
               <span className="w-3 h-px bg-brand-gold hidden md:block" />
               Get in Touch
             </h4>
             <ul className="space-y-3 md:space-y-5 text-xs md:text-sm text-neutral-400 font-light">
-              <li>
+              <li data-footer-contact-item>
                 <a
                   href="mailto:mcasanova@vbizme.com"
                   className="flex items-start gap-2.5 group hover:text-brand-gold transition-colors"
@@ -182,7 +236,7 @@ export const Footer = () => {
                   <span className="break-all leading-snug">mcasanova@vbizme.com</span>
                 </a>
               </li>
-              <li>
+              <li data-footer-contact-item>
                 <a
                   href="tel:+18607709893"
                   className="flex items-center gap-2.5 group hover:text-brand-gold transition-colors"
@@ -191,7 +245,10 @@ export const Footer = () => {
                   <span>+1 (860) 770-9893</span>
                 </a>
               </li>
-              <li className="hidden sm:flex items-start gap-2.5 group hover:text-brand-gold transition-colors">
+              <li
+                data-footer-contact-item
+                className="hidden sm:flex items-start gap-2.5 group hover:text-brand-gold transition-colors"
+              >
                 <MapPin size={14} className="mt-0.5 shrink-0 text-neutral-500 group-hover:text-brand-gold" />
                 <span className="leading-snug">Connecticut, United States</span>
               </li>
@@ -199,6 +256,7 @@ export const Footer = () => {
 
             <button
               type="button"
+              data-footer-contact-item
               onClick={scrollToTop}
               className="mt-5 md:mt-8 inline-flex items-center justify-center gap-2 w-full md:w-auto px-4 py-2.5 rounded-full border border-white/10 bg-white/5 text-neutral-300 text-xs md:text-sm font-medium hover:text-brand-gold hover:border-brand-gold/30 hover:bg-brand-gold/10 transition-all duration-300 group"
               aria-label="Back to top"
@@ -210,11 +268,20 @@ export const Footer = () => {
         </div>
       </div>
 
-      <div className="w-full border-t border-white/5 pt-5 md:pt-8 text-center px-4 flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-2 md:gap-4 relative z-10 mx-auto max-w-7xl">
-        <p className="text-[11px] md:text-[13px] text-neutral-600 font-light tracking-wide">
+      <div
+        data-footer-bottom
+        className="w-full border-t border-white/5 pt-5 md:pt-8 text-center px-4 flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-2 md:gap-4 relative z-10 mx-auto max-w-7xl"
+      >
+        <p
+          data-footer-bottom-item
+          className="text-[11px] md:text-[13px] text-neutral-600 font-light tracking-wide"
+        >
           © {new Date().getFullYear()} vBiz Me. All rights reserved.
         </p>
-        <p className="text-[11px] md:text-[13px] text-neutral-600 font-light tracking-wide">
+        <p
+          data-footer-bottom-item
+          className="text-[11px] md:text-[13px] text-neutral-600 font-light tracking-wide"
+        >
           Designed & Developed by{' '}
           <a
             href="https://nextcreavo.com"
