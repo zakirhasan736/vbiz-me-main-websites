@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, ExternalLink, ArrowLeft } from 'lucide-react';
 import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
 import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
+import { LazyQRCodeImage } from '@/components/LazyQRCodeImage';
 import { getPortfolioQrImageSrc, type PortfolioQrCard } from '@/lib/portfolio-qr-cards';
 
 type ModalView = 'qr' | 'live';
