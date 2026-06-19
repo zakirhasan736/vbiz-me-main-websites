@@ -5,13 +5,17 @@ export type HeroTitleWord = {
   accent?: boolean;
 };
 
-/** Three meaningful hero lines. */
+/** Hero title — line 1 splits on desktop before “Card That Sells”. */
 export const HERO_TITLE_LINES: HeroTitleWord[][] = [
-  [{ text: 'The' }, { text: 'Virtual' }, { text: 'Business' }, { text: 'Card' }, { text: 'That' }, { text: 'Sells', accent: true }],
+  [
+    { text: 'The' },
+    { text: 'Virtual' },
+    { text: 'Business' },
+    { text: 'Card' },
+    { text: 'That' },
+    { text: 'Sells', accent: true },
+  ],
   [{ text: 'Before' }, { text: 'You' }, { text: 'Even' }, { text: 'Speak' }],
 ];
 
-export const HERO_TITLE_LINE_TEXT = [
-  'The Virtual Business Card That Sells',
-  'Before You Even Speak',
-] as const;
+export const HERO_TITLE_LINE_2 = 'Before You Even Speak' as const;
