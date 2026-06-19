@@ -208,7 +208,7 @@ const InteractiveDemoSection = () => {
           <div className="lg:col-span-12 xl:col-span-7 flex flex-col items-center justify-center relative gap-5 pointer-events-auto z-10">
             <div
               key={activeObj.id}
-              className="flex flex-col items-center gap-3 w-full max-w-[375px] mx-auto relative z-10"
+              className="flex flex-col items-center gap-3 w-full max-w-[407px] mx-auto relative z-10"
             >
               <div className="w-full px-4 py-2.5 rounded-xl border border-brand-gold/25 bg-brand-card text-center hero-industry-demo-url">
                 <span className="text-[9px] uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
