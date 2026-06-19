@@ -14,7 +14,11 @@ type SiteGlowCardProps = {
 
 const DEFAULT_GLOW = 'rgba(212, 175, 55, 0.22)';
 
-/** Theme-aware card with mouse glow + integrated spinning gold border on hover. */
+/**
+ * Theme-aware card with mouse glow (CSS ::before) + integrated spinning gold border on hover.
+ * Mouse glow is rendered as a pseudo-element on .site-glow-card__inner via CSS custom properties,
+ * removing the need for a dedicated mouse-glow div and a content-wrapper div.
+ */
 export function SiteGlowCard({
   children,
   className = '',
@@ -34,6 +38,13 @@ export function SiteGlowCard({
       y: e.clientY - rect.top,
     });
   };
+
+  const innerStyle = {
+    '--glow-x': `${mouseCoords.x}px`,
+    '--glow-y': `${mouseCoords.y}px`,
+    '--glow-opacity': isHovered ? 1 : 0,
+    '--glow-color': glowColor,
+  } as CSSProperties;
 
   return (
     <div
@@ -59,18 +70,8 @@ export function SiteGlowCard({
     >
       <div className="site-glow-card__border">
         <div className="site-glow-card__border-glow" aria-hidden="true" />
-        <div className={`site-glow-card__inner ${className}`}>
-          <div
-            className="site-glow-card__mouse-glow"
-            aria-hidden="true"
-            style={{
-              left: `${mouseCoords.x}px`,
-              top: `${mouseCoords.y}px`,
-              opacity: isHovered ? 1 : 0,
-              background: `radial-gradient(circle, ${glowColor} 0%, transparent 68%)`,
-            }}
-          />
-          <div className="site-glow-card__content">{children}</div>
+        <div className={`site-glow-card__inner ${className}`} style={innerStyle}>
+          {children}
         </div>
       </div>
     </div>

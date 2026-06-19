@@ -6,7 +6,7 @@ export function HeroBannerDescription() {
     <p className="hero-desc-lcp" aria-label={HERO_DESC_ARIA}>
       {HERO_DESC_LINE_TEXT.map((line) => (
         <span key={line} className="hero-desc-lcp__line">
-          <span className="hero-desc-lcp__line-inner">{line}</span>
+          {line}
         </span>
       ))}
     </p>

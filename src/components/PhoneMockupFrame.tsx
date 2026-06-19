@@ -1,5 +1,6 @@
 'use client';
 
+import { forwardRef } from 'react';
 import { VCardIframeFrame } from '@/components/VCardIframeFrame';
 import { MOBILE_FRAME_SIZES, type MobileFrameSize } from '@/lib/mobile-frame';
 import { INDUSTRY_MOCKUP_IMAGE } from '@/lib/site-assets';
@@ -26,46 +27,44 @@ export interface PhoneMockupFrameProps {
 /**
  * Reusable live vCard phone frame — 375px logical viewport inside the shell.
  * Used on Home (industries, portfolio), Our Work, and Examples.
+ * Notch is rendered via CSS ::before / ::after on .vcard-phone-mockup (no extra divs).
  */
-export function PhoneMockupFrame({
-  src,
-  title,
-  previewImage,
-  size = 'hero',
-  className = '',
-  compactLoader = false,
-  live = true,
-  iframeLoading = 'lazy',
-  showUrlInLoader = false,
-  minLoaderMs = 0,
-  onLoadingChange,
-}: PhoneMockupFrameProps) {
-  const styles = MOBILE_FRAME_SIZES[size];
-  const showLive = live || !previewImage;
+export const PhoneMockupFrame = forwardRef<HTMLDivElement, PhoneMockupFrameProps>(
+  function PhoneMockupFrame(
+    {
+      src,
+      title,
+      previewImage,
+      size = 'hero',
+      className = '',
+      compactLoader = false,
+      live = true,
+      iframeLoading = 'lazy',
+      showUrlInLoader = false,
+      minLoaderMs = 0,
+      onLoadingChange,
+    },
+    ref,
+  ) {
+    const styles = MOBILE_FRAME_SIZES[size];
+    const showLive = live || !previewImage;
 
-  return (
-    <div
-      className={`vcard-phone-mockup bg-neutral-950 border-neutral-800 relative z-10 flex flex-col overflow-hidden pointer-events-auto touch-auto mx-auto ${styles.shell} ${className}`}
-      data-lenis-prevent
-      data-lenis-prevent-touch
-      data-lenis-prevent-wheel
-      style={{ maxWidth: styles.maxWidth }}
-    >
+    return (
       <div
-        className={`absolute inset-x-0 mx-auto bg-brand-deep ${styles.notch} z-20 flex items-center justify-center pointer-events-none select-none`}
-        aria-hidden="true"
-      >
-        <div className={`${styles.notchBar} bg-neutral-800 rounded-full`} />
-      </div>
-
-      <div
-        className={`vcard-phone-screen w-full flex-1 min-h-0 bg-[#080808] ${styles.screen} overflow-hidden flex flex-col relative pointer-events-auto touch-auto`}
+        ref={ref}
+        className={`vcard-phone-mockup bg-neutral-950 border-neutral-800 relative z-10 flex flex-col overflow-hidden pointer-events-auto touch-auto mx-auto ${styles.shell} ${className}`}
         data-lenis-prevent
         data-lenis-prevent-touch
         data-lenis-prevent-wheel
+        style={{ maxWidth: styles.maxWidth }}
       >
-        {showLive ? (
-          <div className="vcard-iframe-lane-inner absolute inset-0 overflow-hidden pointer-events-auto touch-auto">
+        <div
+          className={`vcard-phone-screen w-full flex-1 min-h-0 bg-[#080808] ${styles.screen} overflow-hidden flex flex-col relative pointer-events-auto touch-auto`}
+          data-lenis-prevent
+          data-lenis-prevent-touch
+          data-lenis-prevent-wheel
+        >
+          {showLive ? (
             <VCardIframeFrame
               src={src}
               title={title}
@@ -75,24 +74,24 @@ export function PhoneMockupFrame({
               minLoaderMs={minLoaderMs}
               onLoadingChange={onLoadingChange}
             />
-          </div>
-        ) : (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={previewImage}
-            alt={title}
-            width={INDUSTRY_MOCKUP_IMAGE.width}
-            height={INDUSTRY_MOCKUP_IMAGE.height}
-            className="absolute inset-0 w-full h-full object-cover object-top"
-            loading="lazy"
-            decoding="async"
-            draggable={false}
-          />
-        )}
+          ) : (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={previewImage}
+              alt={title}
+              width={INDUSTRY_MOCKUP_IMAGE.width}
+              height={INDUSTRY_MOCKUP_IMAGE.height}
+              className="absolute inset-0 w-full h-full object-cover object-top"
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+            />
+          )}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  },
+);
 
 /** Alias for clearer imports */
 export const MobileVCardFrame = PhoneMockupFrame;

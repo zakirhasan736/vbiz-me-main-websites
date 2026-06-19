@@ -47,7 +47,7 @@ export const PARTNER_LOGO_DISPLAY = {
 } as const;
 
 /** CEO / founder intro — homepage hero + About page. */
-export const FOUNDER_INTRO_VIDEO = '/vBizMe_080624_IT002.mp4';
+export const FOUNDER_INTRO_VIDEO = '/vbiz-me-about-video.mp4';
 
 /** Invisible Advantage explainer — Advantage page. */
 export const INVISIBLE_ADVANTAGE_VIDEO = '/The-Invisible-Advantage-Final.mp4';

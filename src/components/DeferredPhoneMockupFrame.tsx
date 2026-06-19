@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { type Ref, useEffect, useRef, useState } from 'react';
 import { PhoneMockupFrame, type PhoneMockupFrameProps } from '@/components/PhoneMockupFrame';
 import { scheduleAfterSiteLoad } from '@/lib/deferred-load';
 import { MOBILE_FRAME_SIZES } from '@/lib/mobile-frame';
@@ -10,20 +10,26 @@ type DeferredPhoneMockupFrameProps = PhoneMockupFrameProps & {
   requireInView?: boolean;
 };
 
-function PhoneMockupPlaceholder({ size = 'hero' }: { size?: PhoneMockupFrameProps['size'] }) {
+/**
+ * Skeleton placeholder — same shell shape as the live frame.
+ * Notch is painted via CSS ::before / ::after on .vcard-phone-mockup.
+ */
+function PhoneMockupPlaceholder({
+  size = 'hero',
+  rootRef,
+}: {
+  size?: PhoneMockupFrameProps['size'];
+  rootRef: Ref<HTMLDivElement>;
+}) {
   const styles = MOBILE_FRAME_SIZES[size ?? 'hero'];
 
   return (
     <div
+      ref={rootRef}
       className={`vcard-phone-mockup bg-neutral-950 border border-neutral-800 relative z-10 flex flex-col overflow-hidden pointer-events-none mx-auto ${styles.shell}`}
       style={{ maxWidth: styles.maxWidth }}
       aria-hidden="true"
     >
-      <div
-        className={`absolute inset-x-0 mx-auto bg-brand-deep ${styles.notch} z-20 flex items-center justify-center pointer-events-none`}
-      >
-        <div className={`${styles.notchBar} bg-neutral-800 rounded-full opacity-60`} />
-      </div>
       <div className={`vcard-phone-screen w-full flex-1 min-h-[420px] bg-[#080808] ${styles.screen} animate-pulse`} />
     </div>
   );
@@ -67,21 +73,12 @@ export function DeferredPhoneMockupFrame({
 
   useEffect(() => {
     if (!siteLoaded || !inView || ready) return;
-
     setReady(true);
   }, [siteLoaded, inView, ready, src]);
 
   if (!ready) {
-    return (
-      <div ref={rootRef} className="w-full">
-        <PhoneMockupPlaceholder size={size} />
-      </div>
-    );
+    return <PhoneMockupPlaceholder size={size} rootRef={rootRef} />;
   }
 
-  return (
-    <div ref={rootRef} className="w-full">
-      <PhoneMockupFrame size={size} src={src} {...props} />
-    </div>
-  );
+  return <PhoneMockupFrame ref={rootRef} size={size} src={src} {...props} />;
 }
