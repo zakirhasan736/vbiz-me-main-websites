@@ -35,3 +35,11 @@ export function usePartnerMarqueeLayout(): PartnerMarqueeLayout {
   if (reducedMotion) return 'static';
   return isDesktop ? 'desktop' : 'mobile';
 }
+
+export function useIsPartnerMarqueeDesktop(): boolean {
+  return useSyncExternalStore(
+    (cb) => subscribeMedia('(min-width: 768px)', cb),
+    getDesktopMatch,
+    () => false,
+  );
+}

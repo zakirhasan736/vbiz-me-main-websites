@@ -17,6 +17,8 @@ export interface PhoneMockupFrameProps {
   compactLoader?: boolean;
   previewPriority?: boolean;
   live?: boolean;
+  iframeLoading?: 'lazy' | 'eager';
+  showUrlInLoader?: boolean;
 }
 
 /**
@@ -31,6 +33,8 @@ export function PhoneMockupFrame({
   className = '',
   compactLoader = false,
   live = true,
+  iframeLoading = 'lazy',
+  showUrlInLoader = false,
 }: PhoneMockupFrameProps) {
   const styles = MOBILE_FRAME_SIZES[size];
   const showLive = live || !previewImage;
@@ -58,7 +62,13 @@ export function PhoneMockupFrame({
       >
         {showLive ? (
           <div className="vcard-iframe-lane-inner absolute inset-0 overflow-hidden pointer-events-auto touch-auto">
-            <VCardIframeFrame src={src} title={title} compact={compactLoader} />
+            <VCardIframeFrame
+              src={src}
+              title={title}
+              compact={compactLoader}
+              iframeLoading={iframeLoading}
+              showUrlInLoader={showUrlInLoader}
+            />
           </div>
         ) : (
           /* eslint-disable-next-line @next/next/no-img-element */

@@ -28,3 +28,18 @@ export const PARTNER_LOGO_MOBILE_WIDTH = Math.round(PARTNER_LOGO_MOBILE_HEIGHT *
 
 /** Logos visible in the desktop marquee viewport at once. */
 export const PARTNER_DESKTOP_VISIBLE_COUNT = 5;
+
+/** Logos visible per row in the mobile dual-row marquee. */
+export const PARTNER_MOBILE_VISIBLE_COUNT = 4;
+
+/** Split 13 logos — first row gets the larger half (7), second row gets 6. */
+export function getPartnerLogoMobileRows(): {
+  rowA: (typeof PARTNER_LOGOS)[number][];
+  rowB: (typeof PARTNER_LOGOS)[number][];
+} {
+  const splitAt = Math.ceil(PARTNER_LOGOS.length / 2);
+  return {
+    rowA: [...PARTNER_LOGOS.slice(0, splitAt)],
+    rowB: [...PARTNER_LOGOS.slice(splitAt)],
+  };
+}

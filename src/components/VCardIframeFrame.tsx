@@ -9,6 +9,7 @@ interface VCardIframeFrameProps {
   maxLoaderMs?: number;
   compact?: boolean;
   iframeLoading?: 'lazy' | 'eager';
+  showUrlInLoader?: boolean;
 }
 
 /**
@@ -22,6 +23,7 @@ export function VCardIframeFrame({
   maxLoaderMs = 6000,
   compact = false,
   iframeLoading = 'lazy',
+  showUrlInLoader = false,
 }: VCardIframeFrameProps) {
   const [showLoader, setShowLoader] = useState(true);
   const activeSrcRef = useRef(src);
@@ -47,6 +49,17 @@ export function VCardIframeFrame({
     });
   }, [src]);
 
+  const loaderUrlLabel = (() => {
+    try {
+      const url = new URL(src);
+      const path =
+        url.pathname.length > 28 ? `${url.pathname.slice(0, 26)}…` : url.pathname;
+      return `${url.host}${path}`;
+    } catch {
+      return src;
+    }
+  })();
+
   return (
     <div
       className="vcard-iframe-shell relative w-full h-full min-h-0 flex-1 touch-auto pointer-events-auto overflow-hidden"
@@ -56,13 +69,20 @@ export function VCardIframeFrame({
     >
       {showLoader && (
         <div
-          className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center z-20 transition-opacity duration-150 pointer-events-none"
-          aria-hidden="true"
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 px-4 backdrop-blur-sm"
+          role="status"
+          aria-live="polite"
+          aria-label={`Loading ${title}`}
         >
-          <div className="w-9 h-9 rounded-full border-2 border-brand-gold/20 border-t-brand-gold animate-spin mb-3 shadow-[0_0_15px_rgba(212,175,55,0.3)]" />
-          <span className="text-[10px] text-neutral-400 tracking-widest uppercase font-semibold">
-            {compact ? 'Loading vCard...' : 'Loading Live vCard...'}
+          <div className="mb-3 h-10 w-10 animate-spin rounded-full border-2 border-brand-gold/20 border-t-brand-gold shadow-[0_0_15px_rgba(212,175,55,0.3)]" />
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-200">
+            {compact ? 'Loading vCard…' : 'Loading live vCard…'}
           </span>
+          {showUrlInLoader ? (
+            <span className="mt-2 max-w-[220px] break-all text-center font-mono text-[9px] leading-snug text-brand-gold/75">
+              {loaderUrlLabel}
+            </span>
+          ) : null}
         </div>
       )}
       <iframe

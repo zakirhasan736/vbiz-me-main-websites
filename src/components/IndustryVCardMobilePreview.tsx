@@ -5,7 +5,6 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { Hand, Smartphone, X } from 'lucide-react';
 import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
-import { DeferredPhoneMockupFrame } from '@/components/DeferredPhoneMockupFrame';
 import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
 
 type IndustryVCardMobilePreviewProps = {
@@ -102,12 +101,14 @@ export function IndustryVCardMobilePreview({
               </div>
 
               <VCardInteractiveLane className="w-full flex flex-col items-center">
-                <DeferredPhoneMockupFrame
+                <PhoneMockupFrame
                   key={src}
                   src={src}
                   title={title}
                   size="modal"
-                  requireInView={false}
+                  compactLoader
+                  iframeLoading="eager"
+                  showUrlInLoader
                 />
               </VCardInteractiveLane>
             </div>

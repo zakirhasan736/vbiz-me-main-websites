@@ -4,8 +4,9 @@ import {
   PARTNER_LOGOS,
   PARTNER_LOGO_MOBILE_HEIGHT,
   PARTNER_LOGO_MOBILE_WIDTH,
+  getPartnerLogoMobileRows,
 } from '@/lib/partner-logos';
-import { usePartnerMarqueeLayout } from '@/components/hero/usePartnerMarqueeLayout';
+import { usePartnerMarqueeLayout, useIsPartnerMarqueeDesktop } from '@/components/hero/usePartnerMarqueeLayout';
 
 type PartnerLogo = (typeof PARTNER_LOGOS)[number];
 
@@ -67,8 +68,43 @@ function StaticLogoGrid() {
   );
 }
 
+function MobileDualRowMarquee({ loopDuplicate }: { loopDuplicate: boolean }) {
+  const { rowA, rowB } = getPartnerLogoMobileRows();
+
+  return (
+    <div className="partner-logo-marquee__rows">
+      <MarqueeTrack logos={rowA} loopDuplicate={loopDuplicate} trackKey="mobile-row-a" />
+      <MarqueeTrack logos={rowB} reverse loopDuplicate={loopDuplicate} trackKey="mobile-row-b" />
+    </div>
+  );
+}
+
+function MobileStaticLogoGrid() {
+  const { rowA, rowB } = getPartnerLogoMobileRows();
+
+  return (
+    <div className="partner-logo-marquee__rows">
+      <div className="partner-logo-marquee__viewport">
+        <div className="partner-logo-marquee__track partner-logo-marquee__track--static">
+          {rowA.map((logo) => (
+            <PartnerLogoImage key={`static-a-${logo.src}`} logo={logo} />
+          ))}
+        </div>
+      </div>
+      <div className="partner-logo-marquee__viewport">
+        <div className="partner-logo-marquee__track partner-logo-marquee__track--static">
+          {rowB.map((logo) => (
+            <PartnerLogoImage key={`static-b-${logo.src}`} logo={logo} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PartnerLogoMarquee() {
   const layout = usePartnerMarqueeLayout();
+  const isDesktop = useIsPartnerMarqueeDesktop();
   const loopDuplicate = layout !== 'static';
 
   return (
@@ -78,13 +114,14 @@ export function PartnerLogoMarquee() {
       role="region"
     >
       {layout === 'static' ? (
-        <StaticLogoGrid />
+        isDesktop ? <StaticLogoGrid /> : <MobileStaticLogoGrid />
+      ) : layout === 'mobile' ? (
+        <MobileDualRowMarquee loopDuplicate={loopDuplicate} />
       ) : (
         <MarqueeTrack
           logos={PARTNER_LOGOS}
           loopDuplicate={loopDuplicate}
-          trackKey={layout}
-          reverse={layout === 'mobile'}
+          trackKey="desktop"
         />
       )}
     </div>
