@@ -43,7 +43,7 @@ export const INDUSTRY_MOCKUP_IMAGE = {
 /** Marquee partner logos — display cell size (intrinsic varies per file). */
 export const PARTNER_LOGO_DISPLAY = {
   width: 140,
-  height: 56,
+  height: 76,
 } as const;
 
 /** CEO / founder intro — homepage hero + About page. */
