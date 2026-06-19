@@ -16,12 +16,15 @@ import { GSAP_DEFAULT_START } from '@/lib/gsap-animation-utils';
 import { LazyQRCodeImage } from '@/components/LazyQRCodeImage';
 import { DeferredPhoneMockupFrame } from '@/components/DeferredPhoneMockupFrame';
 import { PortfolioVCardModal } from '@/components/PortfolioVCardModal';
+import { IndustryVCardMobilePreview } from '@/components/IndustryVCardMobilePreview';
 import {
   PORTFOLIO_QR_CARDS,
   getPortfolioQrImageSrc,
   type PortfolioQrCard,
 } from '@/lib/portfolio-qr-cards';
 import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
+import { useLenis } from '@/components/providers/lenis-context';
+import { LENIS_EASING, LENIS_SCROLL_TO_DURATION } from '@/lib/lenis-config';
 import {
   RevealText,
   RevealParagraph,
@@ -127,11 +130,45 @@ const InteractiveDemoSection = () => {
   ];
 
   const [activeIndId, setActiveIndId] = useState('contractor');
+  const [mobileDemoOpen, setMobileDemoOpen] = useState(false);
+  const [previewHighlighted, setPreviewHighlighted] = useState(false);
+  const mobilePreviewRef = useRef<HTMLDivElement>(null);
+  const lenis = useLenis();
 
   const activeObj = industries.find(ind => ind.id === activeIndId) || industries[2];
 
+  const selectIndustry = (id: string) => {
+    setActiveIndId(id);
+
+    if (typeof window === 'undefined' || !window.matchMedia('(max-width: 1279px)').matches) {
+      return;
+    }
+
+    window.setTimeout(() => {
+      const target = mobilePreviewRef.current;
+      if (!target) return;
+
+      if (lenis) {
+        lenis.scrollTo(target, {
+          offset: -88,
+          duration: LENIS_SCROLL_TO_DURATION,
+          easing: LENIS_EASING,
+        });
+      } else {
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      setPreviewHighlighted(true);
+      window.setTimeout(() => setPreviewHighlighted(false), 1400);
+    }, 80);
+  };
+
+  useEffect(() => {
+    setMobileDemoOpen(false);
+  }, [activeIndId]);
+
   return (
-    <section id="see-in-action" className="site-section bg-brand-dark border-b border-white/5 relative z-10 overflow-hidden">
+    <section id="see-in-action" className="site-section bg-brand-dark border-b border-white/5 relative z-12 overflow-hidden">
       <div className="absolute top-1/2 left-1/4 w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
@@ -167,7 +204,7 @@ const InteractiveDemoSection = () => {
                     key={ind.id}
                     type="button"
                     layout
-                    onClick={() => setActiveIndId(ind.id)}
+                    onClick={() => selectIndustry(ind.id)}
                     whileTap={{ scale: 0.98 }}
                     className={`relative flex items-center gap-3 p-4 rounded-xl border text-left text-xs uppercase font-bold tracking-wider transition-colors duration-300 overflow-hidden ${
                       isActive
@@ -206,11 +243,8 @@ const InteractiveDemoSection = () => {
             </div>
           </ScrollRevealCard>
 
-          {/* Interactive Screen Mockup — first on mobile, right on xl */}
-          <div
-            className="order-1 xl:order-2 lg:col-span-12 xl:col-span-7 flex flex-col items-center justify-center relative gap-5 pointer-events-auto z-10 home-industry-mockup"
-            data-lenis-prevent-touch
-          >
+          {/* Interactive Screen Mockup — popup on mobile, inline on xl+ */}
+          <div className="order-1 xl:order-2 lg:col-span-12 xl:col-span-7 flex flex-col items-center justify-center relative gap-5 pointer-events-auto z-10 home-industry-mockup">
             <div
               key={activeObj.id}
               className="flex flex-col items-center gap-3 w-full max-w-[407px] mx-auto relative z-10"
@@ -229,18 +263,37 @@ const InteractiveDemoSection = () => {
                 </a>
               </div>
 
-              <VCardInteractiveLane className="w-full" id="industries-vcard-lane">
-                <DeferredPhoneMockupFrame
-                  key={activeObj.demoUrl}
+              <div className="hidden xl:block w-full" data-lenis-prevent-touch>
+                <VCardInteractiveLane className="w-full" id="industries-vcard-lane">
+                  <DeferredPhoneMockupFrame
+                    key={activeObj.demoUrl}
+                    src={activeObj.demoUrl}
+                    title={`${activeObj.name} Demo`}
+                    size="hero"
+                  />
+                </VCardInteractiveLane>
+                <p className="text-[11px] text-brand-text-muted text-center font-light mt-3">
+                  Scroll inside the phone to explore the live vCard.
+                </p>
+              </div>
+
+              <div
+                id="industries-mobile-preview"
+                ref={mobilePreviewRef}
+                className="xl:hidden w-full scroll-mt-28"
+              >
+                <IndustryVCardMobilePreview
+                  isOpen={mobileDemoOpen}
+                  onOpen={() => setMobileDemoOpen(true)}
+                  onClose={() => setMobileDemoOpen(false)}
                   src={activeObj.demoUrl}
                   title={`${activeObj.name} Demo`}
-                  size="hero"
+                  industryName={activeObj.name}
+                  company={activeObj.company}
+                  previewImage={activeObj.videoPlaceholder}
+                  highlighted={previewHighlighted}
                 />
-              </VCardInteractiveLane>
-
-              <p className="text-[11px] text-brand-text-muted text-center font-light">
-                Tap and scroll inside the phone to explore the live vCard.
-              </p>
+              </div>
             </div>
           </div>
 
@@ -379,7 +432,7 @@ const PortfolioSection = () => {
   };
 
   return (
-    <section id="portfolio-section" className="site-section bg-brand-dark border-b border-white/5 relative z-99 overflow-hidden">
+    <section id="portfolio-section" className="site-section bg-brand-dark border-b border-white/5 relative z-10 overflow-hidden">
       {/* Background ambient lighting */}
       <div className="absolute top-1/2 left-3/4 w-[600px] h-[600px] bg-brand-gold/5 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute top-1/4 left-10 w-[450px] h-[450px] bg-indigo-500/5 blur-[130px] rounded-full pointer-events-none" />
@@ -1141,29 +1194,6 @@ const HowCanWeHelp = () => {
     },
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 90,
-        damping: 16
-      }
-    }
-  };
-
   return (
     <section id="how-we-help" className="site-section site-section-band border-b relative z-10 overflow-visible">
       {/* Decorative cyber grid lines and soft gradient ambient back-glows */}
@@ -1190,34 +1220,24 @@ const HowCanWeHelp = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto capability-card-grid">
           {features.map((feat, idx) => {
-            const direction = idx % 4 === 0 ? "up" : idx % 4 === 1 ? "right" : idx % 4 === 2 ? "left" : "down";
+            const direction = idx % 4 === 0 ? 'up' : idx % 4 === 1 ? 'right' : idx % 4 === 2 ? 'left' : 'down';
             const delay = (idx % 3) * 0.08;
             return (
-              <ScrollRevealCard 
-                key={idx}
-                direction={direction}
-                delay={delay}
-                className="h-full"
+              <CapabilityCard
+                key={feat.index}
+                index={idx}
+                reveal={{ direction, delay }}
+                className="py-6 px-4 md:py-8 md:px-6 flex flex-col items-start text-left h-full"
               >
-                <CapabilityCard index={idx} className="py-6 px-4 md:py-8 md:px-6 flex flex-col items-start text-left h-full">
-                <div className="bg-[radial-gradient(#ffffff03_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none absolute inset-0 opacity-40 group-hover:opacity-100 transition-opacity duration-500 rounded-[31px]" />
-
-                <div className="absolute inset-0 bg-gradient-to-tr from-brand-gold/[0.015] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-[31px]" />
-                
-                <span className="font-mono text-[10px] text-brand-gold/30 tracking-wider absolute top-8 right-8 group-hover:text-brand-gold/70 transition-colors duration-300">
+                <span className="capability-card__index" aria-hidden="true">
                   // CAP.{feat.index}
                 </span>
-
-                <div className="h-[2px] w-8 bg-brand-gold/25 group-hover:w-16 group-hover:bg-brand-gold/60 transition-all duration-500 mb-6" />
-
-                <div className="capability-card__icon p-3.5 rounded-2xl bg-brand-gold/[0.06] border border-brand-gold/20 text-brand-gold mb-6 group-hover:bg-brand-gold/[0.12] inline-block">
-                  <CapabilityIcon name={feat.icon} />
-                </div>
-                
-                <h3 className="text-brand-text font-medium text-lg tracking-wide mb-3 group-hover:text-brand-gold transition-colors duration-300">{feat.title}</h3>
+                <CapabilityIcon name={feat.icon} />
+                <h3 className="text-brand-text font-medium text-lg tracking-wide mb-3 group-hover:text-brand-gold transition-colors duration-300">
+                  {feat.title}
+                </h3>
                 <p className="text-brand-text-muted text-sm font-light leading-relaxed">{feat.desc}</p>
-                </CapabilityCard>
-              </ScrollRevealCard>
+              </CapabilityCard>
             );
           })}
         </div>

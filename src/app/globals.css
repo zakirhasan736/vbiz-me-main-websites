@@ -450,6 +450,21 @@ html.lenis {
 .portfolio-vcard-modal .vcard-phone-screen,
 .portfolio-vcard-modal .vcard-iframe-shell,
 .portfolio-vcard-modal .vcard-iframe-shell iframe,
+.industry-vcard-mobile-modal,
+.industry-vcard-mobile-modal .vcard-iframe-zone,
+.industry-vcard-mobile-modal .vcard-phone-mockup,
+.industry-vcard-mobile-modal .vcard-phone-screen,
+.industry-vcard-mobile-modal .vcard-iframe-shell,
+.industry-vcard-mobile-modal .vcard-iframe-shell iframe,
+.industry-vcard-mobile-modal {
+  z-index: 10050;
+}
+
+body.industry-demo-modal-open [data-site-navbar] {
+  z-index: 40;
+  pointer-events: none;
+}
+
 #see-in-action .home-industry-mockup,
 #see-in-action .home-industry-toggle-grid,
 #see-in-action .vcard-interactive-lane,
@@ -1009,6 +1024,76 @@ body.theme-light .social-proof-quote-mark {
   flex-direction: column;
   transform-style: preserve-3d;
   backface-visibility: hidden;
+  --glow-x: 50%;
+  --glow-y: 50%;
+  --glow-opacity: 0;
+  --glow-color: rgba(212, 175, 55, 0.22);
+  color: var(--color-brand-text);
+  background-color: var(--color-brand-surface);
+  background-image:
+    radial-gradient(
+      circle 160px at var(--glow-x) var(--glow-y),
+      color-mix(in srgb, var(--glow-color) calc(var(--glow-opacity) * 100%), transparent),
+      transparent 68%
+    ),
+    radial-gradient(#ffffff03 1px, transparent 1px),
+    linear-gradient(to top right, transparent, transparent);
+  background-size: auto, 16px 16px, auto;
+  transition:
+    background 0.45s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+.capability-card:hover .capability-card__inner {
+  background-image:
+    radial-gradient(
+      circle 160px at var(--glow-x) var(--glow-y),
+      color-mix(in srgb, var(--glow-color) calc(var(--glow-opacity) * 100%), transparent),
+      transparent 68%
+    ),
+    radial-gradient(#ffffff03 1px, transparent 1px),
+    linear-gradient(to top right, rgba(212, 175, 55, 0.015), transparent);
+  background-size: auto, 16px 16px, auto;
+}
+
+.capability-card__inner > * {
+  position: relative;
+  z-index: 2;
+}
+
+.capability-card__index {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: rgba(212, 175, 55, 0.3);
+  transition: color 0.3s ease;
+}
+
+.capability-card:hover .capability-card__index {
+  color: rgba(212, 175, 55, 0.7);
+}
+
+.capability-card__inner::before {
+  content: '';
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 2rem;
+  height: 2px;
+  margin-bottom: 1.5rem;
+  background: rgba(212, 175, 55, 0.25);
+  transition:
+    width 0.5s ease,
+    background-color 0.5s ease;
+}
+
+.capability-card:hover .capability-card__inner::before {
+  width: 4rem;
+  background: rgba(212, 175, 55, 0.6);
 }
 
 .capability-card__inner::after {
@@ -1035,8 +1120,22 @@ body.theme-light .social-proof-quote-mark {
 }
 
 .capability-card__icon {
-  transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+  display: inline-block;
+  align-self: flex-start;
+  padding: 0.875rem;
+  margin-bottom: 1.5rem;
+  border-radius: 1rem;
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  transition:
+    transform 0.45s cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 0.3s ease;
   transform-style: preserve-3d;
+}
+
+.capability-card:hover .capability-card__icon {
+  transform: translateZ(16px);
+  background: rgba(212, 175, 55, 0.12);
 }
 
 .capability-icon {
@@ -1095,10 +1194,6 @@ body.theme-light .social-proof-quote-mark {
 .capability-icon--wallet {
   mask-image: url('/icons/capability/wallet.svg');
   -webkit-mask-image: url('/icons/capability/wallet.svg');
-}
-
-.capability-card:hover .capability-card__icon {
-  transform: translateZ(16px);
 }
 
 @media (prefers-reduced-motion: reduce) {

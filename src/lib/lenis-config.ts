@@ -72,7 +72,7 @@ export function buildLenisOptions(): ConstructorParameters<typeof Lenis>[0] {
 export function shouldPreventLenisScroll(node: HTMLElement): boolean {
   return Boolean(
     node.closest(
-      '.vcard-interactive-lane, .vcard-iframe-zone, .vcard-phone-mockup, .vcard-phone-screen, .vcard-iframe-shell, #industries-vcard-lane',
+      '.vcard-interactive-lane, .vcard-iframe-zone, .vcard-phone-mockup, .vcard-phone-screen, .vcard-iframe-shell, #industries-vcard-lane, .industry-vcard-mobile-modal',
     ),
   );
 }

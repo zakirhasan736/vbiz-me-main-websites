@@ -59,10 +59,11 @@ export const Navbar: React.FC = () => {
   return (
     <>
       <motion.nav
+        data-site-navbar
         initial={{ y: -100 }}
         animate={{ y: hidden ? -100 : 0 }}
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-0 inset-x-0 z-999  flex justify-center transition-all duration-700 ${
+        className={`fixed top-0 inset-x-0 z-99  flex justify-center transition-all duration-700 ${
           scrolled ? 'pt-4 md:pt-5' : 'pt-6'
         }`}
       >
