@@ -56,9 +56,9 @@ export function buildHeroLeftTimeline(root: HTMLElement, reduced: boolean) {
 
   tl.fromTo(
     q(root, '.hero-title-block'),
-    { yPercent: 115, opacity: 0 },
+    { y: 40, opacity: 1 },
     {
-      yPercent: 0,
+      y: 0,
       opacity: 1,
       duration: 0.82,
       ease: 'power4.out',
@@ -68,12 +68,12 @@ export function buildHeroLeftTimeline(root: HTMLElement, reduced: boolean) {
 
   tl.fromTo(
     q(root, '.hero-desc-block'),
-    { opacity: 0, y: 36, filter: 'blur(12px)' },
+    { y: 36, opacity: 1 },
     {
-      opacity: 1,
       y: 0,
-      filter: 'blur(0px)',
+      opacity: 1,
       duration: 0.72,
+      ease: 'power3.out',
     },
     '-=0.42',
   );

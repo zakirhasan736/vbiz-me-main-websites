@@ -188,8 +188,6 @@ html {
 
 /* Hero banner — opacity-only hide until GSAP fromTo runs (GSAP owns transform/blur) */
 .section-hero.hero-banner-pending .hero-eyebrow,
-.section-hero.hero-banner-pending .hero-title-block,
-.section-hero.hero-banner-pending .hero-desc-block,
 .section-hero.hero-banner-pending .hero-trust-item,
 .section-hero.hero-banner-pending .hero-video-enter,
 .hero-video-await {
@@ -206,12 +204,18 @@ html {
   opacity: 0;
 }
 
-/* Primary + secondary CTAs — SSR visible on first paint; GSAP slides up (no opacity hide for LCP) */
+/* Hero title, description + CTAs — SSR visible on first paint; GSAP slides up (no opacity hide for LCP) */
+.section-hero.hero-banner-pending .hero-title-block,
+.section-hero.hero-banner-pending .hero-desc-block,
 .section-hero.hero-banner-pending .hero-primary-cta-item,
 .section-hero.hero-banner-pending .hero-secondary-cta-item {
   opacity: 1;
   pointer-events: auto;
   transform: translate3d(0, 40px, 0);
+}
+
+.section-hero.hero-banner-pending .hero-desc-block {
+  transform: translate3d(0, 36px, 0);
 }
 
 @media (max-width: 767px) {
@@ -232,6 +236,8 @@ html {
     pointer-events: auto;
   }
 
+  .section-hero.hero-banner-pending .hero-title-block,
+  .section-hero.hero-banner-pending .hero-desc-block,
   .section-hero.hero-banner-pending .hero-primary-cta-item,
   .section-hero.hero-banner-pending .hero-secondary-cta-item {
     transform: none;

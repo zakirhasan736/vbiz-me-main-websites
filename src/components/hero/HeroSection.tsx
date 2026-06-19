@@ -1,4 +1,5 @@
-import { HeroBanner } from '@/components/hero/HeroBanner';
+import { HeroBannerAnimator } from '@/components/hero/HeroBannerAnimator';
+import { HeroBannerContent } from '@/components/hero/HeroBannerContent';
 import { HeroPrimaryCta } from '@/components/hero/HeroPrimaryCta';
 import { HeroSecondaryCta } from '@/components/hero/HeroSecondaryCta';
 import { HeroSecondaryCtaShell } from '@/components/hero/HeroSecondaryCtaShell';
@@ -15,14 +16,16 @@ export function HeroSection() {
       <HeroAmbientLazy />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-grow">
-        <HeroBanner
-          primaryCta={<HeroPrimaryCta />}
-          secondaryCta={
-            <HeroSecondaryCtaShell>
-              <HeroSecondaryCta />
-            </HeroSecondaryCtaShell>
-          }
-        />
+        <HeroBannerAnimator>
+          <HeroBannerContent
+            primaryCta={<HeroPrimaryCta />}
+            secondaryCta={
+              <HeroSecondaryCtaShell>
+                <HeroSecondaryCta />
+              </HeroSecondaryCtaShell>
+            }
+          />
+        </HeroBannerAnimator>
         <HeroVideoLazy />
       </div>
 

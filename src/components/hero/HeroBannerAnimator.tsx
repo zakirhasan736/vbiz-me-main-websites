@@ -1,12 +1,8 @@
 'use client';
 
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
-import { Check } from 'lucide-react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { HeroHeading } from '@/components/hero/HeroHeading';
-import { HeroBannerDescription } from '@/components/hero/HeroBannerDescription';
-import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { useHeroAnimateReady } from '@/components/hero/useHeroAnimateReady';
 import {
   buildHeroLeftTimeline,
@@ -15,13 +11,8 @@ import {
   resetHeroSectionPending,
 } from '@/lib/hero-gsap-animation';
 
-export function HeroBanner({
-  primaryCta,
-  secondaryCta,
-}: {
-  primaryCta: ReactNode;
-  secondaryCta: ReactNode;
-}) {
+/** Client shell — runs GSAP on SSR banner markup inside `children`. */
+export function HeroBannerAnimator({ children }: { children: ReactNode }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const { animateReady, animationKey } = useHeroAnimateReady();
@@ -62,31 +53,7 @@ export function HeroBanner({
       ref={rootRef}
       className="hero-banner-left lg:col-span-6 flex flex-col relative z-999 items-start text-left"
     >
-      <div className="hero-eyebrow mb-6">
-        <SectionEyebrow label="Real-time Video Introductions" />
-      </div>
-
-      <HeroHeading />
-
-      <HeroBannerDescription />
-
-      <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto z-50 relative">
-        <div className="hero-primary-cta-item w-full sm:w-auto">{primaryCta}</div>
-
-        <div className="hero-secondary-cta-item w-full sm:w-auto">{secondaryCta}</div>
-      </div>
-
-      <div className="mt-10 flex flex-wrap items-center gap-6 text-neutral-500 text-xs">
-        <div className="hero-trust-item flex items-center gap-1.5">
-          <Check size={14} className="text-brand-gold" aria-hidden="true" /> No Application Required
-        </div>
-        <div className="hero-trust-item flex items-center gap-1.5">
-          <Check size={14} className="text-brand-gold" aria-hidden="true" /> Instant Smartphone Saving
-        </div>
-        <div className="hero-trust-item flex items-center gap-1.5">
-          <Check size={14} className="text-brand-gold" aria-hidden="true" /> Unlimited Sharing Limits
-        </div>
-      </div>
+      {children}
     </div>
   );
 }
