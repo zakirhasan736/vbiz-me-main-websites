@@ -6,9 +6,9 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
   buildDescriptionRevealTimeline,
-  prefersReducedMotion,
   splitBannerLines,
 } from '@/lib/description-reveal-animation';
+import { prefersReducedMotion } from '@/lib/hero-gsap-animation';
 import { usePageTransition } from '@/components/providers/page-transition-context';
 import { GSAP_DEFAULT_START } from '@/lib/gsap-animation-utils';
 

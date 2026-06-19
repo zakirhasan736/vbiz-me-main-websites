@@ -2,10 +2,7 @@ import gsap from 'gsap';
 
 export const HERO_GSAP = {
   ease: 'power3.out',
-  titleStagger: 0.048,
   lineStagger: 0.14,
-  letterStagger: 0.014,
-  ctaStagger: 0.11,
 } as const;
 
 export function prefersReducedMotion(): boolean {
@@ -24,10 +21,7 @@ function q(root: HTMLElement, selector: string) {
 
 function revealAll(root: HTMLElement) {
   gsap.set(
-    q(
-      root,
-      '.hero-eyebrow, .hero-desc-lcp, .hero-primary-cta-item, .hero-secondary-cta-item, .hero-trust-item',
-    ),
+    q(root, '.hero-eyebrow, .hero-primary-cta-item, .hero-secondary-cta-item, .hero-trust-item'),
     { opacity: 1, y: 0, yPercent: 0, x: 0, filter: 'none', clearProps: 'transform,filter' },
   );
 }

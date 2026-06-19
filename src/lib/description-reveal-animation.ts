@@ -1,16 +1,11 @@
 import gsap from 'gsap';
 import { HERO_GSAP } from '@/lib/hero-gsap-animation';
 
-export function prefersReducedMotion(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
 function q(root: HTMLElement, selector: string) {
   return root.querySelectorAll(selector);
 }
 
-/** Homepage-style description: line blur fade-up */
+/** Inner-page banner description: line blur fade-up */
 export function buildDescriptionRevealTimeline(root: HTMLElement, reduced: boolean) {
   const tl = gsap.timeline({
     defaults: { ease: HERO_GSAP.ease },

@@ -13,9 +13,7 @@ export type MaskRevealWordCmd = {
   ease?: string;
 };
 
-export type HeroCinemaCommand = MaskRevealWordCmd;
-
-export const HERO_TITLE_INTRO_SCENE: HeroCinemaCommand[] = [
+export const HERO_TITLE_INTRO_SCENE: MaskRevealWordCmd[] = [
   {
     cmd: 'MASK_REVEAL_WORD',
     stagger: 0.04,
@@ -25,7 +23,7 @@ export const HERO_TITLE_INTRO_SCENE: HeroCinemaCommand[] = [
   },
 ];
 
-export const HERO_DESC_INTRO_SCENE: HeroCinemaCommand[] = [
+export const HERO_DESC_INTRO_SCENE: MaskRevealWordCmd[] = [
   {
     cmd: 'MASK_REVEAL_WORD',
     startDelay: 0.55,
@@ -35,6 +33,3 @@ export const HERO_DESC_INTRO_SCENE: HeroCinemaCommand[] = [
     ease: 'power4.out',
   },
 ];
-
-/** @deprecated Use HERO_TITLE_INTRO_SCENE */
-export const HERO_INTRO_SCENE = HERO_TITLE_INTRO_SCENE;

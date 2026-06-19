@@ -36,7 +36,3 @@ export const HERO_DESC_LINES: HeroDescWord[][] = [
 
 export const HERO_DESC_ARIA =
   'Discover the vBiz Me virtual business card (vCard)— an innovative leap in digital networking designed to make a powerful emotional impact.';
-
-export function heroDescTrailSpace(): string {
-  return '\u00a0';
-}

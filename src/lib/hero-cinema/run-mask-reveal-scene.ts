@@ -1,8 +1,12 @@
 import gsap from 'gsap';
+import {
+  HERO_DESC_INTRO_SCENE,
+  HERO_TITLE_INTRO_SCENE,
+} from '@/lib/hero-cinema/commands';
 import { HERO_GSAP } from '@/lib/hero-gsap-animation';
 import type { MaskRevealWordCmd } from '@/lib/hero-cinema/commands';
 
-export type MaskRevealSceneConfig = {
+type MaskRevealSceneConfig = {
   fxSelector: string;
   lineSelector: string;
   innerSelector: string;
@@ -11,7 +15,6 @@ export type MaskRevealSceneConfig = {
   skippedClass: string;
   scene: MaskRevealWordCmd;
   reduced: boolean;
-  fadeOut?: boolean;
 };
 
 function isMobileViewport(): boolean {
@@ -24,7 +27,6 @@ function resolveMaskTiming(scene: MaskRevealWordCmd) {
   const mobileScale = mobile ? 0.78 : 1;
 
   return {
-    startDelay: scene.startDelay ?? 0,
     stagger: (scene.stagger ?? 0.07) * mobileScale,
     wordDuration: (scene.wordDuration ?? 0.78) * mobileScale,
     lineGap: (scene.lineGap ?? 0.12) * mobileScale,
@@ -33,8 +35,7 @@ function resolveMaskTiming(scene: MaskRevealWordCmd) {
   };
 }
 
-/** Word mask reveal — duplicate text rises into clip; LCP text stays underneath. */
-export function runMaskRevealScene(root: HTMLElement, config: MaskRevealSceneConfig) {
+function runMaskRevealScene(root: HTMLElement, config: MaskRevealSceneConfig) {
   const fx = root.querySelector(config.fxSelector) as HTMLElement | null;
   const tl = gsap.timeline({
     defaults: { ease: HERO_GSAP.ease },
@@ -85,9 +86,7 @@ export function runMaskRevealScene(root: HTMLElement, config: MaskRevealSceneCon
     lineIndex += 1;
   });
 
-  if (config.fadeOut !== false) {
-    tl.to(fx, { opacity: 0, duration: 0.16, ease: 'power2.out' });
-  }
+  tl.to(fx, { opacity: 0, duration: 0.16, ease: 'power2.out' });
 
   tl.call(() => {
     fx.classList.remove(config.playingClass);
@@ -96,4 +95,36 @@ export function runMaskRevealScene(root: HTMLElement, config: MaskRevealSceneCon
   });
 
   return tl;
+}
+
+export function runHeroIntroScene(root: HTMLElement, reduced: boolean) {
+  const scene = HERO_TITLE_INTRO_SCENE.find((c) => c.cmd === 'MASK_REVEAL_WORD');
+  if (!scene) return gsap.timeline();
+
+  return runMaskRevealScene(root, {
+    fxSelector: '.hero-title-fx',
+    lineSelector: '.hero-title-fx__line',
+    innerSelector: '.hero-title-fx__word-inner',
+    playingClass: 'hero-title-fx--playing',
+    doneClass: 'hero-title-fx--done',
+    skippedClass: 'hero-title-fx--skipped',
+    scene,
+    reduced,
+  });
+}
+
+export function runHeroDescIntroScene(root: HTMLElement, reduced: boolean) {
+  const scene = HERO_DESC_INTRO_SCENE.find((c) => c.cmd === 'MASK_REVEAL_WORD');
+  if (!scene) return gsap.timeline();
+
+  return runMaskRevealScene(root, {
+    fxSelector: '.hero-desc-fx',
+    lineSelector: '.hero-desc-fx__line',
+    innerSelector: '.hero-desc-fx__word-inner',
+    playingClass: 'hero-desc-fx--playing',
+    doneClass: 'hero-desc-fx--done',
+    skippedClass: 'hero-desc-fx--skipped',
+    scene,
+    reduced,
+  });
 }

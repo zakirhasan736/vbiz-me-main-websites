@@ -1,9 +1,4 @@
-import { HeroTitleStage } from '@/components/hero/HeroTitleStage';
-import {
-  HERO_TITLE_LINES,
-  heroTitleTrailSpace,
-  type HeroTitleWord,
-} from '@/lib/hero-title-copy';
+import { HERO_TITLE_LINES, type HeroTitleWord } from '@/lib/hero-title-copy';
 
 const TITLE_TYPE =
   'text-[1.65rem] leading-[1.12] sm:text-5xl lg:text-[52px] font-medium tracking-tight sm:leading-tight text-white text-left';
@@ -16,7 +11,7 @@ function LcpWord({ word, trailSpace }: { word: HeroTitleWord; trailSpace: boolea
       ) : (
         word.text
       )}
-      {trailSpace ? heroTitleTrailSpace() : null}
+      {trailSpace ? '\u00a0' : null}
     </span>
   );
 }
@@ -33,18 +28,13 @@ function LcpLine({ words }: { words: HeroTitleWord[] }) {
   );
 }
 
-/**
- * Layer 1 — SSR LCP text (never animated, always visible under mask clips).
- * Layers 2–3 — mask overlay + cinema controller in HeroTitleStage.
- */
+/** SSR LCP title — always visible; mask animation is a client sibling overlay. */
 export function HeroHeading() {
   return (
-    <HeroTitleStage>
-      <h1 className={`hero-title-lcp ${TITLE_TYPE}`}>
-        {HERO_TITLE_LINES.map((line, lineIndex) => (
-          <LcpLine key={`lcp-line-${lineIndex}`} words={line} />
-        ))}
-      </h1>
-    </HeroTitleStage>
+    <h1 className={`hero-title-lcp ${TITLE_TYPE}`}>
+      {HERO_TITLE_LINES.map((line, lineIndex) => (
+        <LcpLine key={`lcp-line-${lineIndex}`} words={line} />
+      ))}
+    </h1>
   );
 }

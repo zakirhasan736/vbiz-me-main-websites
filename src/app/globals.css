@@ -287,6 +287,9 @@ body.theme-ocean .section-hero {
 .hero-title-fx__word-inner {
   display: inline-block;
   white-space: pre;
+  transform: translate3d(0, 115%, 0);
+  opacity: 0.2;
+  filter: blur(12px);
   will-change: transform, opacity, filter;
   backface-visibility: hidden;
 }
@@ -385,6 +388,9 @@ body.theme-ocean .section-hero {
 .hero-desc-fx__word-inner {
   display: inline-block;
   white-space: pre;
+  transform: translate3d(0, 115%, 0);
+  opacity: 0.2;
+  filter: blur(12px);
   will-change: transform, opacity, filter;
   backface-visibility: hidden;
 }
@@ -423,6 +429,11 @@ body.theme-ocean .section-hero {
   .hero-title-lcp,
   .hero-title-fx {
     letter-spacing: -0.02em;
+  }
+
+  .hero-title-fx__word-inner,
+  .hero-desc-fx__word-inner {
+    filter: blur(6px);
   }
 
   .hero-desc-lcp,
@@ -484,6 +495,11 @@ body.theme-ocean .section-hero {
 
   .banner-description-pending .hero-desc-line-wrap {
     opacity: 1;
+  }
+
+  .hero-title-fx-mount,
+  .hero-desc-fx-mount {
+    display: none !important;
   }
 }
 
