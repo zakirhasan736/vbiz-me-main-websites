@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { COMPETITIVE_ANALYSIS_CHART } from '@/lib/site-assets';
 import { SiteImage } from '@/components/ui/SiteImage';
-import { perfDebug } from '@/lib/performance-debug';
 
 type HeroCompetitiveAnalysisPopupProps = {
   isOpen: boolean;
@@ -15,7 +14,7 @@ type HeroCompetitiveAnalysisPopupProps = {
 
 export function HeroCompetitiveAnalysisPopup({
   isOpen,
-  siteLoaded,
+  siteLoaded: _siteLoaded,
   onClose,
 }: HeroCompetitiveAnalysisPopupProps) {
   const popup = (
@@ -75,15 +74,6 @@ export function HeroCompetitiveAnalysisPopup({
                   height={COMPETITIVE_ANALYSIS_CHART.height}
                   sizes="(max-width: 768px) 100vw, 1024px"
                   className="w-full h-auto block"
-                  onLoad={() => {
-                    perfDebug({
-                      hypothesisId: 'H1',
-                      runId: 'post-fix',
-                      location: 'HeroCompetitiveAnalysisPopup:image.onLoad',
-                      message: 'Popup image finished loading',
-                      data: { src: COMPETITIVE_ANALYSIS_CHART.src, siteLoaded },
-                    });
-                  }}
                 />
               </div>
             </div>

@@ -541,25 +541,10 @@ const PortfolioSection = () => {
                 
                 {/* Dynamically Jittering QR grid to look simulated */}
                 <div className="w-24 h-24 bg-white p-2 rounded-xl flex-shrink-0 flex items-center justify-center border border-brand-gold/30 shadow-[0_0_20px_rgba(211,175,55,0.08)] relative overflow-hidden">
-                  <div className={`grid grid-cols-6 gap-0.5 w-full h-full transition-all duration-200 ${isMorphing ? 'scale-90 opacity-40 blur-[0.5px]' : 'scale-100 opacity-90'}`}>
-                    {[...Array(36)].map((_, i) => {
-                      // Make certain fields solid like standard QR markers
-                      const isCornerMarker = 
-                        (i >= 0 && i <= 1) || (i >= 4 && i <= 5) || 
-                        (i % 6 === 0 && i <= 7) || 
-                        (i >= 30 && i <= 31) || (i >= 34 && i <= 35);
-                      // Generate pseudorandom layout toggled by inputted string
-                      const triggerVal = (qrInput.length * i * 7) % 3 === 0;
-                      return (
-                        <div 
-                          key={i} 
-                          className={`rounded-xs transition-colors duration-150 ${
-                            isCornerMarker || triggerVal ? 'bg-neutral-950' : 'bg-transparent'
-                          }`}
-                        />
-                      );
-                    })}
-                  </div>
+                  <div
+                    className={`qr-sim-matrix transition-all duration-200 ${isMorphing ? 'scale-90 opacity-40 blur-[0.5px]' : 'scale-100 opacity-90'}`}
+                    aria-hidden="true"
+                  />
                   {isMorphing && (
                     <span className="absolute text-[6px] font-mono uppercase bg-brand-gold text-black rounded px-1 py-0.5 tracking-tight font-extrabold animate-pulse">
                       Updating
@@ -715,29 +700,18 @@ const PortfolioSection = () => {
           </div>
           
           {/* Responsive scroll indicators at bottom of slider */}
-          <div className="flex justify-center items-center gap-1 mt-4">
-            {Array.from({ length: qrSliderItems.length + 1 }).map((_, dotIdx) => {
-              const isActive = activeSliderIdx === dotIdx;
-              return (
-                <button
-                  key={dotIdx}
-                  type="button"
-                  onClick={() => scrollToSlide(dotIdx)}
-                  className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-full cursor-pointer"
-                  aria-label={`Go to slide ${dotIdx + 1}`}
-                  aria-current={isActive ? 'true' : undefined}
-                >
-                  <span
-                    className={`block rounded-full transition-all duration-300 ${
-                      isActive
-                        ? 'h-2.5 w-6 bg-brand-gold shadow-[0_0_8px_rgba(212,175,55,0.6)]'
-                        : 'h-2.5 w-2.5 bg-neutral-800 hover:bg-neutral-600'
-                    }`}
-                    aria-hidden="true"
-                  />
-                </button>
-              );
-            })}
+          <div className="flex justify-center items-center gap-1 mt-4" role="tablist" aria-label="Portfolio carousel">
+            {Array.from({ length: qrSliderItems.length + 1 }).map((_, dotIdx) => (
+              <button
+                key={dotIdx}
+                type="button"
+                role="tab"
+                onClick={() => scrollToSlide(dotIdx)}
+                className={`portfolio-slider-dot${activeSliderIdx === dotIdx ? ' portfolio-slider-dot--active' : ''}`}
+                aria-label={`Go to slide ${dotIdx + 1}`}
+                aria-selected={activeSliderIdx === dotIdx}
+              />
+            ))}
           </div>
 
           <ScrollRevealCard

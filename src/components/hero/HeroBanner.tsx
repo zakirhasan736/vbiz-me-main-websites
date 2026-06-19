@@ -6,7 +6,6 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { HeroHeading } from '@/components/hero/HeroHeading';
 import { HeroBannerDescription } from '@/components/hero/HeroBannerDescription';
-import { HeroBannerActions } from '@/components/hero/HeroBannerActions';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { useHeroAnimateReady } from '@/components/hero/useHeroAnimateReady';
 import {
@@ -16,7 +15,13 @@ import {
   resetHeroSectionPending,
 } from '@/lib/hero-gsap-animation';
 
-export function HeroBanner({ primaryCta }: { primaryCta: ReactNode }) {
+export function HeroBanner({
+  primaryCta,
+  secondaryCta,
+}: {
+  primaryCta: ReactNode;
+  secondaryCta: ReactNode;
+}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const { animateReady, animationKey } = useHeroAnimateReady();
@@ -66,11 +71,9 @@ export function HeroBanner({ primaryCta }: { primaryCta: ReactNode }) {
       <HeroBannerDescription />
 
       <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto z-50 relative">
-        <div className="hero-cta-item w-full sm:w-auto">{primaryCta}</div>
+        <div className="hero-primary-cta-item w-full sm:w-auto">{primaryCta}</div>
 
-        <div className="hero-cta-item w-full sm:w-auto">
-          <HeroBannerActions />
-        </div>
+        <div className="hero-secondary-cta-item w-full sm:w-auto">{secondaryCta}</div>
       </div>
 
       <div className="mt-10 flex flex-wrap items-center gap-6 text-neutral-500 text-xs">

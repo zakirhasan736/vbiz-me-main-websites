@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PORTFOLIO_QR_IMAGE } from '@/lib/site-assets';
-import { perfDebug } from '@/lib/performance-debug';
 
 interface LazyQRCodeImageProps {
   src: string;
@@ -35,15 +34,6 @@ export const LazyQRCodeImage = ({
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          // #region agent log
-          perfDebug({
-            hypothesisId: 'H2',
-            runId: 'post-fix',
-            location: 'LazyQRCodeImage:intersection',
-            message: 'QR image load triggered by intersection',
-            data: { src: src.split('/').pop(), rootMargin: '100px' },
-          });
-          // #endregion
           setShouldLoad(true);
           observer.disconnect();
         }

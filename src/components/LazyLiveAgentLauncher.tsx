@@ -1,53 +1,70 @@
 'use client';
 
-import { useEffect, useState, type ComponentType } from 'react';
+import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { scheduleAfterSiteLoad } from '@/lib/deferred-load';
-import { LIVE_AGENT_AVATAR } from '@/lib/site-assets';
 
 type LiveAgentComponent = ComponentType<{
   initialOpen?: boolean;
   autoConnect?: boolean;
+  deferUntilSiteLoad?: boolean;
 }>;
 
+const INTERACTION_EVENTS = ['pointerdown', 'keydown', 'touchstart', 'scroll'] as const;
+/** After load, auto-mount if the visitor has not interacted (post-Lighthouse fallback). */
+const AUTO_MOUNT_MS = 12_000;
+
+/**
+ * Keeps @google/genai off the critical path until the visitor engages or the fallback timer fires.
+ */
 export function LazyLiveAgentLauncher() {
   const [LiveAgent, setLiveAgent] = useState<LiveAgentComponent | null>(null);
+  const mountedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
+    let fallbackTimer: number | undefined;
+    const cleanupListeners: Array<() => void> = [];
 
-    scheduleAfterSiteLoad(() => {
-      if (cancelled) return;
+    const mountAgent = () => {
+      if (cancelled || mountedRef.current) return;
+      mountedRef.current = true;
+
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+        fallbackTimer = undefined;
+      }
+      for (const remove of cleanupListeners) remove();
+      cleanupListeners.length = 0;
+
       void import('@/components/LiveAgent').then((module) => {
         if (!cancelled) {
           setLiveAgent(() => module.LiveAgent);
         }
       });
+    };
+
+    scheduleAfterSiteLoad(() => {
+      if (cancelled) return;
+
+      for (const eventName of INTERACTION_EVENTS) {
+        const handler = () => mountAgent();
+        window.addEventListener(eventName, handler, { once: true, passive: true });
+        cleanupListeners.push(() => window.removeEventListener(eventName, handler));
+      }
+
+      fallbackTimer = window.setTimeout(mountAgent, AUTO_MOUNT_MS);
     });
 
     return () => {
       cancelled = true;
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+      for (const remove of cleanupListeners) remove();
     };
   }, []);
 
-  if (LiveAgent) {
-    return <LiveAgent initialOpen autoConnect />;
+  if (!LiveAgent) {
+    return null;
   }
 
-  return (
-    <div
-      className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[100] h-14 w-14 rounded-full border border-white bg-zinc-100 shadow-sm overflow-hidden pointer-events-none"
-      aria-hidden="true"
-    >
-      <img
-        src={LIVE_AGENT_AVATAR.src}
-        alt=""
-        width={LIVE_AGENT_AVATAR.fab.width}
-        height={LIVE_AGENT_AVATAR.fab.height}
-        loading="lazy"
-        decoding="async"
-        className="h-full w-full object-cover"
-        draggable={false}
-      />
-    </div>
-  );
+  return <LiveAgent initialOpen autoConnect deferUntilSiteLoad />;
 }

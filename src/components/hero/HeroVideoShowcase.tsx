@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { Pause, Play, Sparkles, Volume2, VolumeX } from 'lucide-react';
 import { FOUNDER_INTRO_VIDEO } from '@/lib/site-assets';
+import { isMediaAssetAvailable } from '@/lib/media-availability';
 import { useHeroAnimateReady } from '@/components/hero/useHeroAnimateReady';
 import { buildHeroVideoTimeline, prefersReducedMotion } from '@/lib/hero-gsap-animation';
 
@@ -19,30 +20,54 @@ export default function HeroVideoShowcase() {
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const [isMuted, setIsMuted] = useState(true);
   const [entranceDone, setEntranceDone] = useState(false);
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
   const [videoReady, setVideoReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const showVideo = entranceDone && videoReady;
+  const showVideo = entranceDone && videoReady && Boolean(videoSrc);
+
+  useEffect(() => {
+    if (!animateReady) return;
+
+    let cancelled = false;
+    setVideoSrc(null);
+    setVideoReady(false);
+
+    void isMediaAssetAvailable(FOUNDER_INTRO_VIDEO).then((available) => {
+      if (!cancelled && available) {
+        setVideoSrc(FOUNDER_INTRO_VIDEO);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [animateReady, animationKey]);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !animateReady) return;
+    if (!video || !videoSrc) return;
 
     setVideoReady(isVideoReadyToPlay(video));
 
     const markReady = () => setVideoReady(true);
+    const onError = () => {
+      setVideoSrc(null);
+      setVideoReady(false);
+      setIsPlaying(false);
+    };
+
     video.addEventListener('loadeddata', markReady);
     video.addEventListener('canplay', markReady);
-
-    video.preload = 'auto';
-    video.load();
+    video.addEventListener('error', onError);
 
     return () => {
       video.removeEventListener('loadeddata', markReady);
       video.removeEventListener('canplay', markReady);
+      video.removeEventListener('error', onError);
     };
-  }, [animateReady, animationKey]);
+  }, [videoSrc, animationKey]);
 
   useGSAP(
     () => {
@@ -113,21 +138,23 @@ export default function HeroVideoShowcase() {
             <span className="text-brand-gold font-semibold hidden sm:inline">Widescreen Feature Presentation</span>
           </div>
 
-          <video
-            ref={videoRef}
-            src={FOUNDER_INTRO_VIDEO}
-            loop
-            muted
-            playsInline
-            preload="auto"
-            aria-hidden={!showVideo}
-            aria-label={showVideo ? 'Founder introduction demo video' : undefined}
-            className={`absolute inset-0 w-full h-full object-contain bg-brand-deep transition-opacity duration-500 ${
-              showVideo ? (isPlaying ? 'opacity-100' : 'opacity-30') : 'opacity-0 invisible'
-            }`}
-          >
-            <track kind="captions" srcLang="en" label="English" src="/captions/hero-demo.vtt" />
-          </video>
+          {videoSrc ? (
+            <video
+              ref={videoRef}
+              src={videoSrc}
+              loop
+              muted
+              playsInline
+              preload="auto"
+              aria-hidden={!showVideo}
+              aria-label={showVideo ? 'Founder introduction demo video' : undefined}
+              className={`absolute inset-0 w-full h-full object-contain bg-brand-deep transition-opacity duration-500 ${
+                showVideo ? (isPlaying ? 'opacity-100' : 'opacity-30') : 'opacity-0 invisible'
+              }`}
+            >
+              <track kind="captions" srcLang="en" label="English" src="/captions/hero-demo.vtt" />
+            </video>
+          ) : null}
 
           {!showVideo && (
             <div className="absolute inset-0 bg-brand-deep z-[1]" aria-hidden="true" />

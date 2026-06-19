@@ -42,25 +42,20 @@ export function CapabilityCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="capability-card__scene">
-        <div className="capability-card__flipper">
-          <div className="site-glow-card__border capability-card__border">
-            <div className="site-glow-card__border-glow" aria-hidden="true" />
-            <div className={`site-glow-card__inner capability-card__inner ${className}`}>
-              <div
-                className="site-glow-card__mouse-glow"
-                aria-hidden="true"
-                style={{
-                  left: `${mouseCoords.x}px`,
-                  top: `${mouseCoords.y}px`,
-                  opacity: isHovered ? 1 : 0,
-                  background: `radial-gradient(circle, ${glowColor} 0%, transparent 68%)`,
-                }}
-              />
-              <div className="capability-card__shine" aria-hidden="true" />
-              <div className="site-glow-card__content">{children}</div>
-            </div>
-          </div>
+      <div className="site-glow-card__border capability-card__border">
+        <div className="site-glow-card__border-glow" aria-hidden="true" />
+        <div className={`site-glow-card__inner capability-card__inner capability-card__flipper ${className}`}>
+          <div
+            className="site-glow-card__mouse-glow"
+            aria-hidden="true"
+            style={{
+              left: `${mouseCoords.x}px`,
+              top: `${mouseCoords.y}px`,
+              opacity: isHovered ? 1 : 0,
+              background: `radial-gradient(circle, ${glowColor} 0%, transparent 68%)`,
+            }}
+          />
+          {children}
         </div>
       </div>
     </div>

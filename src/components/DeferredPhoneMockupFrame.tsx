@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { PhoneMockupFrame, type PhoneMockupFrameProps } from '@/components/PhoneMockupFrame';
 import { scheduleAfterSiteLoad } from '@/lib/deferred-load';
 import { MOBILE_FRAME_SIZES } from '@/lib/mobile-frame';
-import { perfDebug } from '@/lib/performance-debug';
 
 type DeferredPhoneMockupFrameProps = PhoneMockupFrameProps & {
   /** Wait until frame enters viewport (after site load). Default true. */
@@ -68,21 +67,6 @@ export function DeferredPhoneMockupFrame({
 
   useEffect(() => {
     if (!siteLoaded || !inView || ready) return;
-
-    // #region agent log
-    perfDebug({
-      hypothesisId: 'H6',
-      runId: 'post-fix',
-      location: 'DeferredPhoneMockupFrame:activate',
-      message: 'Industry live vCard iframe activating',
-      data: {
-        src,
-        siteLoaded,
-        inView,
-        readyState: document.readyState,
-      },
-    });
-    // #endregion
 
     setReady(true);
   }, [siteLoaded, inView, ready, src]);

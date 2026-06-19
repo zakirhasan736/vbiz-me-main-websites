@@ -68,15 +68,9 @@ export function BannerDescription({
       {resolvedLines.map((line, lineIdx) => (
         <span
           key={lineIdx}
-          className="hero-desc-line-wrap block overflow-hidden py-[0.06em] -my-[0.06em]"
+          className="hero-desc-line-wrap block overflow-hidden py-[0.06em] -my-[0.06em] will-change-transform"
         >
-          <span className="hero-desc-line inline-block will-change-transform">
-            {line.split('').map((char, charIdx) => (
-              <span key={charIdx} className="hero-desc-char inline-block">
-                {char === ' ' ? '\u00A0' : char}
-              </span>
-            ))}
-          </span>
+          {line}
         </span>
       ))}
     </p>

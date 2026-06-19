@@ -1,7 +1,6 @@
 'use client';
 
 import { PARTNER_LOGOS, PARTNER_LOGO_SIZE } from '@/lib/partner-logos';
-import Image from 'next/image';
 
 const LOOP_LOGOS = [...PARTNER_LOGOS, ...PARTNER_LOGOS];
 
@@ -22,23 +21,18 @@ export function PartnerLogoMarquee() {
       <div className="partner-logo-marquee__viewport">
         <div className="partner-logo-marquee__track">
           {LOOP_LOGOS.map((logo, index) => (
-            <div key={`${logo.src}-${index}`} className="partner-logo-marquee__item">
-              <div className="partner-logo-marquee__cell">
-                <div className="partner-logo-marquee__cell-shine" aria-hidden="true" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <Image
-                  src={logo.src}
-                  alt={logo.alt}
-                  width={width}
-                  height={height}
-                  sizes={`${width}px`}
-                  className="partner-logo-marquee__logo"
-                  loading="lazy"
-                  decoding="async"
-                  draggable={false}
-                />
-              </div>
-            </div>
+            <img
+              key={`${logo.src}-${index}`}
+              src={logo.src}
+              alt={logo.alt}
+              width={width}
+              height={height}
+              className="partner-logo-marquee__cell partner-logo-marquee__logo"
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
+              draggable={false}
+            />
           ))}
         </div>
       </div>

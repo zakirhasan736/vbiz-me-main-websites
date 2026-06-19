@@ -13,7 +13,6 @@ export const CINEMATIC = {
   LIST_STAGGER: 0.085,
   DISTANCE: 36,
   EDGE_X: 72,
-  BLUR: 12,
   SCALE_FROM: 0.96,
   EASE: 'power3.out',
   BURST_EASE: 'back.out(1.25)',
@@ -21,11 +20,11 @@ export const CINEMATIC = {
 
 type SlideDirection = 'up' | 'left' | 'right';
 
+/** Composited props only — opacity + transform (no filter blur). */
 function getSlideFrom(direction: SlideDirection): gsap.TweenVars {
   const base: gsap.TweenVars = {
     opacity: 0,
     y: CINEMATIC.DISTANCE,
-    filter: `blur(${CINEMATIC.BLUR}px)`,
     scale: CINEMATIC.SCALE_FROM,
   };
 
@@ -57,7 +56,6 @@ export function animateCinematicStagger(
     opacity: 1,
     x: 0,
     y: 0,
-    filter: 'blur(0px)',
     scale: 1,
     duration: CINEMATIC.DURATION,
     stagger: options?.stagger ?? CINEMATIC.LIST_STAGGER,
@@ -68,7 +66,7 @@ export function animateCinematicStagger(
       once: true,
     },
     onComplete: () => {
-      gsap.set(items, { clearProps: 'transform,filter' });
+      gsap.set(items, { clearProps: 'transform' });
     },
   });
 }
@@ -107,7 +105,6 @@ export function animateCinematicBurst(
       opacity: 1,
       x: 0,
       y: 0,
-      filter: 'blur(0px)',
       scale: 1,
       duration: 1.05,
       delay,
@@ -118,7 +115,7 @@ export function animateCinematicBurst(
         once: true,
       },
       onComplete: () => {
-        gsap.set(element, { clearProps: 'transform,filter' });
+        gsap.set(element, { clearProps: 'transform' });
       },
     },
   );

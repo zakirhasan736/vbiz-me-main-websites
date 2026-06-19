@@ -11,6 +11,7 @@ import {
   MOTION_CONSTANTS,
 } from '@/lib/gsap-animation-utils';
 import { usePageTransition } from '@/components/providers/page-transition-context';
+import { renderHighlightedText } from '@/lib/text-highlight';
 
 const PREMIUM_EASE = [0.16, 1, 0.3, 1] as const;
 const ELASTIC_EASE = [0.22, 1, 0.36, 1] as const;
@@ -31,83 +32,36 @@ export const RevealText = ({
   /** Above-the-fold titles: visible on first paint for LCP (no stagger/blur delay). */
   priority?: boolean;
 }) => {
-  const words = text.split(' ');
   const { revealReady } = usePageTransition();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const shouldReveal = revealReady && isInView;
+  const alignment = centered ? 'text-center justify-center mx-auto' : '';
 
   if (priority) {
     return (
-      <Tag
-        data-reveal-title
-        ref={ref}
-        className={`${className} ${centered ? 'text-center justify-center mx-auto' : ''}`}
-      >
-        {words.map((word, idx) => {
-          const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, '');
-          const isHighlighted = highlightedWords.some(
-            (h) => h.toLowerCase() === cleanWord.toLowerCase(),
-          );
-
-          return (
-            <span
-              key={idx}
-              className={`inline-block mr-[0.22em] ${isHighlighted ? 'text-brand-gold font-semibold' : ''}`}
-            >
-              {word}
-            </span>
-          );
-        })}
+      <Tag ref={ref} data-reveal-title className={`${className} ${alignment}`}>
+        {renderHighlightedText(text, highlightedWords)}
       </Tag>
     );
   }
 
   return (
-    <Tag
-      data-reveal-title
-      ref={ref}
-      className={`${className} ${centered ? 'text-center justify-center mx-auto' : ''}`}
-    >
+    <Tag ref={ref} data-reveal-title className={`${className} ${alignment}`}>
       <motion.span
-        className={`inline-flex flex-wrap ${centered ? 'justify-center text-center mx-auto' : ''}`}
-        initial="hidden"
-        animate={shouldReveal ? 'visible' : 'hidden'}
-        variants={{
-          hidden: {},
-          visible: {
-            transition: { staggerChildren: MOTION_CONSTANTS.TITLE_STAGGER },
-          },
+        className={`block ${centered ? 'mx-auto text-center' : ''}`}
+        initial={{ opacity: 0, y: 28, filter: 'blur(8px)' }}
+        animate={
+          shouldReveal
+            ? { opacity: 1, y: 0, filter: 'blur(0px)' }
+            : { opacity: 0, y: 28, filter: 'blur(8px)' }
+        }
+        transition={{
+          duration: MOTION_CONSTANTS.TITLE_WORD_DURATION,
+          ease: ELASTIC_EASE,
         }}
       >
-        {words.map((word, idx) => {
-          const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?"']/g, '');
-          const isHighlighted = highlightedWords.some(
-            (h) => h.toLowerCase() === cleanWord.toLowerCase()
-          );
-
-          return (
-            <span key={idx} className="inline-block overflow-hidden mr-[0.22em] py-0.5">
-              <motion.span
-                className={`inline-block origin-bottom ${isHighlighted ? 'text-brand-gold font-semibold' : ''}`}
-                variants={{
-                  hidden: { y: '115%', opacity: 0, filter: 'blur(8px)' },
-                  visible: {
-                    y: 0,
-                    opacity: 1,
-                    filter: 'blur(0px)',
-                    transition: {
-                      duration: MOTION_CONSTANTS.TITLE_WORD_DURATION,
-                      ease: ELASTIC_EASE,
-                    },
-                  },
-                }}
-              >
-                {word}
-              </motion.span>
-            </span>
-          );
-        })}
+        {renderHighlightedText(text, highlightedWords)}
       </motion.span>
     </Tag>
   );
@@ -124,55 +78,30 @@ export const RevealParagraph = ({
   delay?: number;
   centered?: boolean;
 }) => {
-  const words = text.split(' ');
   const { revealReady } = usePageTransition();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const shouldReveal = revealReady && isInView;
 
   return (
-    <p
+    <motion.p
       data-reveal-description
       ref={ref}
-      className={`${className} ${centered ? 'text-center mx-auto justify-center flex' : ''}`}
+      className={`${className} ${centered ? 'text-center mx-auto' : ''}`}
+      initial={{ opacity: 0, y: 22, filter: 'blur(6px)' }}
+      animate={
+        shouldReveal
+          ? { opacity: 1, y: 0, filter: 'blur(0px)' }
+          : { opacity: 0, y: 22, filter: 'blur(6px)' }
+      }
+      transition={{
+        duration: MOTION_CONSTANTS.PARAGRAPH_WORD_DURATION,
+        ease: PREMIUM_EASE,
+        delay: shouldReveal ? delay : 0,
+      }}
     >
-      <motion.span
-        className={`inline-flex flex-wrap ${centered ? 'justify-center mx-auto text-center' : ''}`}
-        initial="hidden"
-        animate={shouldReveal ? 'visible' : 'hidden'}
-        variants={{
-          hidden: {},
-          visible: {
-            transition: {
-              staggerChildren: MOTION_CONSTANTS.PARAGRAPH_STAGGER,
-              delayChildren: delay,
-            },
-          },
-        }}
-      >
-        {words.map((word, idx) => (
-          <span key={idx} className="inline-block overflow-hidden mr-[0.22em] py-0.5">
-            <motion.span
-              className="inline-block origin-bottom text-inherit font-inherit"
-              variants={{
-                hidden: { y: '110%', opacity: 0, filter: 'blur(6px)' },
-                visible: {
-                  y: 0,
-                  opacity: 1,
-                  filter: 'blur(0px)',
-                  transition: {
-                    duration: MOTION_CONSTANTS.PARAGRAPH_WORD_DURATION,
-                    ease: PREMIUM_EASE,
-                  },
-                },
-              }}
-            >
-              {word}
-            </motion.span>
-          </span>
-        ))}
-      </motion.span>
-    </p>
+      {text}
+    </motion.p>
   );
 };
 

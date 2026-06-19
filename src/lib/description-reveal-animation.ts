@@ -10,12 +10,12 @@ function q(root: HTMLElement, selector: string) {
   return root.querySelectorAll(selector);
 }
 
-/** Homepage-style description: line blur fade-up, then letter spell-in */
+/** Homepage-style description: line blur fade-up */
 export function buildDescriptionRevealTimeline(root: HTMLElement, reduced: boolean) {
   const tl = gsap.timeline({
     defaults: { ease: HERO_GSAP.ease },
     onComplete: () => {
-      gsap.set(q(root, '.hero-desc-line-wrap, .hero-desc-char'), {
+      gsap.set(q(root, '.hero-desc-line-wrap'), {
         opacity: 1,
         y: 0,
         filter: 'none',
@@ -25,7 +25,7 @@ export function buildDescriptionRevealTimeline(root: HTMLElement, reduced: boole
   });
 
   if (reduced) {
-    gsap.set(q(root, '.hero-desc-line-wrap, .hero-desc-char'), { opacity: 1, clearProps: 'all' });
+    gsap.set(q(root, '.hero-desc-line-wrap'), { opacity: 1, clearProps: 'all' });
     return tl;
   }
 
@@ -39,13 +39,6 @@ export function buildDescriptionRevealTimeline(root: HTMLElement, reduced: boole
       duration: 0.72,
       stagger: HERO_GSAP.lineStagger,
     },
-  );
-
-  tl.fromTo(
-    q(root, '.hero-desc-char'),
-    { opacity: 0 },
-    { opacity: 1, duration: 0.035, stagger: HERO_GSAP.letterStagger },
-    '-=0.5',
   );
 
   return tl;

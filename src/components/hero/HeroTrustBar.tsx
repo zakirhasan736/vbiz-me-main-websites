@@ -14,10 +14,6 @@ export function HeroTrustBar() {
       className="hero-trust-bar relative z-20 w-full mt-4 md:mt-8"
     >
       <div className="hero-trust-bar__frame relative overflow-hidden">
-        <div className="hero-trust-bar__ambient" aria-hidden="true" />
-        <div className="hero-trust-bar__sweep" aria-hidden="true" />
-        <div className="hero-trust-bar__grain" aria-hidden="true" />
-
         <div className="hero-trust-bar__inner relative z-10 py-8 md:py-10">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
@@ -53,8 +49,6 @@ export function HeroTrustBar() {
             transition={{ duration: 0.8, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
             className="hero-trust-bar__marquee-lane"
           >
-            <div className="hero-trust-bar__lane-glow hero-trust-bar__lane-glow--top" aria-hidden="true" />
-            <div className="hero-trust-bar__lane-glow hero-trust-bar__lane-glow--bottom" aria-hidden="true" />
             <DeferredPartnerLogoMarquee />
           </motion.div>
         </div>

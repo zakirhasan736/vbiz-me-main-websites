@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run optimize:partner-logos && next build",
     "start": "next start",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "optimize:partner-logos": "node scripts/optimize-partner-logos.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.52.0",

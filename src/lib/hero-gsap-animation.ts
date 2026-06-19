@@ -26,7 +26,7 @@ function revealAll(root: HTMLElement) {
   gsap.set(
     q(
       root,
-      '.hero-eyebrow, .hero-title-word, .hero-desc-line-wrap, .hero-desc-char, .hero-cta-item, .hero-trust-item',
+      '.hero-eyebrow, .hero-title-block, .hero-desc-block, .hero-primary-cta-item, .hero-secondary-cta-item, .hero-trust-item',
     ),
     { opacity: 1, y: 0, yPercent: 0, x: 0, filter: 'none', clearProps: 'transform,filter' },
   );
@@ -55,49 +55,51 @@ export function buildHeroLeftTimeline(root: HTMLElement, reduced: boolean) {
   }
 
   tl.fromTo(
-    q(root, '.hero-title-word'),
+    q(root, '.hero-title-block'),
     { yPercent: 115, opacity: 0 },
     {
       yPercent: 0,
       opacity: 1,
       duration: 0.82,
-      stagger: HERO_GSAP.titleStagger,
       ease: 'power4.out',
     },
     '-=0.28',
   );
 
   tl.fromTo(
-    q(root, '.hero-desc-line-wrap'),
+    q(root, '.hero-desc-block'),
     { opacity: 0, y: 36, filter: 'blur(12px)' },
     {
       opacity: 1,
       y: 0,
       filter: 'blur(0px)',
       duration: 0.72,
-      stagger: HERO_GSAP.lineStagger,
     },
     '-=0.42',
   );
 
   tl.fromTo(
-    q(root, '.hero-desc-char'),
-    { opacity: 0 },
-    { opacity: 1, duration: 0.035, stagger: HERO_GSAP.letterStagger },
-    '-=0.55',
+    q(root, '.hero-primary-cta-item'),
+    { y: 40, opacity: 1 },
+    {
+      y: 0,
+      opacity: 1,
+      duration: 0.78,
+      ease: 'power3.out',
+    },
+    '-=0.35',
   );
 
   tl.fromTo(
-    q(root, '.hero-cta-item'),
-    { opacity: 0, y: 40, filter: 'blur(12px)' },
+    q(root, '.hero-secondary-cta-item'),
+    { y: 40, opacity: 1 },
     {
-      opacity: 1,
       y: 0,
-      filter: 'blur(0px)',
+      opacity: 1,
       duration: 0.78,
-      stagger: HERO_GSAP.ctaStagger,
+      ease: 'power3.out',
     },
-    '-=0.35',
+    '-=0.62',
   );
 
   tl.fromTo(
