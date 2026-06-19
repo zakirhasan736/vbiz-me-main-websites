@@ -19,6 +19,8 @@ export interface PhoneMockupFrameProps {
   live?: boolean;
   iframeLoading?: 'lazy' | 'eager';
   showUrlInLoader?: boolean;
+  minLoaderMs?: number;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
 /**
@@ -35,6 +37,8 @@ export function PhoneMockupFrame({
   live = true,
   iframeLoading = 'lazy',
   showUrlInLoader = false,
+  minLoaderMs = 0,
+  onLoadingChange,
 }: PhoneMockupFrameProps) {
   const styles = MOBILE_FRAME_SIZES[size];
   const showLive = live || !previewImage;
@@ -68,6 +72,8 @@ export function PhoneMockupFrame({
               compact={compactLoader}
               iframeLoading={iframeLoading}
               showUrlInLoader={showUrlInLoader}
+              minLoaderMs={minLoaderMs}
+              onLoadingChange={onLoadingChange}
             />
           </div>
         ) : (

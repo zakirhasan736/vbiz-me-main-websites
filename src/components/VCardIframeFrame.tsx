@@ -1,15 +1,18 @@
 'use client';
 
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 interface VCardIframeFrameProps {
   src: string;
   title: string;
   className?: string;
   maxLoaderMs?: number;
+  /** Keep loader visible at least this long so users notice it on fast/cached loads. */
+  minLoaderMs?: number;
   compact?: boolean;
   iframeLoading?: 'lazy' | 'eager';
   showUrlInLoader?: boolean;
+  onLoadingChange?: (loading: boolean) => void;
 }
 
 /**
@@ -21,15 +24,40 @@ export function VCardIframeFrame({
   title,
   className = 'border-0 bg-brand-deep',
   maxLoaderMs = 6000,
+  minLoaderMs = 0,
   compact = false,
   iframeLoading = 'lazy',
   showUrlInLoader = false,
+  onLoadingChange,
 }: VCardIframeFrameProps) {
   const [showLoader, setShowLoader] = useState(true);
   const activeSrcRef = useRef(src);
+  const mountTimeRef = useRef(0);
+  const hideTimerRef = useRef<number | null>(null);
+
+  const clearHideTimer = () => {
+    if (hideTimerRef.current !== null) {
+      window.clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+  };
+
+  const scheduleHideLoader = useCallback(() => {
+    clearHideTimer();
+    const elapsed = Date.now() - mountTimeRef.current;
+    const delay = Math.max(0, minLoaderMs - elapsed);
+
+    hideTimerRef.current = window.setTimeout(() => {
+      if (activeSrcRef.current === src) {
+        setShowLoader(false);
+      }
+    }, delay);
+  }, [minLoaderMs, src]);
 
   useLayoutEffect(() => {
     activeSrcRef.current = src;
+    mountTimeRef.current = Date.now();
+    clearHideTimer();
     setShowLoader(true);
 
     const fallback = window.setTimeout(() => {
@@ -38,16 +66,20 @@ export function VCardIframeFrame({
       }
     }, maxLoaderMs);
 
-    return () => window.clearTimeout(fallback);
+    return () => {
+      window.clearTimeout(fallback);
+      clearHideTimer();
+    };
   }, [src, maxLoaderMs]);
 
+  useEffect(() => {
+    onLoadingChange?.(showLoader);
+  }, [showLoader, onLoadingChange]);
+
   const handleLoad = useCallback(() => {
-    requestAnimationFrame(() => {
-      if (activeSrcRef.current === src) {
-        setShowLoader(false);
-      }
-    });
-  }, [src]);
+    if (activeSrcRef.current !== src) return;
+    scheduleHideLoader();
+  }, [scheduleHideLoader, src]);
 
   const loaderUrlLabel = (() => {
     try {
@@ -62,33 +94,36 @@ export function VCardIframeFrame({
 
   return (
     <div
-      className="vcard-iframe-shell relative w-full h-full min-h-0 flex-1 touch-auto pointer-events-auto overflow-hidden"
+      className="vcard-iframe-shell absolute inset-0 h-full w-full min-h-0 touch-auto pointer-events-auto overflow-hidden"
       data-lenis-prevent
       data-lenis-prevent-touch
       data-lenis-prevent-wheel
     >
       {showLoader && (
         <div
-          className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 px-4 backdrop-blur-sm"
+          className="vcard-iframe-loader absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#080808] px-4"
           role="status"
           aria-live="polite"
           aria-label={`Loading ${title}`}
         >
-          <div className="mb-3 h-10 w-10 animate-spin rounded-full border-2 border-brand-gold/20 border-t-brand-gold shadow-[0_0_15px_rgba(212,175,55,0.3)]" />
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-200">
+          <div className="mb-3 h-11 w-11 animate-spin rounded-full border-2 border-brand-gold/25 border-t-brand-gold shadow-[0_0_18px_rgba(212,175,55,0.35)]" />
+          <span className="text-[11px] font-semibold uppercase tracking-widest text-white">
             {compact ? 'Loading vCard…' : 'Loading live vCard…'}
           </span>
           {showUrlInLoader ? (
-            <span className="mt-2 max-w-[220px] break-all text-center font-mono text-[9px] leading-snug text-brand-gold/75">
+            <span className="mt-2.5 max-w-[240px] break-all text-center font-mono text-[10px] leading-snug text-brand-gold">
               {loaderUrlLabel}
             </span>
           ) : null}
+          <span className="mt-3 text-[9px] font-light text-neutral-500">Please wait…</span>
         </div>
       )}
       <iframe
         key={src}
         src={src}
-        className={`absolute inset-0 z-[1] w-full h-full border-0 pointer-events-auto touch-auto ${className}`}
+        className={`absolute inset-0 z-[1] h-full w-full border-0 pointer-events-auto touch-auto ${className} ${
+          showLoader ? 'opacity-0' : 'opacity-100'
+        } transition-opacity duration-300`}
         title={title}
         onLoad={handleLoad}
         loading={iframeLoading}

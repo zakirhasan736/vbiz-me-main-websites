@@ -31,10 +31,28 @@ export function IndustryVCardMobilePreview({
   highlighted = false,
 }: IndustryVCardMobilePreviewProps) {
   const [mounted, setMounted] = useState(false);
+  const [phoneLoading, setPhoneLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setPhoneLoading(true);
+    }
+  }, [isOpen, src]);
+
+  const loaderUrlLabel = (() => {
+    try {
+      const url = new URL(src);
+      const path =
+        url.pathname.length > 28 ? `${url.pathname.slice(0, 26)}…` : url.pathname;
+      return `${url.host}${path}`;
+    } catch {
+      return src;
+    }
+  })();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -101,15 +119,38 @@ export function IndustryVCardMobilePreview({
               </div>
 
               <VCardInteractiveLane className="w-full flex flex-col items-center">
-                <PhoneMockupFrame
-                  key={src}
-                  src={src}
-                  title={title}
-                  size="modal"
-                  compactLoader
-                  iframeLoading="eager"
-                  showUrlInLoader
-                />
+                <div className="relative w-full max-w-[407px] mx-auto">
+                  {phoneLoading && (
+                    <div
+                      className="industry-vcard-phone-loader absolute inset-0 z-[80] flex flex-col items-center justify-center rounded-[44px] border border-brand-gold/30 bg-[#080808] px-5 text-center shadow-[inset_0_0_40px_rgba(212,175,55,0.06)]"
+                      role="status"
+                      aria-live="polite"
+                      aria-label={`Loading ${industryName} live demo`}
+                    >
+                      <div className="mb-4 h-12 w-12 animate-spin rounded-full border-2 border-brand-gold/25 border-t-brand-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]" />
+                      <span className="text-xs font-semibold uppercase tracking-widest text-white">
+                        Loading live demo
+                      </span>
+                      <span className="mt-2 max-w-[260px] break-all font-mono text-[10px] leading-snug text-brand-gold">
+                        {loaderUrlLabel}
+                      </span>
+                      <span className="mt-3 text-[10px] font-light text-neutral-400">
+                        Connecting to vCard…
+                      </span>
+                    </div>
+                  )}
+                  <PhoneMockupFrame
+                    key={`${src}-${isOpen}`}
+                    src={src}
+                    title={title}
+                    size="modal"
+                    compactLoader
+                    iframeLoading="eager"
+                    showUrlInLoader
+                    minLoaderMs={900}
+                    onLoadingChange={setPhoneLoading}
+                  />
+                </div>
               </VCardInteractiveLane>
             </div>
 

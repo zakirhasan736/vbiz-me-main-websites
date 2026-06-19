@@ -456,6 +456,8 @@ html.lenis {
 .industry-vcard-mobile-modal .vcard-phone-screen,
 .industry-vcard-mobile-modal .vcard-iframe-shell,
 .industry-vcard-mobile-modal .vcard-iframe-shell iframe,
+.industry-vcard-mobile-modal .vcard-iframe-loader,
+.industry-vcard-phone-loader,
 .industry-vcard-mobile-modal {
   z-index: 10050;
 }
