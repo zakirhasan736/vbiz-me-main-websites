@@ -186,9 +186,8 @@ html {
   overflow-x: hidden;
 }
 
-/* Hero banner — hidden until GSAP runs on animateReady (title stays in SSR HTML for crawlers) */
+/* Hero banner — hidden until GSAP runs (title is SSR-visible for LCP — see below) */
 .section-hero.hero-banner-pending .hero-eyebrow,
-.section-hero.hero-banner-pending .hero-title-block,
 .section-hero.hero-banner-pending .hero-trust-item,
 .section-hero.hero-banner-pending .hero-video-enter,
 .hero-video-await {
@@ -205,7 +204,8 @@ html {
   opacity: 0;
 }
 
-/* Hero description + CTAs — SSR visible on first paint; GSAP slides up */
+/* Hero title, description + CTAs — SSR visible on first paint; GSAP slides up (no opacity hide for LCP) */
+.section-hero.hero-banner-pending .hero-title-block,
 .section-hero.hero-banner-pending .hero-desc-block,
 .section-hero.hero-banner-pending .hero-primary-cta-item,
 .section-hero.hero-banner-pending .hero-secondary-cta-item {
@@ -236,6 +236,7 @@ html {
     pointer-events: auto;
   }
 
+  .section-hero.hero-banner-pending .hero-title-block,
   .section-hero.hero-banner-pending .hero-desc-block,
   .section-hero.hero-banner-pending .hero-primary-cta-item,
   .section-hero.hero-banner-pending .hero-secondary-cta-item {
@@ -1345,10 +1346,15 @@ body.theme-light .hero-trust-bar__marquee-lane {
 
 /* ── Partner logo marquee ── */
 .partner-logo-marquee {
-  --marquee-visible-count: 4;
+  --marquee-visible-count: 2;
   --marquee-item-gap: 0.875rem;
   --marquee-logo-height: 50px;
   --marquee-logo-aspect: 1.8421;
+  --marquee-viewport-width: min(100vw - 2rem, 72rem);
+  --marquee-slot-width: calc(
+    (var(--marquee-viewport-width) - (var(--marquee-visible-count) - 1) * var(--marquee-item-gap)) /
+      var(--marquee-visible-count)
+  );
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
   mask-image: linear-gradient(90deg, transparent 0%, #000 7%, #000 93%, transparent 100%);
 }
@@ -1365,9 +1371,10 @@ body.theme-light .hero-trust-bar__marquee-lane {
 
 @media (min-width: 768px) {
   .partner-logo-marquee {
-    --marquee-visible-count: 4;
+    --marquee-visible-count: 5;
     --marquee-item-gap: 1.125rem;
     --marquee-logo-height: 4.25rem;
+    --marquee-viewport-width: min(100vw - 3rem, 42rem);
   }
 
   .partner-logo-marquee__desktop-only {
@@ -1378,27 +1385,7 @@ body.theme-light .hero-trust-bar__marquee-lane {
     display: none;
   }
 }
-@media (min-width: 991px) {
-  .partner-logo-marquee {
-    --marquee-visible-count: 6;
-    --marquee-item-gap: 1.5rem;
-    --marquee-logo-height: 5.5rem;
-  }
-}
-@media (min-width: 1200px) {
-  .partner-logo-marquee {
-    --marquee-visible-count: 8;
-    --marquee-item-gap: 1.5rem;
-    --marquee-logo-height: 5.5rem;
-  }
-} 
-@media (min-width: 1400px) {
-  .partner-logo-marquee {
-    --marquee-visible-count: 8;
-    --marquee-item-gap: 1.5rem;
-    --marquee-logo-height: 5.5rem;
-  }
-}
+
 .partner-logo-marquee-placeholder {
   min-height: calc((var(--marquee-logo-height, 50px) + 1.7rem) * 2 + 0.65rem);
 }
@@ -1469,15 +1456,8 @@ body.theme-light .hero-trust-bar__marquee-lane {
 }
 
 .partner-logo-marquee__cell {
-  flex: 0 0
-    calc(
-      (100vw - 2rem - (var(--marquee-visible-count) - 1) * var(--marquee-item-gap)) /
-        var(--marquee-visible-count)
-    );
-  width: calc(
-    (100vw - 2rem - (var(--marquee-visible-count) - 1) * var(--marquee-item-gap)) /
-      var(--marquee-visible-count)
-  );
+  flex: 0 0 var(--marquee-slot-width);
+  width: var(--marquee-slot-width);
   max-width: 10.5rem;
   flex-shrink: 0;
   position: relative;

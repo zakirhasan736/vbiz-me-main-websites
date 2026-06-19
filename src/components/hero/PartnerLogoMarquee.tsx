@@ -57,16 +57,45 @@ function MarqueeTrack({
   );
 }
 
+function StaticLogoGrid() {
+  return (
+    <div className="partner-logo-marquee__viewport">
+      <div className="partner-logo-marquee__track partner-logo-marquee__track--static">
+        {PARTNER_LOGOS.map((logo) => (
+          <PartnerLogoImage key={`static-${logo.src}`} logo={logo} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function PartnerLogoMarquee() {
   const [loopDuplicate, setLoopDuplicate] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const sync = () => setLoopDuplicate(!mq.matches);
+    const sync = () => {
+      const reduced = mq.matches;
+      setReducedMotion(reduced);
+      setLoopDuplicate(!reduced);
+    };
     sync();
     mq.addEventListener('change', sync);
     return () => mq.removeEventListener('change', sync);
   }, []);
+
+  if (reducedMotion) {
+    return (
+      <div
+        className="partner-logo-marquee relative w-full"
+        aria-label="Trusted partner company logos"
+        role="region"
+      >
+        <StaticLogoGrid />
+      </div>
+    );
+  }
 
   return (
     <div

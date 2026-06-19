@@ -28,8 +28,11 @@ export const PARTNER_LOGO_MOBILE_WIDTH = Math.round(PARTNER_LOGO_MOBILE_HEIGHT *
 
 const MARQUEE_ROW_SPLIT = Math.ceil(PARTNER_LOGOS.length / 2);
 
-/** First mobile marquee row (scrolls left). */
+/** Logos visible in the desktop marquee viewport at once. */
+export const PARTNER_DESKTOP_VISIBLE_COUNT = 5;
+
+/** First mobile row — logos 1–7 (scrolls left). */
 export const PARTNER_LOGO_MARQUEE_ROW_A = PARTNER_LOGOS.slice(0, MARQUEE_ROW_SPLIT);
 
-/** Second mobile marquee row (scrolls right). */
+/** Second mobile row — logos 8–13 (scrolls right). */
 export const PARTNER_LOGO_MARQUEE_ROW_B = PARTNER_LOGOS.slice(MARQUEE_ROW_SPLIT);
