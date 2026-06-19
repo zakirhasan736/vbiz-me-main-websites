@@ -26,7 +26,7 @@ function revealAll(root: HTMLElement) {
   gsap.set(
     q(
       root,
-      '.hero-eyebrow, .hero-desc-block, .hero-primary-cta-item, .hero-secondary-cta-item, .hero-trust-item',
+      '.hero-eyebrow, .hero-desc-lcp, .hero-primary-cta-item, .hero-secondary-cta-item, .hero-trust-item',
     ),
     { opacity: 1, y: 0, yPercent: 0, x: 0, filter: 'none', clearProps: 'transform,filter' },
   );
@@ -53,18 +53,6 @@ export function buildHeroLeftTimeline(root: HTMLElement, reduced: boolean) {
       { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.65 },
     );
   }
-
-  tl.fromTo(
-    q(root, '.hero-desc-block'),
-    { y: 36, opacity: 1 },
-    {
-      y: 0,
-      opacity: 1,
-      duration: 0.72,
-      ease: 'power3.out',
-    },
-    '-=0.2',
-  );
 
   tl.fromTo(
     q(root, '.hero-primary-cta-item'),

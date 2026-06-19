@@ -1,73 +1,24 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { HERO_GSAP } from '@/lib/hero-gsap-animation';
-import { HERO_INTRO_SCENE } from '@/lib/hero-cinema/commands';
+import { HERO_TITLE_INTRO_SCENE } from '@/lib/hero-cinema/commands';
+import { runMaskRevealScene } from '@/lib/hero-cinema/run-mask-reveal-scene';
 
 gsap.registerPlugin(ScrollTrigger);
 
-/** Word mask reveal — duplicate text rises into clip; LCP layer underneath. */
 export function runHeroIntroScene(root: HTMLElement, reduced: boolean) {
-  const fx = root.querySelector('.hero-title-fx') as HTMLElement | null;
-  const tl = gsap.timeline({ defaults: { ease: HERO_GSAP.ease } });
+  const scene = HERO_TITLE_INTRO_SCENE.find((c) => c.cmd === 'MASK_REVEAL_WORD');
+  if (!scene) return gsap.timeline();
 
-  if (!fx) return tl;
-
-  if (reduced) {
-    fx.classList.add('hero-title-fx--skipped');
-    gsap.set(fx, { opacity: 0, pointerEvents: 'none', visibility: 'hidden' });
-    return tl;
-  }
-
-  const lines = Array.from(root.querySelectorAll<HTMLElement>('.hero-title-fx__line'));
-  const maskCmd = HERO_INTRO_SCENE.find((c) => c.cmd === 'MASK_REVEAL_WORD');
-
-  const stagger = maskCmd?.stagger ?? 0.07;
-  const wordDuration = maskCmd?.wordDuration ?? 0.78;
-  const lineGap = maskCmd?.lineGap ?? 0.12;
-  const ease = maskCmd?.ease ?? 'power4.out';
-
-  fx.classList.add('hero-title-fx--playing');
-  gsap.set(fx, { opacity: 1, visibility: 'visible' });
-
-  let lineIndex = 0;
-  lines.forEach((line) => {
-    const inners = Array.from(line.querySelectorAll<HTMLElement>('.hero-title-fx__word-inner'));
-    if (!inners.length) return;
-
-    const lineStart = lineIndex === 0 ? 0 : `+=${lineGap}`;
-
-    gsap.set(inners, {
-      yPercent: 115,
-      opacity: 0.2,
-      filter: 'blur(12px)',
-      force3D: true,
-    });
-
-    tl.to(
-      inners,
-      {
-        yPercent: 0,
-        opacity: 1,
-        filter: 'blur(0px)',
-        duration: wordDuration,
-        stagger,
-        ease,
-      },
-      lineStart,
-    );
-
-    lineIndex += 1;
+  return runMaskRevealScene(root, {
+    fxSelector: '.hero-title-fx',
+    lineSelector: '.hero-title-fx__line',
+    innerSelector: '.hero-title-fx__word-inner',
+    playingClass: 'hero-title-fx--playing',
+    doneClass: 'hero-title-fx--done',
+    skippedClass: 'hero-title-fx--skipped',
+    scene,
+    reduced,
   });
-
-  tl.to(fx, { opacity: 0, duration: 0.28, ease: 'power2.out' });
-
-  tl.call(() => {
-    fx.classList.remove('hero-title-fx--playing');
-    fx.classList.add('hero-title-fx--done');
-    gsap.set(fx, { visibility: 'hidden', pointerEvents: 'none' });
-  });
-
-  return tl;
 }
 
 /** Scroll parallax — disabled while mask intro plays. */

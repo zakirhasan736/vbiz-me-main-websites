@@ -331,6 +331,112 @@ body.theme-ocean .section-hero {
   pointer-events: none;
 }
 
+/* ── Hero description — 3-layer mask system (mirrors title) ── */
+.hero-desc-stage {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+}
+
+.hero-desc-lcp {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18em;
+  margin: 0;
+}
+
+.hero-desc-lcp,
+.hero-desc-lcp * {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.hero-desc-lcp__line,
+.hero-desc-fx__line {
+  display: block;
+  line-height: 1.55;
+}
+
+.hero-desc-lcp__word-wrap,
+.hero-desc-fx__word-wrap {
+  display: inline;
+}
+
+.hero-desc-lcp__word {
+  display: inline;
+}
+
+.hero-desc-fx__word-clip {
+  display: inline-block;
+  vertical-align: top;
+  overflow: hidden;
+  line-height: 1.55;
+  background-color: var(--color-brand-dark);
+  background-image: var(--hero-title-mask-bg);
+  background-size: 100% 100svh;
+  background-position: center top;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+.hero-desc-fx__word-inner {
+  display: inline-block;
+  white-space: pre;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+}
+
+.hero-desc-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18em;
+  pointer-events: none;
+  opacity: 1;
+  visibility: visible;
+}
+
+.hero-desc-fx__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18em;
+}
+
+.hero-desc-fx--playing {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.hero-desc-fx--done,
+.hero-desc-fx--skipped {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  .hero-title-lcp,
+  .hero-title-fx {
+    letter-spacing: -0.02em;
+  }
+
+  .hero-desc-lcp,
+  .hero-desc-fx {
+    line-height: 1.5;
+  }
+
+  .hero-desc-lcp__line,
+  .hero-desc-fx__line,
+  .hero-desc-fx__word-clip {
+    line-height: 1.5;
+  }
+}
+
 .section-hero.hero-banner-pending .hero-title-lcp,
 .section-hero.hero-banner-pending .hero-title-lcp * {
   opacity: 1;
@@ -338,17 +444,19 @@ body.theme-ocean .section-hero {
   transform: none;
 }
 
-/* Hero description + CTAs — SSR visible on first paint; GSAP slides up */
-.section-hero.hero-banner-pending .hero-desc-block,
+/* Hero description + CTAs — SSR visible on first paint; desc mask handled in HeroDescStage */
+.section-hero.hero-banner-pending .hero-desc-lcp,
+.section-hero.hero-banner-pending .hero-desc-lcp * {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
 .section-hero.hero-banner-pending .hero-primary-cta-item,
 .section-hero.hero-banner-pending .hero-secondary-cta-item {
   opacity: 1;
   pointer-events: auto;
   transform: translate3d(0, 40px, 0);
-}
-
-.section-hero.hero-banner-pending .hero-desc-block {
-  transform: translate3d(0, 36px, 0);
 }
 
 @media (max-width: 767px) {
@@ -361,7 +469,7 @@ body.theme-ocean .section-hero {
 @media (prefers-reduced-motion: reduce) {
   .section-hero.hero-banner-pending .hero-eyebrow,
   .section-hero.hero-banner-pending .hero-title-lcp,
-  .section-hero.hero-banner-pending .hero-desc-block,
+  .section-hero.hero-banner-pending .hero-desc-lcp,
   .section-hero.hero-banner-pending .hero-trust-item,
   .section-hero.hero-banner-pending .hero-video-enter,
   .hero-video-await {
@@ -369,7 +477,6 @@ body.theme-ocean .section-hero {
     pointer-events: auto;
   }
 
-  .section-hero.hero-banner-pending .hero-desc-block,
   .section-hero.hero-banner-pending .hero-primary-cta-item,
   .section-hero.hero-banner-pending .hero-secondary-cta-item {
     transform: none;

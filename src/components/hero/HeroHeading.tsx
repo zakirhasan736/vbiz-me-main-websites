@@ -6,7 +6,7 @@ import {
 } from '@/lib/hero-title-copy';
 
 const TITLE_TYPE =
-  'text-4xl sm:text-5xl lg:text-[52px] font-medium tracking-tight leading-tight text-white text-left';
+  'text-[1.65rem] leading-[1.12] sm:text-5xl lg:text-[52px] font-medium tracking-tight sm:leading-tight text-white text-left';
 
 function LcpWord({ word, trailSpace }: { word: HeroTitleWord; trailSpace: boolean }) {
   return (

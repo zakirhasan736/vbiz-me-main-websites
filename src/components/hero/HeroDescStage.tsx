@@ -2,16 +2,13 @@
 
 import gsap from 'gsap';
 import { useLayoutEffect, useRef, type ReactNode } from 'react';
-import { HeroTitleFxOverlay } from '@/components/hero/HeroTitleFxOverlay';
+import { HeroDescFxOverlay } from '@/components/hero/HeroDescFxOverlay';
 import { useHeroAnimateReady } from '@/components/hero/useHeroAnimateReady';
+import { runHeroDescIntroScene } from '@/lib/hero-cinema/run-hero-desc-intro-scene';
 import { prefersReducedMotion } from '@/lib/hero-gsap-animation';
-import {
-  bindHeroTitleScrollFx,
-  runHeroIntroScene,
-} from '@/lib/hero-cinema/run-hero-intro-scene';
 
-/** Wraps LCP title + FX overlay; runs word-by-word cinema on overlay only. */
-export function HeroTitleStage({ children }: { children: ReactNode }) {
+/** Wraps LCP description + FX mask overlay. */
+export function HeroDescStage({ children }: { children: ReactNode }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const { animateReady, animationKey } = useHeroAnimateReady();
 
@@ -21,24 +18,21 @@ export function HeroTitleStage({ children }: { children: ReactNode }) {
 
     const reduced = prefersReducedMotion();
     let intro: gsap.core.Timeline | null = null;
-    let unbindScroll = () => {};
 
     const ctx = gsap.context(() => {
-      intro = runHeroIntroScene(stage, reduced);
-      unbindScroll = bindHeroTitleScrollFx(stage, reduced);
+      intro = runHeroDescIntroScene(stage, reduced);
     }, stage);
 
     return () => {
       intro?.kill();
-      unbindScroll();
       ctx.revert();
     };
   }, [animateReady, animationKey]);
 
   return (
-    <div ref={stageRef} className="hero-title-stage mb-4 sm:mb-6">
+    <div ref={stageRef} className="hero-desc-stage mb-6 sm:mb-8 max-w-2xl">
       {children}
-      <HeroTitleFxOverlay />
+      <HeroDescFxOverlay />
     </div>
   );
 }
