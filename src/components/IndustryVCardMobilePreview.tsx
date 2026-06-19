@@ -67,10 +67,10 @@ export function IndustryVCardMobilePreview({
 
   useEffect(() => {
     if (!isOpen) return;
-    document.body.classList.add('industry-demo-modal-open');
+    document.body.classList.add('vcard-demo-modal-open');
     document.body.style.overflow = 'hidden';
     return () => {
-      document.body.classList.remove('industry-demo-modal-open');
+      document.body.classList.remove('vcard-demo-modal-open');
       document.body.style.overflow = '';
     };
   }, [isOpen]);
@@ -84,7 +84,7 @@ export function IndustryVCardMobilePreview({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.28, ease: 'easeOut' }}
           onClick={onClose}
-          className="industry-vcard-mobile-modal fixed inset-0 flex items-end justify-center bg-black/92 backdrop-blur-xl"
+          className="vcard-mobile-bottom-modal industry-vcard-mobile-modal fixed inset-0 flex items-end justify-center bg-black/92 backdrop-blur-xl"
           data-lenis-prevent
           data-lenis-prevent-touch
         >
@@ -122,7 +122,7 @@ export function IndustryVCardMobilePreview({
                 <div className="relative w-full max-w-[407px] mx-auto">
                   {phoneLoading && (
                     <div
-                      className="industry-vcard-phone-loader absolute inset-0 z-[80] flex flex-col items-center justify-center rounded-[44px] border border-brand-gold/30 bg-[#080808] px-5 text-center shadow-[inset_0_0_40px_rgba(212,175,55,0.06)]"
+                      className="vcard-phone-loader absolute inset-0 z-[80] flex flex-col items-center justify-center rounded-[44px] border border-brand-gold/30 bg-[#080808] px-5 text-center shadow-[inset_0_0_40px_rgba(212,175,55,0.06)]"
                       role="status"
                       aria-live="polite"
                       aria-label={`Loading ${industryName} live demo`}

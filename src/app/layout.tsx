@@ -8,6 +8,7 @@ const inter = Inter({
   weight: ['400', '500', '600', '700'],
   display: 'swap',
   adjustFontFallback: true,
+  fallback: ['system-ui', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
   variable: '--font-inter',
   preload: true,
 });
@@ -15,7 +16,7 @@ const inter = Inter({
 const HERO_LCP_CRITICAL_CSS = `
 .hero-title-lcp,.hero-desc-lcp{margin:0;text-align:left}
 .hero-title-lcp{display:flex;flex-direction:column;gap:.08em;font-size:2.25rem;line-height:1.12;font-weight:500;letter-spacing:-.025em;color:var(--color-brand-text,#0b1020);min-height:calc(2 * 1.15em + .08em)}
-.hero-title-lcp__accent{color:var(--color-brand-gold,#d4af37);font-weight:600}
+.hero-title-lcp__accent{color:var(--color-brand-gold,#d4af37);font-weight:inherit;letter-spacing:.01em;display:inline-block;vertical-align:baseline}
 .hero-desc-lcp{display:flex;flex-direction:column;gap:.18em;font-size:1rem;line-height:1.625;font-weight:300;color:#a3a3a3;min-height:calc(3 * 1.55em + 2 * .18em)}
 .hero-title-lcp__line,.hero-desc-lcp__line{display:block;opacity:1;visibility:visible;overflow:hidden}
 .hero-title-lcp__line{line-height:1.15;min-height:1.15em}
