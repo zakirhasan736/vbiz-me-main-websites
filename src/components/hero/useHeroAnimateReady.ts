@@ -3,19 +3,13 @@
 import { useLayoutEffect, useState } from 'react';
 import { usePageTransition } from '@/components/providers/page-transition-context';
 
-/** Banner content mounted + page transition clear — start GSAP immediately (no window load wait) */
+/** Banner content mounted + page transition clear — sync so GSAP matches SSR title state immediately */
 export function useHeroAnimateReady() {
   const { revealReady, animationKey } = usePageTransition();
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(revealReady);
 
   useLayoutEffect(() => {
-    if (!revealReady) {
-      setReady(false);
-      return;
-    }
-
-    const frame = requestAnimationFrame(() => setReady(true));
-    return () => cancelAnimationFrame(frame);
+    setReady(revealReady);
   }, [revealReady, animationKey]);
 
   return {

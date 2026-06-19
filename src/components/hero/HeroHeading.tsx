@@ -1,12 +1,50 @@
-/** SSR hero H1 — visible on first paint; GSAP slides up after hydrate (opacity never hidden). */
+import { HeroTitleStage } from '@/components/hero/HeroTitleStage';
+import {
+  HERO_TITLE_LINES,
+  heroTitleTrailSpace,
+  type HeroTitleWord,
+} from '@/lib/hero-title-copy';
+
+const TITLE_TYPE =
+  'text-4xl sm:text-5xl lg:text-[52px] font-medium tracking-tight leading-tight text-white text-left';
+
+function LcpWord({ word, trailSpace }: { word: HeroTitleWord; trailSpace: boolean }) {
+  return (
+    <span className="hero-title-lcp__word">
+      {word.accent ? (
+        <span className="text-brand-gold font-semibold">{word.text}</span>
+      ) : (
+        word.text
+      )}
+      {trailSpace ? heroTitleTrailSpace() : null}
+    </span>
+  );
+}
+
+function LcpLine({ words }: { words: HeroTitleWord[] }) {
+  return (
+    <span className="hero-title-lcp__line">
+      {words.map((word, index) => (
+        <span key={`${word.text}-${index}`} className="hero-title-lcp__word-wrap">
+          <LcpWord word={word} trailSpace={index < words.length - 1} />
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/**
+ * Layer 1 — SSR LCP text (never animated, always visible under mask clips).
+ * Layers 2–3 — mask overlay + cinema controller in HeroTitleStage.
+ */
 export function HeroHeading() {
   return (
-    <h1 className="text-4xl sm:text-5xl lg:text-[52px] font-medium will-change-transform tracking-tight mb-6 leading-tight text-white text-left">
-      <span className="hero-title-block inline-block will-change-transform">
-        The Virtual Business Card That{' '}
-        <span className="text-brand-gold font-semibold">Sells</span>
-        {' '}Before You Even Speak
-      </span>
-    </h1>
+    <HeroTitleStage>
+      <h1 className={`hero-title-lcp ${TITLE_TYPE}`}>
+        {HERO_TITLE_LINES.map((line, lineIndex) => (
+          <LcpLine key={`lcp-line-${lineIndex}`} words={line} />
+        ))}
+      </h1>
+    </HeroTitleStage>
   );
 }

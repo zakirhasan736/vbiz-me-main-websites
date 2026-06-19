@@ -29,6 +29,7 @@ export function HeroBannerAnimator({ children }: { children: ReactNode }) {
       if (!animateReady || !rootRef.current) return;
 
       const section = rootRef.current.closest('.section-hero') as HTMLElement | null;
+
       timelineRef.current?.kill();
 
       timelineRef.current = buildHeroLeftTimeline(

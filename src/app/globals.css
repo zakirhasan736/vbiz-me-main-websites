@@ -204,8 +204,141 @@ html {
   opacity: 0;
 }
 
-/* Hero title, description + CTAs — SSR visible on first paint; GSAP slides up (no opacity hide for LCP) */
-.section-hero.hero-banner-pending .hero-title-block,
+/* ── Hero title — 3-layer mask system (LCP text always visible underneath) ── */
+.section-hero {
+  --page-hero-mid: #14213a;
+  --page-hero-base: #0b1020;
+  --hero-title-mask-top: color-mix(
+    in srgb,
+    var(--page-hero-mid) 82%,
+    var(--color-brand-dark)
+  );
+  --hero-title-mask-bottom: color-mix(
+    in srgb,
+    var(--page-hero-base) 82%,
+    var(--color-brand-dark)
+  );
+  --hero-title-mask-bg: radial-gradient(
+    circle at top center,
+    var(--hero-title-mask-top) 0%,
+    var(--hero-title-mask-bottom) 100%
+  );
+}
+
+body.theme-midnight .section-hero {
+  --page-hero-mid: #14213a;
+  --page-hero-base: #0b1020;
+}
+
+body.theme-light .section-hero {
+  --page-hero-mid: #f8f9fb;
+  --page-hero-base: #ffffff;
+}
+
+body.theme-ocean .section-hero {
+  --page-hero-mid: #1c2a34;
+  --page-hero-base: #0f1a22;
+}
+
+.hero-title-stage {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero-title-lcp {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.08em;
+  margin: 0;
+}
+
+.hero-title-lcp,
+.hero-title-lcp * {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.hero-title-lcp__line,
+.hero-title-fx__line {
+  display: block;
+  line-height: 1.15;
+}
+
+.hero-title-fx__word-wrap {
+  display: inline;
+}
+
+.hero-title-fx__word-clip {
+  display: inline-block;
+  vertical-align: top;
+  overflow: hidden;
+  line-height: 1.15;
+  background-color: var(--color-brand-dark);
+  background-image: var(--hero-title-mask-bg);
+  background-size: 100% 100svh;
+  background-position: center top;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+.hero-title-fx__word-inner {
+  display: inline-block;
+  white-space: pre;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+}
+
+.hero-title-lcp__word-wrap,
+.hero-title-fx__word-wrap {
+  display: inline;
+}
+
+.hero-title-lcp__word {
+  display: inline;
+}
+
+/* Layer 2 — masked word reveal aligned over LCP text */
+.hero-title-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.08em;
+  pointer-events: none;
+  opacity: 1;
+  visibility: visible;
+}
+
+.hero-title-fx__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08em;
+}
+
+.hero-title-fx--playing {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.hero-title-fx--done,
+.hero-title-fx--skipped {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none;
+}
+
+.section-hero.hero-banner-pending .hero-title-lcp,
+.section-hero.hero-banner-pending .hero-title-lcp * {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+
+/* Hero description + CTAs — SSR visible on first paint; GSAP slides up */
 .section-hero.hero-banner-pending .hero-desc-block,
 .section-hero.hero-banner-pending .hero-primary-cta-item,
 .section-hero.hero-banner-pending .hero-secondary-cta-item {
@@ -227,7 +360,7 @@ html {
 
 @media (prefers-reduced-motion: reduce) {
   .section-hero.hero-banner-pending .hero-eyebrow,
-  .section-hero.hero-banner-pending .hero-title-block,
+  .section-hero.hero-banner-pending .hero-title-lcp,
   .section-hero.hero-banner-pending .hero-desc-block,
   .section-hero.hero-banner-pending .hero-trust-item,
   .section-hero.hero-banner-pending .hero-video-enter,
@@ -236,7 +369,6 @@ html {
     pointer-events: auto;
   }
 
-  .section-hero.hero-banner-pending .hero-title-block,
   .section-hero.hero-banner-pending .hero-desc-block,
   .section-hero.hero-banner-pending .hero-primary-cta-item,
   .section-hero.hero-banner-pending .hero-secondary-cta-item {
