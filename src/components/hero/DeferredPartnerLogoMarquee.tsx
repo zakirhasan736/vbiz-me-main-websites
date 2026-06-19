@@ -6,7 +6,7 @@ import { scheduleAfterSiteLoad } from '@/lib/deferred-load';
 
 const PartnerLogoMarquee = dynamic(
   () => import('@/components/hero/PartnerLogoMarquee').then((m) => ({ default: m.PartnerLogoMarquee })),
-  { ssr: false, loading: () => <div className="h-14 md:h-16" aria-hidden="true" /> },
+  { ssr: false, loading: () => <div className="partner-logo-marquee-placeholder" aria-hidden="true" /> },
 );
 
 /** Partner logos — deferred until after site load to protect LCP / initial bandwidth. */
@@ -18,7 +18,7 @@ export function DeferredPartnerLogoMarquee() {
   }, []);
 
   if (!ready) {
-    return <div className="h-14 md:h-16 w-full" aria-hidden="true" />;
+    return <div className="partner-logo-marquee-placeholder w-full" aria-hidden="true" />;
   }
 
   return <PartnerLogoMarquee />;

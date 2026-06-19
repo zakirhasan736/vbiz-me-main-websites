@@ -18,3 +18,18 @@ export const PARTNER_LOGOS = [
 ] as const;
 
 export const PARTNER_LOGO_SIZE = PARTNER_LOGO_DISPLAY;
+
+export const PARTNER_LOGO_ASPECT = PARTNER_LOGO_DISPLAY.width / PARTNER_LOGO_DISPLAY.height;
+
+/** Mobile marquee logo height — width follows aspect ratio in CSS. */
+export const PARTNER_LOGO_MOBILE_HEIGHT = 50;
+
+export const PARTNER_LOGO_MOBILE_WIDTH = Math.round(PARTNER_LOGO_MOBILE_HEIGHT * PARTNER_LOGO_ASPECT);
+
+const MARQUEE_ROW_SPLIT = Math.ceil(PARTNER_LOGOS.length / 2);
+
+/** First mobile marquee row (scrolls left). */
+export const PARTNER_LOGO_MARQUEE_ROW_A = PARTNER_LOGOS.slice(0, MARQUEE_ROW_SPLIT);
+
+/** Second mobile marquee row (scrolls right). */
+export const PARTNER_LOGO_MARQUEE_ROW_B = PARTNER_LOGOS.slice(MARQUEE_ROW_SPLIT);
