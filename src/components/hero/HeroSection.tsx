@@ -16,7 +16,7 @@ const HERO_LCP_MOTION_BOOT = `(function(){function go(){if(window.matchMedia("(p
 /** Hero shell — title and description SSR outside any client boundary for LCP. */
 export function HeroSection() {
   return (
-    <section className="section-hero hero-banner-pending relative min-h-screen flex flex-col justify-center pt-38 pb-16 z-20 overflow-x-hidden bg-brand-dark">
+    <section className="section-hero hero-banner-pending relative min-h-screen flex flex-col justify-center pt-36 pb-16 z-20 overflow-x-hidden bg-brand-dark">
       <PageHeroBackground />
       <HeroAmbientLazy />
 

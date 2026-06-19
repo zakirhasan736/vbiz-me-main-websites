@@ -7,7 +7,7 @@ export const VBIZ_LOGO = {
     width: 256,
     height: 256,
     sizes: '256px',
-    className: 'h-[32px] md:h-[52px] w-auto object-contain',
+    className: 'h-[42px] md:h-[52px] w-auto object-contain',
   },
   footer: {
     width: 256,

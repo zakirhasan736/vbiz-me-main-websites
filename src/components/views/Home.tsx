@@ -151,15 +151,15 @@ const InteractiveDemoSection = () => {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
-          {/* Controls column */}
+          {/* Controls column — below phone on mobile, left on xl */}
           <ScrollRevealCard 
             direction="right"
-            className="lg:col-span-12 xl:col-span-5 flex flex-col gap-3"
+            className="order-2 xl:order-1 lg:col-span-12 xl:col-span-5 flex flex-col gap-3"
           >
             <span className="text-xs uppercase tracking-widest text-neutral-500 font-semibold mb-2 block">
               1. Toggle Industries
             </span>
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-1 gap-2.5">
+            <div className="home-industry-toggle-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-2.5">
               {industries.map((ind) => {
                 const isActive = activeIndId === ind.id;
                 return (
@@ -206,8 +206,11 @@ const InteractiveDemoSection = () => {
             </div>
           </ScrollRevealCard>
 
-          {/* Interactive Screen Mockup column — iframe lane has no transform ancestors */}
-          <div className="lg:col-span-12 xl:col-span-7 flex flex-col items-center justify-center relative gap-5 pointer-events-auto z-10">
+          {/* Interactive Screen Mockup — first on mobile, right on xl */}
+          <div
+            className="order-1 xl:order-2 lg:col-span-12 xl:col-span-7 flex flex-col items-center justify-center relative gap-5 pointer-events-auto z-10 home-industry-mockup"
+            data-lenis-prevent-touch
+          >
             <div
               key={activeObj.id}
               className="flex flex-col items-center gap-3 w-full max-w-[407px] mx-auto relative z-10"

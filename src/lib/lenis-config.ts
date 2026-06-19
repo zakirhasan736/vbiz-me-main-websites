@@ -52,10 +52,29 @@ export function prefersReducedScrollMotion(): boolean {
 }
 
 export function buildLenisOptions(): ConstructorParameters<typeof Lenis>[0] {
-  if (prefersReducedScrollMotion()) {
-    return { ...LENIS_OPTIONS, ...LENIS_REDUCED_MOTION_OPTIONS };
-  }
-  return LENIS_OPTIONS;
+  const reduced = prefersReducedScrollMotion();
+  const coarseTouch =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+  const options: ConstructorParameters<typeof Lenis>[0] = {
+    ...LENIS_OPTIONS,
+    prevent: shouldPreventLenisScroll,
+    ...(reduced ? LENIS_REDUCED_MOTION_OPTIONS : {}),
+    // Native touch scroll on phones — syncTouch fights iframe + toggle interactions.
+    ...(coarseTouch && !reduced ? { syncTouch: false, touchMultiplier: 1 } : {}),
+  };
+
+  return options;
+}
+
+/** Keep Lenis from hijacking touch/wheel inside live vCard phone lanes. */
+export function shouldPreventLenisScroll(node: HTMLElement): boolean {
+  return Boolean(
+    node.closest(
+      '.vcard-interactive-lane, .vcard-iframe-zone, .vcard-phone-mockup, .vcard-phone-screen, .vcard-iframe-shell, #industries-vcard-lane',
+    ),
+  );
 }
 
 export function applyCinematicLenisOptions(instance: Lenis, reduced: boolean) {
@@ -64,10 +83,15 @@ export function applyCinematicLenisOptions(instance: Lenis, reduced: boolean) {
     return;
   }
 
+  const coarseTouch =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
   instance.options.lerp = LENIS_LERP;
   instance.options.smoothWheel = true;
-  instance.options.syncTouch = true;
+  instance.options.syncTouch = !coarseTouch;
   instance.options.wheelMultiplier = LENIS_WHEEL_MULTIPLIER;
-  instance.options.touchMultiplier = LENIS_TOUCH_MULTIPLIER;
+  instance.options.touchMultiplier = coarseTouch ? 1 : LENIS_TOUCH_MULTIPLIER;
   instance.options.syncTouchLerp = LENIS_SYNC_TOUCH_LERP;
+  instance.options.prevent = shouldPreventLenisScroll;
 }

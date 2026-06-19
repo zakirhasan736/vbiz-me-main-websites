@@ -10,22 +10,16 @@ interface VCardInteractiveLaneProps {
 
 /**
  * Isolated pointer/touch lane for embedded vCard iframes.
- * Stops Lenis + parent handlers from stealing events; no transform animations on this subtree.
+ * Lenis ignore is via data-lenis-prevent* + lenis-config prevent callback.
  */
 export function VCardInteractiveLane({ children, className = '', id }: VCardInteractiveLaneProps) {
   return (
     <div
       id={id}
-      className={`vcard-interactive-lane vcard-iframe-zone pointer-events-auto relative z-20 touch-auto ${className}`}
+      className={`vcard-interactive-lane vcard-iframe-zone pointer-events-auto relative z-20 touch-pan-y ${className}`}
       data-lenis-prevent
       data-lenis-prevent-touch
       data-lenis-prevent-wheel
-      onPointerDown={(e) => e.stopPropagation()}
-      onPointerUp={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
-      onWheel={(e) => e.stopPropagation()}
-      onTouchStart={(e) => e.stopPropagation()}
-      onTouchMove={(e) => e.stopPropagation()}
     >
       {children}
     </div>

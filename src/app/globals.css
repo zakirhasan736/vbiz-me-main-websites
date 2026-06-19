@@ -221,7 +221,7 @@ html {
   gap: 0.08em;
   margin: 0;
   text-align: left; 
-  font-size: 2.25rem; /* 42.4px */
+  font-size: 2.25rem;
   line-height: 1.12;
   font-weight: 500;
   letter-spacing: -0.025em;
@@ -450,6 +450,8 @@ html.lenis {
 .portfolio-vcard-modal .vcard-phone-screen,
 .portfolio-vcard-modal .vcard-iframe-shell,
 .portfolio-vcard-modal .vcard-iframe-shell iframe,
+#see-in-action .home-industry-mockup,
+#see-in-action .home-industry-toggle-grid,
 #see-in-action .vcard-interactive-lane,
 #see-in-action .vcard-phone-mockup,
 #see-in-action .vcard-phone-screen,
@@ -462,8 +464,10 @@ html.lenis {
 .vcard-iframe-shell,
 .vcard-iframe-zone,
 .vcard-iframe-zone .vcard-phone-mockup,
-.vcard-iframe-shell iframe {
-  touch-action: auto;
+.vcard-iframe-shell iframe,
+.home-industry-mockup,
+.home-industry-toggle-grid {
+  touch-action: pan-y;
   pointer-events: auto;
 }
 
