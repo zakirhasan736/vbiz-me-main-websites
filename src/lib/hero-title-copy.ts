@@ -1,4 +1,4 @@
-/** Shared hero H1 copy — used by LCP text layer and FX overlay layer. */
+/** Shared hero H1 copy — SSR title lines. */
 
 export type HeroTitleWord = {
   text: string;

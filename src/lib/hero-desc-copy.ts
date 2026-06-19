@@ -1,4 +1,4 @@
-/** Shared hero description copy — LCP layer + FX mask layer. */
+/** Shared hero description copy — SSR description lines. */
 
 export type HeroDescWord = {
   text: string;

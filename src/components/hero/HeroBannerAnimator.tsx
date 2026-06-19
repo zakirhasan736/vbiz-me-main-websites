@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { useHeroAnimateReady } from '@/components/hero/useHeroAnimateReady';
@@ -11,14 +11,14 @@ import {
   resetHeroSectionPending,
 } from '@/lib/hero-gsap-animation';
 
-/** Client shell — runs GSAP on SSR banner markup inside `children`. */
-export function HeroBannerAnimator({ children }: { children: ReactNode }) {
-  const rootRef = useRef<HTMLDivElement>(null);
+/** Headless GSAP driver — title/description animate via CSS; this runs eyebrow/CTA/trust only. */
+export function HeroBannerAnimator() {
+  const mountRef = useRef<HTMLSpanElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const { animateReady, animationKey } = useHeroAnimateReady();
 
   useLayoutEffect(() => {
-    const section = rootRef.current?.closest('.section-hero') as HTMLElement | null;
+    const section = mountRef.current?.closest('.section-hero') as HTMLElement | null;
     if (!animateReady) {
       resetHeroSectionPending(section);
     }
@@ -26,16 +26,14 @@ export function HeroBannerAnimator({ children }: { children: ReactNode }) {
 
   useGSAP(
     () => {
-      if (!animateReady || !rootRef.current) return;
+      const root = mountRef.current?.parentElement;
+      if (!animateReady || !root) return;
 
-      const section = rootRef.current.closest('.section-hero') as HTMLElement | null;
+      const section = root.closest('.section-hero') as HTMLElement | null;
 
       timelineRef.current?.kill();
 
-      timelineRef.current = buildHeroLeftTimeline(
-        rootRef.current,
-        prefersReducedMotion(),
-      );
+      timelineRef.current = buildHeroLeftTimeline(root, prefersReducedMotion());
 
       timelineRef.current.eventCallback('onComplete', () => {
         lockHeroSectionVisible(section);
@@ -46,15 +44,8 @@ export function HeroBannerAnimator({ children }: { children: ReactNode }) {
         timelineRef.current = null;
       };
     },
-    { scope: rootRef, dependencies: [animateReady, animationKey] },
+    { scope: mountRef, dependencies: [animateReady, animationKey] },
   );
 
-  return (
-    <div
-      ref={rootRef}
-      className="hero-banner-left lg:col-span-6 flex flex-col relative z-999 items-start text-left"
-    >
-      {children}
-    </div>
-  );
+  return <span ref={mountRef} className="sr-only" aria-hidden="true" />;
 }
