@@ -75,12 +75,15 @@ export default function HeroVideoShowcase() {
             muted
             playsInline
             preload="none"
+            aria-label="Founder introduction demo video"
             onLoadedMetadata={(e) => {
               e.currentTarget.muted = true;
               e.currentTarget.play().catch(() => {});
             }}
             className={`absolute inset-0 w-full h-full object-contain bg-brand-deep transition-opacity duration-700 ${isPlaying ? 'opacity-100' : 'opacity-30'}`}
-          />
+          >
+            <track kind="captions" srcLang="en" label="English" src="/captions/hero-demo.vtt" />
+          </video>
 
           <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none z-10" />
           <div className="absolute inset-x-0 top-0 h-1/4 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10" />
@@ -132,13 +135,17 @@ export default function HeroVideoShowcase() {
         </div>
 
         <div
-          className="p-3 sm:p-4 bg-neutral-950/90 backdrop-blur-xl border-t border-white/15 flex gap-2.5 items-center"
+          className="hero-video-chrome p-3 sm:p-4 bg-neutral-950/90 backdrop-blur-xl border-t border-white/15 flex gap-2.5 items-center"
           aria-hidden="true"
         >
           <div className="w-9 h-9 rounded-full overflow-hidden border border-brand-gold/30 relative bg-neutral-800 shrink-0" />
           <div className="flex-grow min-w-0">
-            <p className="text-[11px] font-semibold text-white truncate tracking-wide">Michael Casanova</p>
-            <p className="text-[9px] text-neutral-400 font-light truncate">Hartford Motors Advisor</p>
+            <p className="hero-video-chrome__name text-[11px] font-semibold text-white truncate tracking-wide">
+              Michael Casanova
+            </p>
+            <p className="hero-video-chrome__role text-[9px] text-neutral-300 font-light truncate">
+              Hartford Motors Advisor
+            </p>
           </div>
         </div>
       </div>

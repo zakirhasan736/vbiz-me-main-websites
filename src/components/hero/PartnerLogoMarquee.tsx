@@ -1,10 +1,12 @@
 'use client';
 
-import { PARTNER_LOGOS } from '@/lib/partner-logos';
+import { PARTNER_LOGOS, PARTNER_LOGO_SIZE } from '@/lib/partner-logos';
 
 const LOOP_LOGOS = [...PARTNER_LOGOS, ...PARTNER_LOGOS];
 
 export function PartnerLogoMarquee() {
+  const { width, height } = PARTNER_LOGO_SIZE;
+
   return (
     <div
       className="partner-logo-marquee relative w-full"
@@ -26,6 +28,8 @@ export function PartnerLogoMarquee() {
                 <img
                   src={logo.src}
                   alt={logo.alt}
+                  width={width}
+                  height={height}
                   className="partner-logo-marquee__logo"
                   loading="lazy"
                   decoding="async"

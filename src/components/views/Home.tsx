@@ -15,6 +15,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { GSAP_DEFAULT_START } from '@/lib/gsap-animation-utils';
 import { LazyQRCodeImage } from '@/components/LazyQRCodeImage';
 import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
+import { DeferredPhoneMockupFrame } from '@/components/DeferredPhoneMockupFrame';
 import { PortfolioVCardModal } from '@/components/PortfolioVCardModal';
 import {
   PORTFOLIO_QR_CARDS,
@@ -210,7 +211,7 @@ const InteractiveDemoSection = () => {
               key={activeObj.id}
               className="flex flex-col items-center gap-3 w-full max-w-[375px] mx-auto relative z-10"
             >
-              <div className="w-full px-4 py-2.5 rounded-xl border border-brand-gold/25 bg-brand-card text-center">
+              <div className="w-full px-4 py-2.5 rounded-xl border border-brand-gold/25 bg-brand-card text-center hero-industry-demo-url">
                 <span className="text-[9px] uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
                   Live Demo URL
                 </span>
@@ -218,14 +219,14 @@ const InteractiveDemoSection = () => {
                   href={activeObj.demoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[11px] font-mono text-brand-gold hover:underline break-all leading-snug"
+                  className="text-[11px] font-mono text-brand-gold hover:underline break-all leading-snug hero-industry-demo-url__link"
                 >
                   {activeObj.demoUrl}
                 </a>
               </div>
 
               <VCardInteractiveLane className="w-full" id="industries-vcard-lane">
-                <PhoneMockupFrame
+                <DeferredPhoneMockupFrame
                   key={activeObj.demoUrl}
                   src={activeObj.demoUrl}
                   title={`${activeObj.name} Demo`}
@@ -715,20 +716,27 @@ const PortfolioSection = () => {
           </div>
           
           {/* Responsive scroll indicators at bottom of slider */}
-          <div className="flex justify-center items-center gap-2 mt-4">
+          <div className="flex justify-center items-center gap-1 mt-4">
             {Array.from({ length: qrSliderItems.length + 1 }).map((_, dotIdx) => {
               const isActive = activeSliderIdx === dotIdx;
               return (
                 <button
                   key={dotIdx}
+                  type="button"
                   onClick={() => scrollToSlide(dotIdx)}
-                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                    isActive 
-                      ? 'w-6 bg-brand-gold shadow-[0_0_8px_rgba(212,175,55,0.6)]' 
-                      : 'w-2 bg-neutral-800 hover:bg-neutral-600'
-                  }`}
+                  className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-full cursor-pointer"
                   aria-label={`Go to slide ${dotIdx + 1}`}
-                />
+                  aria-current={isActive ? 'true' : undefined}
+                >
+                  <span
+                    className={`block rounded-full transition-all duration-300 ${
+                      isActive
+                        ? 'h-2.5 w-6 bg-brand-gold shadow-[0_0_8px_rgba(212,175,55,0.6)]'
+                        : 'h-2.5 w-2.5 bg-neutral-800 hover:bg-neutral-600'
+                    }`}
+                    aria-hidden="true"
+                  />
+                </button>
               );
             })}
           </div>

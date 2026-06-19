@@ -9,6 +9,7 @@ import { PageTransitionOverlay } from '@/components/PageTransitionOverlay';
 import { PageTransitionProvider, usePageTransition } from '@/components/providers/page-transition-context';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { SmoothScrollProvider } from '@/components/providers/smooth-scroll-provider';
+import { PerformanceDebugMonitor } from '@/components/debug/PerformanceDebugMonitor';
 import { useGsapReveal } from '@/hooks/use-gsap-reveal';
 
 function GsapRevealController() {
@@ -25,6 +26,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <ThemeProvider>
       <PageTransitionProvider>
         <SmoothScrollProvider>
+          <PerformanceDebugMonitor />
           <div className="min-h-screen overflow-x-hidden bg-brand-dark font-sans selection:bg-brand-gold selection:text-brand-dark transition-colors duration-500">
             <GsapRevealController />
             <Navbar />

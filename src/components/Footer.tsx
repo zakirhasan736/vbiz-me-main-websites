@@ -172,7 +172,7 @@ export const Footer = () => {
             <Link href="/" data-footer-brand-item className="group flex items-center mb-4 md:mb-8">
               <Image
                 src={VBIZ_LOGO.src}
-                alt="vBiz Me Logo"
+                alt={VBIZ_LOGO.alt}
                 width={VBIZ_LOGO.footer.width}
                 height={VBIZ_LOGO.footer.height}
                 sizes={VBIZ_LOGO.footer.sizes}
@@ -195,13 +195,13 @@ export const Footer = () => {
 
           {/* Platform links */}
           <div data-footer-platform className="col-span-1 md:col-span-3 md:col-start-6">
-            <h4
+            <h3
               data-footer-nav-item
               className="text-white font-medium text-[10px] md:text-xs tracking-widest uppercase mb-4 md:mb-8 flex items-center gap-2 opacity-80"
             >
               <span className="w-3 h-px bg-brand-gold hidden md:block" />
               Platform
-            </h4>
+            </h3>
             <ul className="space-y-2 md:space-y-3 text-xs md:text-sm text-neutral-400 font-light">
               {PLATFORM_LINKS.map(([href, label]) => (
                 <li key={href} data-footer-nav-item>
@@ -219,13 +219,13 @@ export const Footer = () => {
 
           {/* Get in touch */}
           <div data-footer-contact className="col-span-1 md:col-span-4 flex flex-col">
-            <h4
+            <h3
               data-footer-contact-item
               className="text-white font-medium text-[10px] md:text-xs tracking-widest uppercase mb-4 md:mb-8 flex items-center gap-2 opacity-80"
             >
               <span className="w-3 h-px bg-brand-gold hidden md:block" />
               Get in Touch
-            </h4>
+            </h3>
             <ul className="space-y-3 md:space-y-5 text-xs md:text-sm text-neutral-400 font-light">
               <li data-footer-contact-item>
                 <a

@@ -87,10 +87,10 @@ export const Navbar: React.FC = () => {
               >
                 <Image
                   src={VBIZ_LOGO.src}
-                  alt="vBiz Me Logo"
+                  alt={VBIZ_LOGO.alt}
                   width={VBIZ_LOGO.navbar.width}
                   height={VBIZ_LOGO.navbar.height}
-                  sizes={VBIZ_LOGO.navbar.sizes}
+                  sizes="(min-width: 768px) 52px, 32px"
                   priority
                   className={`${VBIZ_LOGO.navbar.className} transition-transform duration-500`}
                 />

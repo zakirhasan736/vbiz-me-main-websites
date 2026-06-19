@@ -8,6 +8,7 @@ interface VCardIframeFrameProps {
   className?: string;
   maxLoaderMs?: number;
   compact?: boolean;
+  iframeLoading?: 'lazy' | 'eager';
 }
 
 /**
@@ -20,17 +21,18 @@ export function VCardIframeFrame({
   className = 'border-0 bg-brand-deep',
   maxLoaderMs = 6000,
   compact = false,
+  iframeLoading = 'lazy',
 }: VCardIframeFrameProps) {
-  const [loading, setLoading] = useState(true);
+  const [showLoader, setShowLoader] = useState(true);
   const activeSrcRef = useRef(src);
 
   useLayoutEffect(() => {
     activeSrcRef.current = src;
-    setLoading(true);
+    setShowLoader(true);
 
     const fallback = window.setTimeout(() => {
       if (activeSrcRef.current === src) {
-        setLoading(false);
+        setShowLoader(false);
       }
     }, maxLoaderMs);
 
@@ -40,7 +42,7 @@ export function VCardIframeFrame({
   const handleLoad = useCallback(() => {
     requestAnimationFrame(() => {
       if (activeSrcRef.current === src) {
-        setLoading(false);
+        setShowLoader(false);
       }
     });
   }, [src]);
@@ -52,7 +54,7 @@ export function VCardIframeFrame({
       data-lenis-prevent-touch
       data-lenis-prevent-wheel
     >
-      {loading && (
+      {showLoader && (
         <div
           className="absolute inset-0 bg-black/75 backdrop-blur-sm flex flex-col items-center justify-center z-20 transition-opacity duration-150 pointer-events-none"
           aria-hidden="true"
@@ -69,7 +71,7 @@ export function VCardIframeFrame({
         className={`absolute inset-0 z-[1] w-full h-full border-0 pointer-events-auto touch-auto ${className}`}
         title={title}
         onLoad={handleLoad}
-        loading="eager"
+        loading={iframeLoading}
         allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; fullscreen"
       />
     </div>

@@ -2,6 +2,7 @@
 
 import { VCardIframeFrame } from '@/components/VCardIframeFrame';
 import { MOBILE_FRAME_SIZES, type MobileFrameSize } from '@/lib/mobile-frame';
+import { INDUSTRY_MOCKUP_IMAGE } from '@/lib/site-assets';
 
 export type { MobileFrameSize };
 
@@ -64,7 +65,11 @@ export function PhoneMockupFrame({
           <img
             src={previewImage}
             alt={title}
+            width={INDUSTRY_MOCKUP_IMAGE.width}
+            height={INDUSTRY_MOCKUP_IMAGE.height}
             className="absolute inset-0 w-full h-full object-cover object-top"
+            loading="lazy"
+            decoding="async"
             draggable={false}
           />
         )}

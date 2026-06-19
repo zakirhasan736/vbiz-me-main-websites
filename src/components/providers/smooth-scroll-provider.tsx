@@ -6,7 +6,13 @@ import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { LenisProvider } from '@/components/providers/lenis-context';
-import { LENIS_OPTIONS, LENIS_SCROLL_TO_DURATION } from '@/lib/lenis-config';
+import {
+  applyCinematicLenisOptions,
+  buildLenisOptions,
+  LENIS_EASING,
+  LENIS_SCROLL_TO_DURATION,
+  prefersReducedScrollMotion,
+} from '@/lib/lenis-config';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,7 +21,7 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    const instance = new Lenis(LENIS_OPTIONS);
+    const instance = new Lenis(buildLenisOptions());
 
     document.documentElement.classList.add('lenis', 'lenis-smooth');
     document.body.classList.add('lenis', 'lenis-smooth');
@@ -46,10 +52,28 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     });
 
     ScrollTrigger.defaults({ scroller: document.documentElement });
-    ScrollTrigger.refresh();
+
+    const refreshLayout = () => {
+      instance.resize();
+      ScrollTrigger.refresh();
+    };
+
+    refreshLayout();
+    window.addEventListener('load', refreshLayout);
+    window.addEventListener('resize', refreshLayout);
+
+    const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onMotionChange = () => {
+      applyCinematicLenisOptions(instance, prefersReducedScrollMotion());
+    };
+    motionQuery.addEventListener('change', onMotionChange);
+
     setLenis(instance);
 
     return () => {
+      motionQuery.removeEventListener('change', onMotionChange);
+      window.removeEventListener('load', refreshLayout);
+      window.removeEventListener('resize', refreshLayout);
       gsap.ticker.remove(tickerRaf);
       ScrollTrigger.scrollerProxy(document.documentElement, {});
       ScrollTrigger.defaults({ scroller: window });
@@ -65,6 +89,7 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
 
     lenis.scrollTo(0, { immediate: true });
     const refreshTimer = window.setTimeout(() => {
+      lenis.resize();
       ScrollTrigger.refresh();
     }, 120);
 
@@ -87,7 +112,11 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       const element = document.getElementById(targetId);
 
       if (element) {
-        lenis.scrollTo(element, { offset: -80, duration: LENIS_SCROLL_TO_DURATION });
+        lenis.scrollTo(element, {
+          offset: -80,
+          duration: LENIS_SCROLL_TO_DURATION,
+          easing: LENIS_EASING,
+        });
         window.history.pushState(null, '', href);
       }
     };

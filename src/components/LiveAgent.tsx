@@ -549,10 +549,11 @@ export function LiveAgent() {
               <div className="flex items-center gap-3">
                 <div className="relative w-10 h-10 shrink-0">
                   <Image
-                    src={LIVE_AGENT_AVATAR}
-                    alt="Live AI assistant"
-                    width={40}
-                    height={40}
+                    src={LIVE_AGENT_AVATAR.src}
+                    alt={LIVE_AGENT_AVATAR.alt}
+                    width={LIVE_AGENT_AVATAR.panel.width}
+                    height={LIVE_AGENT_AVATAR.panel.height}
+                    sizes={LIVE_AGENT_AVATAR.panel.sizes}
                     className={`w-10 h-10 rounded-full object-cover border ${
                       isConnected ? 'border-zinc-100' : 'border-zinc-700'
                     } ${isSpeaking ? 'ring-2 ring-zinc-100/80 ring-offset-2 ring-offset-zinc-950' : ''}`}
@@ -598,6 +599,7 @@ export function LiveAgent() {
                   </button>
                   <button
                     onClick={toggleConnection}
+                    aria-label="End live AI assistant conversation"
                     className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white transition-all active:scale-95 border border-red-400"
                   >
                     <Square size={20} fill="currentColor" />
@@ -607,6 +609,11 @@ export function LiveAgent() {
                 <button
                   onClick={toggleConnection}
                   disabled={isConnecting || !keyReady}
+                  aria-label={
+                    isConnecting
+                      ? 'Connecting to live AI assistant'
+                      : 'Start live AI assistant conversation'
+                  }
                   className="w-16 h-16 rounded-full bg-zinc-100 hover:bg-white disabled:opacity-50 flex items-center justify-center text-zinc-950 transition-all ml-auto hover:scale-105 active:scale-95 shadow-sm"
                 >
                   {isConnecting ? <Loader2 size={24} className="animate-spin text-zinc-500" /> : <Mic size={24} strokeWidth={2.5} />}
@@ -626,10 +633,12 @@ export function LiveAgent() {
         aria-label={isOpen ? 'Close live AI assistant' : 'Open live AI assistant'}
       >
         <Image
-          src={LIVE_AGENT_AVATAR}
-          alt="Live AI assistant"
-          width={56}
-          height={56}
+          src={LIVE_AGENT_AVATAR.src}
+          alt={LIVE_AGENT_AVATAR.alt}
+          width={LIVE_AGENT_AVATAR.fab.width}
+          height={LIVE_AGENT_AVATAR.fab.height}
+          sizes={LIVE_AGENT_AVATAR.fab.sizes}
+          loading="lazy"
           className="w-full h-full object-cover"
         />
         {isConnected && !isOpen && (

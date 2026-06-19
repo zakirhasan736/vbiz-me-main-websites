@@ -351,15 +351,24 @@ export function SocialProof() {
             </SiteGlowIcon>
           </div>
 
-          <div className="flex justify-center items-center gap-2.5 mt-12">
+          <div className="flex justify-center items-center gap-1 mt-12">
             {reviews.map((_, idx) => (
               <button
                 key={idx}
+                type="button"
                 onClick={() => setCurrentIndex(idx)}
-                className={`h-1.5 rounded-full transition-all duration-500 cursor-pointer ${idx === currentIndex ? 'w-10 bg-brand-gold' : 'w-2 bg-neutral-800 hover:bg-neutral-600'}`}
+                className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-full cursor-pointer"
                 aria-label={`Go to slide ${idx + 1}`}
+                aria-current={idx === currentIndex ? 'true' : undefined}
                 id={`testimonial-dot-${idx}`}
-              />
+              >
+                <span
+                  className={`block rounded-full transition-all duration-500 ${
+                    idx === currentIndex ? 'h-2 w-10 bg-brand-gold' : 'h-2 w-2 bg-neutral-800 hover:bg-neutral-600'
+                  }`}
+                  aria-hidden="true"
+                />
+              </button>
             ))}
           </div>
         </motion.div>

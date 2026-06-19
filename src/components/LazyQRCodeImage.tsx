@@ -1,66 +1,70 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { PORTFOLIO_QR_IMAGE } from '@/lib/site-assets';
+import { perfDebug } from '@/lib/performance-debug';
 
 interface LazyQRCodeImageProps {
   src: string;
   alt: string;
   className?: string;
   bgcolor?: string;
+  width?: number;
+  height?: number;
   onLoaded?: () => void;
 }
 
 export const LazyQRCodeImage = ({
   src,
   alt,
-  className = "",
-  bgcolor = "ffffff",
-  onLoaded
+  className = '',
+  bgcolor = 'ffffff',
+  width = PORTFOLIO_QR_IMAGE.width,
+  height = PORTFOLIO_QR_IMAGE.height,
+  onLoaded,
 }: LazyQRCodeImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  // Small local intersection observer to defer network requesting until the card enters proximity
   useEffect(() => {
-    let observer: IntersectionObserver;
-    const element = document.getElementById(`lazy-qr-${encodeURIComponent(src).slice(-20)}`);
-    
-    if (element) {
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setShouldLoad(true);
-            observer.disconnect();
-          }
-        },
-        { rootMargin: "100px" } // trigger load slightly before it comes into view for zero latency
-      );
-      observer.observe(element);
-    } else {
-      setShouldLoad(true);
-    }
+    const element = rootRef.current;
+    if (!element) return;
 
-    return () => {
-      if (observer) {
-        observer.disconnect();
-      }
-    };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          // #region agent log
+          perfDebug({
+            hypothesisId: 'H2',
+            runId: 'post-fix',
+            location: 'LazyQRCodeImage:intersection',
+            message: 'QR image load triggered by intersection',
+            data: { src: src.split('/').pop(), rootMargin: '100px' },
+          });
+          // #endregion
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '100px' },
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
   }, [src]);
 
   const handleImageLoad = () => {
     setIsLoaded(true);
-    if (onLoaded) {
-      onLoaded();
-    }
+    onLoaded?.();
   };
 
   return (
-    <div 
-      id={`lazy-qr-${encodeURIComponent(src).slice(-20)}`}
+    <div
+      ref={rootRef}
       className="relative w-full h-full flex items-center justify-center overflow-hidden"
     >
-      {/* Premium Shimmer Skeleton Loader */}
       <AnimatePresence>
         {!isLoaded && (
           <motion.div
@@ -70,16 +74,15 @@ export const LazyQRCodeImage = ({
             className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100"
             style={{ backgroundColor: bgcolor.startsWith('#') ? bgcolor : `#${bgcolor}` }}
           >
-            {/* Soft pulsing glow animation */}
             <motion.div
-              animate={{ 
+              animate={{
                 opacity: [0.3, 0.6, 0.3],
-                scale: [0.95, 1, 0.95]
+                scale: [0.95, 1, 0.95],
               }}
-              transition={{ 
-                repeat: Infinity, 
-                duration: 1.5, 
-                ease: "easeInOut" 
+              transition={{
+                repeat: Infinity,
+                duration: 1.5,
+                ease: 'easeInOut',
               }}
               className="w-16 h-16 rounded-2xl bg-neutral-200 border border-neutral-300 flex items-center justify-center shadow-inner"
             >
@@ -89,18 +92,18 @@ export const LazyQRCodeImage = ({
         )}
       </AnimatePresence>
 
-      {/* Actual QR Image, loaded on demand and transitioned after cached */}
       {shouldLoad && (
         <img
           src={src}
           alt={alt}
+          width={width}
+          height={height}
           onLoad={handleImageLoad}
           className={`${className} transition-all duration-700 ease-out ${
-            isLoaded 
-              ? "opacity-100 scale-100" 
-              : "opacity-0 scale-95"
+            isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
           }`}
           loading="lazy"
+          decoding="async"
           referrerPolicy="no-referrer"
         />
       )}

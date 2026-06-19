@@ -189,8 +189,16 @@ html.lenis body {
   height: auto;
 }
 
+html.lenis {
+  scroll-behavior: auto !important;
+}
+
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: auto;
 }
 
 .lenis.lenis-smooth [data-lenis-prevent] {
@@ -1294,7 +1302,7 @@ body.theme-light .hero-trust-bar__marquee-lane {
   align-items: center;
   justify-content: center;
   min-width: clamp(7.5rem, 13vw, 9.5rem);
-  height: clamp(2.75rem, 4.5vw, 3.25rem);
+  height: clamp(2.75rem, 4.5vw, 5.25rem);
   padding-inline: clamp(1rem, 2vw, 1.35rem);
   border-radius: 0.875rem;
   border: 1px solid rgb(255 255 255 / 0.07);
@@ -1363,19 +1371,18 @@ body.theme-light .partner-logo-marquee__item:hover .partner-logo-marquee__cell {
 .partner-logo-marquee__logo {
   position: relative;
   z-index: 1;
-  height: clamp(1.65rem, 3vw, 2rem);
-  width: auto;
-  max-width: clamp(6.5rem, 12vw, 8.5rem);
+  width: 140px;
+  height: 56px;
+  max-width: 140px;
   object-fit: contain;
-  opacity: 0.68;
-  filter: grayscale(1) brightness(1.2) contrast(0.95);
+  opacity: 1;
   transition:
     opacity 0.4s ease,
     filter 0.4s ease,
     transform 0.4s ease;
 }
 
-.partner-logo-marquee__item:hover .partner-logo-marquee__logo {
+/* .partner-logo-marquee__item:hover .partner-logo-marquee__logo {
   opacity: 1;
   filter: grayscale(0) brightness(1.05) contrast(1);
   transform: scale(1.03);
@@ -1389,6 +1396,29 @@ body.theme-light .partner-logo-marquee__logo {
 body.theme-light .partner-logo-marquee__item:hover .partner-logo-marquee__logo {
   filter: grayscale(0) brightness(0.18) contrast(1.05);
   opacity: 1;
+} */
+
+/* Hero video mockup chrome — keep contrast on light theme */
+body.theme-light .hero-video-chrome {
+  background-color: rgba(11, 16, 32, 0.94) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.theme-light .hero-video-chrome__name {
+  color: #ffffff !important;
+}
+
+body.theme-light .hero-video-chrome__role {
+  color: #cbd5e1 !important;
+}
+
+body.theme-light .hero-industry-demo-url {
+  background-color: rgba(11, 16, 32, 0.06) !important;
+  border-color: rgba(212, 175, 55, 0.35) !important;
+}
+
+body.theme-light .hero-industry-demo-url__link {
+  color: #574200 !important;
 }
 
 .partner-logo-marquee__edge {

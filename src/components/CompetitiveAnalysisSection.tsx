@@ -2,6 +2,7 @@
 
 import { RevealText, ScrollRevealCard } from '@/components/animations/reveal';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
+import { DeferredCompetitiveAnalysisImage } from '@/components/ui/DeferredCompetitiveAnalysisImage';
 
 export function CompetitiveAnalysisSection() {
   return (
@@ -23,13 +24,7 @@ export function CompetitiveAnalysisSection() {
 
         <ScrollRevealCard direction="up" className="w-full">
           <div className="max-w-full mx-auto bg-brand-surface/65 p-2 md:p-4 rounded-3xl border border-emerald-500/10 shadow-[0_20px_50px_rgba(0,0,0,0.45)] overflow-hidden">
-            <img
-              src="/vBiz-Me-Competative-Analysis.webp"
-              alt="vBiz Me Competitive Analysis Chart"
-              className="w-full h-auto rounded-2xl opacity-95 hover:opacity-100 transition-opacity duration-500 shadow-inner"
-              referrerPolicy="no-referrer"
-              id="vbiz-competitive-analysis-img"
-            />
+            <DeferredCompetitiveAnalysisImage id="vbiz-competitive-analysis-img" />
           </div>
         </ScrollRevealCard>
       </div>

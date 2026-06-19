@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { PartnerLogoMarquee } from '@/components/hero/PartnerLogoMarquee';
+import { DeferredPartnerLogoMarquee } from '@/components/hero/DeferredPartnerLogoMarquee';
 import { PARTNER_LOGOS } from '@/lib/partner-logos';
 
 export function HeroTrustBar() {
@@ -55,7 +55,7 @@ export function HeroTrustBar() {
           >
             <div className="hero-trust-bar__lane-glow hero-trust-bar__lane-glow--top" aria-hidden="true" />
             <div className="hero-trust-bar__lane-glow hero-trust-bar__lane-glow--bottom" aria-hidden="true" />
-            <PartnerLogoMarquee />
+            <DeferredPartnerLogoMarquee />
           </motion.div>
         </div>
       </div>

@@ -86,6 +86,8 @@ export function PageTransitionOverlay({ children }: { children: ReactNode }) {
     const centerLine = centerLineRef.current;
     if (!topPanel || !bottomPanel || !centerLine) return Promise.resolve();
 
+    lenis?.stop();
+
     activeTimeline.current?.kill();
     notifyCoverStart();
     setOverlayInteractive(true);
@@ -122,7 +124,7 @@ export function PageTransitionOverlay({ children }: { children: ReactNode }) {
 
       activeTimeline.current = tl;
     });
-  }, [notifyCoverStart, resetOverlay, setOverlayInteractive]);
+  }, [lenis, notifyCoverStart, resetOverlay, setOverlayInteractive]);
 
   const playReveal = useCallback(() => {
     const topPanel = topPanelRef.current;
@@ -146,6 +148,7 @@ export function PageTransitionOverlay({ children }: { children: ReactNode }) {
           setOverlayInteractive(false);
           isTransitioning.current = false;
           activeTimeline.current = null;
+          lenis?.start();
           notifyRevealComplete();
           resolve();
         },
@@ -180,7 +183,7 @@ export function PageTransitionOverlay({ children }: { children: ReactNode }) {
 
       activeTimeline.current = tl;
     });
-  }, [notifyRevealComplete, resetOverlay, setOverlayInteractive]);
+  }, [lenis, notifyRevealComplete, resetOverlay, setOverlayInteractive]);
 
   const scrollToTop = useCallback(() => {
     if (lenis) {
