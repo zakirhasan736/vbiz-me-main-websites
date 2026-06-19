@@ -1,27 +1,13 @@
-'use client';
-
-import { motion } from 'motion/react';
 import { DeferredPartnerLogoMarquee } from '@/components/hero/DeferredPartnerLogoMarquee';
 import { PARTNER_LOGOS } from '@/lib/partner-logos';
 
+/** SSR partner trust strip — entrance animation is CSS-only (no motion bundle). */
 export function HeroTrustBar() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 32 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-      className="hero-trust-bar relative z-20 w-full mt-4 md:mt-8"
-    >
+    <div className="hero-trust-bar hero-trust-bar--enter relative z-20 w-full mt-4 md:mt-8">
       <div className="hero-trust-bar__frame relative overflow-hidden">
         <div className="hero-trust-bar__inner relative z-10 py-8 md:py-10">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col items-center text-center px-4 mb-7 md:mb-8"
-          >
+          <div className="hero-trust-bar__copy hero-trust-bar__copy--enter flex flex-col items-center text-center px-4 mb-7 md:mb-8">
             <div className="hero-trust-bar__title-row">
               <span className="hero-trust-bar__line" aria-hidden="true" />
               <div className="hero-trust-bar__badge">
@@ -40,19 +26,13 @@ export function HeroTrustBar() {
             <p className="hero-trust-bar__subline">
               {PARTNER_LOGOS.length}+ industry-leading brands power their digital presence with vBiz Me
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            className="hero-trust-bar__marquee-lane"
-          >
+          <div className="hero-trust-bar__marquee-lane hero-trust-bar__marquee-lane--enter">
             <DeferredPartnerLogoMarquee />
-          </motion.div>
+          </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

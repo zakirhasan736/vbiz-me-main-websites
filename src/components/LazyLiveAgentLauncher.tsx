@@ -9,7 +9,8 @@ type LiveAgentComponent = ComponentType<{
 }>;
 
 /**
- * Keeps @google/genai off the critical path, then mounts the agent once the page has loaded.
+ * Keeps LiveAgent off the critical path until after window load.
+ * Panel opens and auto-connects once the page has fully loaded; Gemini SDK loads only at connect time.
  */
 export function LazyLiveAgentLauncher() {
   const [LiveAgent, setLiveAgent] = useState<LiveAgentComponent | null>(null);

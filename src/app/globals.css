@@ -322,6 +322,13 @@ html {
     transform: none;
   }
 
+  .hero-trust-bar--enter,
+  .hero-trust-bar__copy--enter,
+  .hero-trust-bar__marquee-lane--enter {
+    animation: none;
+    transform: none;
+  }
+
   .section-hero.hero-banner-pending .hero-primary-cta-item,
   .section-hero.hero-banner-pending .hero-secondary-cta-item {
     transform: none;
@@ -1184,6 +1191,47 @@ footer [data-footer-bottom-item] {
 }
 
 /* ── Hero trust bar — cinematic partner strip ── */
+@keyframes hero-trust-slide-up {
+  from {
+    transform: translate3d(0, 32px, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes hero-trust-slide-up-sm {
+  from {
+    transform: translate3d(0, 12px, 0);
+  }
+
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.hero-trust-bar--enter {
+  opacity: 1;
+  will-change: transform;
+  animation: hero-trust-slide-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.15s;
+}
+
+.hero-trust-bar__copy--enter {
+  opacity: 1;
+  will-change: transform;
+  animation: hero-trust-slide-up-sm 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.27s;
+}
+
+.hero-trust-bar__marquee-lane--enter {
+  opacity: 1;
+  will-change: transform;
+  animation: hero-trust-slide-up-sm 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.43s;
+}
+
 .hero-trust-bar {
   --marquee-fade: #070b14;
   --trust-lane-bg: rgb(8 12 22 / 0.55);

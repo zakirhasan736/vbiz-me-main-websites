@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mic, Square, Loader2, Volume2, MicOff, AlertCircle } from 'lucide-react';
-import { GoogleGenAI, LiveServerMessage, Modality, Type, StartSensitivity, EndSensitivity } from '@google/genai';
+import { loadLiveAgentRuntime } from '@/lib/live-agent-runtime';
 import {
   createMicProcessingChain,
   encodeMicChunk,
@@ -62,7 +62,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [keyReady, setKeyReady] = useState(false);
@@ -73,14 +73,14 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const pcmContextRef = useRef<AudioContext | null>(null);
   const scheduledSourcesRef = useRef<AudioBufferSourceNode[]>([]);
-  
+
   const nextStartTimeRef = useRef<number>(0);
-  const animationFrameRef = useRef<number>(0);
   const checkSpeakingRef = useRef<number>(0);
   const _lastAudioTime = useRef<number>(0);
   const isMutedRef = useRef(false);
   const isSpeakingRef = useRef(false);
-  const aiRef = useRef<GoogleGenAI | null>(null);
+  const aiRef = useRef<any>(null);
+  const apiKeyRef = useRef<string | null>(null);
   const isConnectedRef = useRef(false);
   const isConnectingRef = useRef(false);
   const lastUserActivityRef = useRef(0);
@@ -193,7 +193,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     void resolveLiveAgentApiKey()
       .then((key) => {
         if (cancelled) return;
-        aiRef.current = new GoogleGenAI({ apiKey: key });
+        apiKeyRef.current = key;
       })
       .catch((err) => {
         if (cancelled) return;
@@ -208,7 +208,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   }, []);
 
   useEffect(() => {
-    if (!autoConnect || !keyReady || !aiRef.current) return;
+    if (!autoConnect || !keyReady) return;
 
     setIsOpen(true);
     void startConnection();
@@ -276,7 +276,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
         sessionRef.current = null;
       }
       if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
         mediaStreamRef.current = null;
       }
       if (processorRef.current) {
@@ -289,16 +289,16 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
         audioContextRef.current = null;
       }
       if (pcmContextRef.current) {
-         pcmContextRef.current.close();
-         pcmContextRef.current = null;
+        pcmContextRef.current.close();
+        pcmContextRef.current = null;
       }
       if (checkSpeakingRef.current) {
         cancelAnimationFrame(checkSpeakingRef.current);
       }
     } catch (e) {
-      console.warn("Disconnect error", e);
+      console.warn('Disconnect error', e);
     }
-    
+
     setIsConnected(false);
     setIsConnecting(false);
     setIsSpeaking(false);
@@ -306,73 +306,95 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     isConnectingRef.current = false;
   };
 
+  const ensureAiClient = async () => {
+    if (aiRef.current) return aiRef.current;
+
+    const [runtime, apiKey] = await Promise.all([
+      loadLiveAgentRuntime(),
+      apiKeyRef.current ? Promise.resolve(apiKeyRef.current) : resolveLiveAgentApiKey(),
+    ]);
+
+    apiKeyRef.current = apiKey;
+    aiRef.current = new runtime.GoogleGenAI({ apiKey });
+    return aiRef.current;
+  };
+
   const startConnection = async () => {
-    if (isConnectedRef.current || isConnectingRef.current || !aiRef.current) return;
+    if (isConnectedRef.current || isConnectingRef.current) return;
 
     isConnectingRef.current = true;
     setIsConnecting(true);
     setError(null);
     initAudioOutput();
-    
+
     try {
+      const ai = await ensureAiClient();
+      const runtime = await loadLiveAgentRuntime();
+      if (!ai) return;
+
       const stream = await navigator.mediaDevices.getUserMedia(LIVE_AGENT_MIC_CONSTRAINTS);
       mediaStreamRef.current = stream;
-      
+
       const audioContext = new AudioContext({ latencyHint: 'interactive' });
       audioContextRef.current = audioContext;
       await audioContext.resume();
 
       await pcmContextRef.current?.resume();
-      
-      const sessionPromise = aiRef.current.live.connect({
-        model: "gemini-3.1-flash-live-preview",
+
+      const sessionPromise = ai.live.connect({
+        model: 'gemini-3.1-flash-live-preview',
         config: {
-          responseModalities: [Modality.AUDIO],
+          responseModalities: [runtime.Modality.AUDIO],
           speechConfig: {
-             voiceConfig: { prebuiltVoiceConfig: { voiceName: LIVE_AGENT_VOICE } },
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: LIVE_AGENT_VOICE } },
           },
           realtimeInputConfig: {
             automaticActivityDetection: {
               disabled: false,
-              startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_HIGH,
-              endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_LOW,
+              startOfSpeechSensitivity: runtime.StartSensitivity.START_SENSITIVITY_HIGH,
+              endOfSpeechSensitivity: runtime.EndSensitivity.END_SENSITIVITY_LOW,
               prefixPaddingMs: LIVE_AGENT_VAD.prefixPaddingMs,
               silenceDurationMs: LIVE_AGENT_VAD.silenceDurationMs,
             },
           },
           systemInstruction: SYSTEM_PROMPT,
-          tools: [{
-            functionDeclarations: [
-              {
-                name: "callUser",
-                description: "Execute this to call the business owner or user by phone.",
-                parameters: { type: Type.OBJECT, properties: {} }
-              },
-              {
-                name: "emailUser",
-                description: "Execute this to send an email to the business owner or user.",
-                parameters: { type: Type.OBJECT, properties: {} }
-              },
-              {
-                name: "openVideos",
-                description: "Execute this to open YouTube intro videos based on a query.",
-                parameters: { 
-                  type: Type.OBJECT, 
-                  properties: { query: { type: Type.STRING, description: "Search query for videos" } },
-                }
-              },
-              {
-                name: "saveContact",
-                description: "Execute this to save the business owner's contact info (vCard) to the user's device.",
-                parameters: { type: Type.OBJECT, properties: {} }
-              },
-              {
-                name: "openNotepad",
-                description: "Execute this to open the notepad/guestbook section for leaving notes.",
-                parameters: { type: Type.OBJECT, properties: {} }
-              }
-            ]
-          }],
+          tools: [
+            {
+              functionDeclarations: [
+                {
+                  name: 'callUser',
+                  description: 'Execute this to call the business owner or user by phone.',
+                  parameters: { type: runtime.Type.OBJECT, properties: {} },
+                },
+                {
+                  name: 'emailUser',
+                  description: 'Execute this to send an email to the business owner or user.',
+                  parameters: { type: runtime.Type.OBJECT, properties: {} },
+                },
+                {
+                  name: 'openVideos',
+                  description: 'Execute this to open YouTube intro videos based on a query.',
+                  parameters: {
+                    type: runtime.Type.OBJECT,
+                    properties: {
+                      query: { type: runtime.Type.STRING, description: 'Search query for videos' },
+                    },
+                  },
+                },
+                {
+                  name: 'saveContact',
+                  description:
+                    "Execute this to save the business owner's contact info (vCard) to the user's device.",
+                  parameters: { type: runtime.Type.OBJECT, properties: {} },
+                },
+                {
+                  name: 'openNotepad',
+                  description: 'Execute this to open the notepad/guestbook section for leaving notes.',
+                  parameters: { type: runtime.Type.OBJECT, properties: {} },
+                },
+              ],
+            },
+          ],
         },
         callbacks: {
           onopen: () => {
@@ -382,26 +404,26 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
             setIsConnecting(false);
             lastUserActivityRef.current = Date.now();
             nudgeCountRef.current = 0;
-            
-            // start monitoring speaking state
-            checkSpeakingRef.current = requestAnimationFrame(monitorSpeaking);
-            
-            // Proactive verbal introduction when the visitor lands on the site
-            sessionPromise.then((session: any) => {
-              sessionRef.current = session;
-              try {
-                const introPrompt = `${LIVE_AGENT_GREETING_TRIGGER} Introduce yourself aloud as the live AI assistant and say exactly: "${LIVE_AGENT_GREETING_TEXT}"`;
-                if (typeof session.sendRealtimeInput === 'function') {
-                  session.sendRealtimeInput({ text: introPrompt });
-                } else if (typeof session.send === 'function') {
-                  session.send({ text: introPrompt });
-                }
-              } catch (e) {
-                console.warn("Could not send initial prompt:", e);
-              }
-            }).catch((e: any) => console.warn("Could not get session:", e));
 
-            const { processor, silentOut } = createMicProcessingChain(audioContext, stream);
+            checkSpeakingRef.current = requestAnimationFrame(monitorSpeaking);
+
+            sessionPromise
+              .then((session: any) => {
+                sessionRef.current = session;
+                try {
+                  const introPrompt = `${LIVE_AGENT_GREETING_TRIGGER} Introduce yourself aloud as the live AI assistant and say exactly: "${LIVE_AGENT_GREETING_TEXT}"`;
+                  if (typeof session.sendRealtimeInput === 'function') {
+                    session.sendRealtimeInput({ text: introPrompt });
+                  } else if (typeof session.send === 'function') {
+                    session.send({ text: introPrompt });
+                  }
+                } catch (e) {
+                  console.warn('Could not send initial prompt:', e);
+                }
+              })
+              .catch((e: any) => console.warn('Could not get session:', e));
+
+            const { processor } = createMicProcessingChain(audioContext, stream);
             processorRef.current = processor;
 
             processor.onaudioprocess = (e) => {
@@ -419,11 +441,13 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                 if (sessionRef.current) {
                   sessionRef.current.sendRealtimeInput(payload);
                 } else {
-                  sessionPromise.then((session) => {
-                    session.sendRealtimeInput(payload);
-                  }).catch((err) => {
-                    console.warn('Error sending input', err);
-                  });
+                  sessionPromise
+                    .then((session: any) => {
+                      session.sendRealtimeInput(payload);
+                    })
+                    .catch((err: unknown) => {
+                      console.warn('Error sending input', err);
+                    });
                 }
               } catch (err) {
                 console.warn('Error sending mic audio', err);
@@ -431,89 +455,98 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
             };
           },
           onmessage: (e: any) => {
-             const message = e as LiveServerMessage;
-             
-             if (message.toolCall) {
-               const functionCalls = message.toolCall.functionCalls;
-               if (functionCalls && functionCalls.length > 0) {
-                 for (const call of functionCalls) {
-                   if (call.name === "callUser") {
-                      window.location.href = `tel:+18607709893`;
-                   } else if (call.name === "emailUser") {
-                      window.location.href = `mailto:mcasanova@vbizme.com`;
-                   } else if (call.name === "openVideos") {
-                      const args = call.args as Record<string, string>;
-                      window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(args?.query || 'mc intro videos')}`, '_blank');
-                   } else if (call.name === "saveContact") {
-                      window.dispatchEvent(new CustomEvent('saveContactAction'));
-                   } else if (call.name === "openNotepad") {
-                      window.dispatchEvent(new CustomEvent('openNotepadAction'));
-                   }
-                   
-                   if (sessionRef.current) {
-                      sessionRef.current.sendToolResponse({
-                        functionResponses: [{
+            const message = e;
+
+            if (message.toolCall) {
+              const functionCalls = message.toolCall.functionCalls;
+              if (functionCalls && functionCalls.length > 0) {
+                for (const call of functionCalls) {
+                  if (call.name === 'callUser') {
+                    window.location.href = `tel:+18607709893`;
+                  } else if (call.name === 'emailUser') {
+                    window.location.href = `mailto:mcasanova@vbizme.com`;
+                  } else if (call.name === 'openVideos') {
+                    const args = call.args as Record<string, string>;
+                    window.open(
+                      `https://www.youtube.com/results?search_query=${encodeURIComponent(args?.query || 'mc intro videos')}`,
+                      '_blank',
+                    );
+                  } else if (call.name === 'saveContact') {
+                    window.dispatchEvent(new CustomEvent('saveContactAction'));
+                  } else if (call.name === 'openNotepad') {
+                    window.dispatchEvent(new CustomEvent('openNotepadAction'));
+                  }
+
+                  if (sessionRef.current) {
+                    sessionRef.current.sendToolResponse({
+                      functionResponses: [
+                        {
                           id: call.id,
                           name: call.name,
-                          response: { result: "Action executed successfully" }
-                        }]
-                      });
-                   }
-                 }
-               }
-             }
+                          response: { result: 'Action executed successfully' },
+                        },
+                      ],
+                    });
+                  }
+                }
+              }
+            }
 
-             const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-             if (base64Audio && pcmContextRef.current) {
-                 const binary = atob(base64Audio);
-                 const buffer = new ArrayBuffer(binary.length);
-                 const view = new Uint8Array(buffer);
-                 for (let i = 0; i < binary.length; i++) {
-                   view[i] = binary.charCodeAt(i);
-                 }
-                 const pcm16 = new Int16Array(buffer);
-                 
-                 const pcmContext = pcmContextRef.current;
-                 const audioBuffer = pcmContext.createBuffer(1, pcm16.length, 24000);
-                 const channelData = audioBuffer.getChannelData(0);
-                 for(let i=0; i<pcm16.length; i++) {
-                   channelData[i] = pcm16[i] / 0x7fff;
-                 }
-                 
-                 playChunk(audioBuffer);
-             }
-             
-             if (message.serverContent?.interrupted) {
-                 if (pcmContextRef.current) {
-                     scheduledSourcesRef.current.forEach((source) => {
-                       try { source.stop(); } catch (e) {}
-                     });
-                     scheduledSourcesRef.current = [];
-                     nextStartTimeRef.current = pcmContextRef.current.currentTime;
-                     _lastAudioTime.current = 0;
-                 }
-             }
+            const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+            if (base64Audio && pcmContextRef.current) {
+              const binary = atob(base64Audio);
+              const buffer = new ArrayBuffer(binary.length);
+              const view = new Uint8Array(buffer);
+              for (let i = 0; i < binary.length; i++) {
+                view[i] = binary.charCodeAt(i);
+              }
+              const pcm16 = new Int16Array(buffer);
 
-             if (message.serverContent?.inputTranscription?.text) {
-               noteUserSpeech();
-             }
+              const pcmContext = pcmContextRef.current;
+              const audioBuffer = pcmContext.createBuffer(1, pcm16.length, 24000);
+              const channelData = audioBuffer.getChannelData(0);
+              for (let i = 0; i < pcm16.length; i++) {
+                channelData[i] = pcm16[i] / 0x7fff;
+              }
 
-             if (message.serverContent?.turnComplete) {
-               scheduleUserSilenceNudge();
-             }
+              playChunk(audioBuffer);
+            }
+
+            if (message.serverContent?.interrupted) {
+              if (pcmContextRef.current) {
+                scheduledSourcesRef.current.forEach((source) => {
+                  try {
+                    source.stop();
+                  } catch (err) {
+                    console.warn('Could not stop audio source', err);
+                  }
+                });
+                scheduledSourcesRef.current = [];
+                nextStartTimeRef.current = pcmContextRef.current.currentTime;
+                _lastAudioTime.current = 0;
+              }
+            }
+
+            if (message.serverContent?.inputTranscription?.text) {
+              noteUserSpeech();
+            }
+
+            if (message.serverContent?.turnComplete) {
+              scheduleUserSilenceNudge();
+            }
           },
           onerror: (err: any) => {
-            const errDetails = err ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : "unknown";
-            console.warn("Live API Error:", err, "Details:", errDetails);
+            const errDetails = err ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : 'unknown';
+            console.warn('Live API Error:', err, 'Details:', errDetails);
             setError(`Connection error: ${err?.message || errDetails}`);
             disconnect();
           },
           onclose: () => {
-             disconnect();
-          }
-        }
+            disconnect();
+          },
+        },
       });
-      
+
       sessionRef.current = await sessionPromise;
     } catch (err: any) {
       console.warn('Failed to start Live API', err);
@@ -528,29 +561,28 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     if (isConnectedRef.current || isConnectingRef.current) {
       disconnect();
     } else {
-      startConnection();
+      void startConnection();
     }
   };
 
   return (
-    <motion.div 
+    <motion.div
       drag
       dragMomentum={false}
       className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[100] flex flex-col items-end gap-4 pointer-events-none"
     >
-      
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+            transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
             className="pointer-events-auto bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 shadow-sm w-72 min-h-[194px] flex flex-col gap-4 relative overflow-hidden"
           >
-             {isSpeaking && (
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-800/30 via-transparent to-transparent opacity-50 animate-pulse pointer-events-none" />
-             )}
+            {isSpeaking && (
+              <div className="absolute inset-0 bg-gradient-to-t from-zinc-800/30 via-transparent to-transparent opacity-50 animate-pulse pointer-events-none" />
+            )}
 
             <div className="flex items-center justify-between z-10 w-full">
               <div className="flex items-center gap-3">
@@ -624,11 +656,14 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                   }
                   className="w-16 h-16 rounded-full bg-zinc-100 hover:bg-white disabled:opacity-50 flex items-center justify-center text-zinc-950 transition-all ml-auto hover:scale-105 active:scale-95 shadow-sm"
                 >
-                  {isConnecting ? <Loader2 size={24} className="animate-spin text-zinc-500" /> : <Mic size={24} strokeWidth={2.5} />}
+                  {isConnecting ? (
+                    <Loader2 size={24} className="animate-spin text-zinc-500" />
+                  ) : (
+                    <Mic size={24} strokeWidth={2.5} />
+                  )}
                 </button>
               )}
             </div>
-
           </motion.div>
         )}
       </AnimatePresence>
@@ -636,7 +671,9 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-300 relative overflow-hidden shadow-sm ${
-          isOpen ? 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' : 'bg-zinc-100 text-zinc-950 hover:scale-105 active:scale-95'
+          isOpen
+            ? 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
+            : 'bg-zinc-100 text-zinc-950 hover:scale-105 active:scale-95'
         }`}
         aria-label={isOpen ? 'Close live AI assistant' : 'Open live AI assistant'}
       >
@@ -653,10 +690,9 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
           <span className="absolute top-0 right-0 w-3 h-3 bg-zinc-400 rounded-full border-2 border-zinc-900 animate-ping" />
         )}
         {isConnected && !isOpen && (
-           <span className="absolute top-0 right-0 w-3 h-3 bg-zinc-400 rounded-full border-2 border-zinc-900" />
+          <span className="absolute top-0 right-0 w-3 h-3 bg-zinc-400 rounded-full border-2 border-zinc-900" />
         )}
       </button>
-
     </motion.div>
   );
 }
