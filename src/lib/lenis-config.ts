@@ -1,13 +1,13 @@
 import type Lenis from 'lenis';
 
 /** Cinematic programmatic scroll (anchors, back-to-top). */
-export const LENIS_SCROLL_TO_DURATION = 0.4;
+export const LENIS_SCROLL_TO_DURATION = 0.6;
 
 /** Soft ease-out — long cinematic deceleration at the end of scrollTo. */
-export const LENIS_EASING = (t: number) => 1 - Math.pow(1 - t, 4);
-
+export const LENIS_EASING = (t: number) => 1 - Math.pow(1 - t, 5);
+ 
 /** Primary lerp — lower = silkier, more cinematic glide (not snappy). */
-export const LENIS_LERP = 0.085;
+export const LENIS_LERP = 0.075;
 
 export const LENIS_WHEEL_MULTIPLIER = 0.9;
 export const LENIS_TOUCH_MULTIPLIER = 1.08;

@@ -14,7 +14,6 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { GSAP_DEFAULT_START } from '@/lib/gsap-animation-utils';
 import { LazyQRCodeImage } from '@/components/LazyQRCodeImage';
-import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
 import { DeferredPhoneMockupFrame } from '@/components/DeferredPhoneMockupFrame';
 import { PortfolioVCardModal } from '@/components/PortfolioVCardModal';
 import {
@@ -822,10 +821,11 @@ const PortfolioSection = () => {
                   {selectedCard.role} • {selectedCard.company}
                 </p>
                 
-                <PhoneMockupFrame
+                <DeferredPhoneMockupFrame
                   src={selectedCard.demoUrl || 'https://app.vbizme.com/vCard/michaelangelo-casanova-2#home'}
                   title={`${selectedCard.name} Live Card Interface`}
                   size="modal"
+                  requireInView={false}
                 />
               </div>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { PARTNER_LOGOS, PARTNER_LOGO_SIZE } from '@/lib/partner-logos';
+import Image from 'next/image';
 
 const LOOP_LOGOS = [...PARTNER_LOGOS, ...PARTNER_LOGOS];
 
@@ -25,11 +26,12 @@ export function PartnerLogoMarquee() {
               <div className="partner-logo-marquee__cell">
                 <div className="partner-logo-marquee__cell-shine" aria-hidden="true" />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={logo.src}
                   alt={logo.alt}
                   width={width}
                   height={height}
+                  sizes={`${width}px`}
                   className="partner-logo-marquee__logo"
                   loading="lazy"
                   decoding="async"

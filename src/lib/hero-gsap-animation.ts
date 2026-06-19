@@ -13,6 +13,11 @@ export function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+function prefersFastMobileLcp(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(max-width: 767px)').matches;
+}
+
 function q(root: HTMLElement, selector: string) {
   return root.querySelectorAll(selector);
 }
@@ -39,11 +44,15 @@ export function buildHeroLeftTimeline(root: HTMLElement, reduced: boolean) {
     return tl;
   }
 
-  tl.fromTo(
-    q(root, '.hero-eyebrow'),
-    { opacity: 0, y: 22, filter: 'blur(10px)' },
-    { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.65 },
-  );
+  if (prefersFastMobileLcp()) {
+    gsap.set(q(root, '.hero-eyebrow'), { opacity: 1, y: 0, filter: 'none', clearProps: 'transform,filter' });
+  } else {
+    tl.fromTo(
+      q(root, '.hero-eyebrow'),
+      { opacity: 0, y: 22, filter: 'blur(10px)' },
+      { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.65 },
+    );
+  }
 
   tl.fromTo(
     q(root, '.hero-title-word'),
@@ -113,7 +122,7 @@ function getHeroVideoOffscreenX(panel: HTMLElement): number {
   return Math.max(window.innerWidth - rect.left + 64, 160);
 }
 
-/** Right column — slide in from off-screen right + fade + deblur */
+/** Right column — slide in from off-screen right + fade using composited properties only. */
 export function buildHeroVideoTimeline(root: HTMLElement, reduced: boolean) {
   const panel = root.querySelector('.hero-video-enter') as HTMLElement | null;
   const tl = gsap.timeline({ defaults: { ease: HERO_GSAP.ease } });
@@ -121,7 +130,7 @@ export function buildHeroVideoTimeline(root: HTMLElement, reduced: boolean) {
   if (!panel) return tl;
 
   if (reduced) {
-    gsap.set(panel, { opacity: 1, x: 0, filter: 'none', clearProps: 'transform,filter' });
+    gsap.set(panel, { opacity: 1, x: 0, clearProps: 'transform' });
     panel.classList.remove('hero-video-await');
     return tl;
   }
@@ -131,11 +140,10 @@ export function buildHeroVideoTimeline(root: HTMLElement, reduced: boolean) {
 
   tl.fromTo(
     panel,
-    { x: startX, opacity: 0, filter: 'blur(18px)' },
+    { x: startX, opacity: 0 },
     {
       x: 0,
       opacity: 1,
-      filter: 'blur(0px)',
       duration: 1.28,
       ease: 'power3.out',
     },
@@ -144,7 +152,7 @@ export function buildHeroVideoTimeline(root: HTMLElement, reduced: boolean) {
 
   tl.eventCallback('onComplete', () => {
     panel.classList.remove('hero-video-await');
-    gsap.set(panel, { clearProps: 'transform,filter' });
+    gsap.set(panel, { clearProps: 'transform' });
   });
 
   return tl;

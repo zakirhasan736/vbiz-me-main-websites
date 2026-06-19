@@ -8,24 +8,60 @@ import { FOUNDER_INTRO_VIDEO } from '@/lib/site-assets';
 import { useHeroAnimateReady } from '@/components/hero/useHeroAnimateReady';
 import { buildHeroVideoTimeline, prefersReducedMotion } from '@/lib/hero-gsap-animation';
 
-/** CSR hero video — enters from the right when panel mounts */
+function isVideoReadyToPlay(video: HTMLVideoElement) {
+  return video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA;
+}
+
+/** CSR hero video — slides in from the right, then autoplays once entrance + buffer are ready. */
 export default function HeroVideoShowcase() {
   const { animateReady, animationKey } = useHeroAnimateReady();
   const rootRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
   const [isMuted, setIsMuted] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [entranceDone, setEntranceDone] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  const showVideo = entranceDone && videoReady;
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !animateReady) return;
+
+    setVideoReady(isVideoReadyToPlay(video));
+
+    const markReady = () => setVideoReady(true);
+    video.addEventListener('loadeddata', markReady);
+    video.addEventListener('canplay', markReady);
+
+    video.preload = 'auto';
+    video.load();
+
+    return () => {
+      video.removeEventListener('loadeddata', markReady);
+      video.removeEventListener('canplay', markReady);
+    };
+  }, [animateReady, animationKey]);
 
   useGSAP(
     () => {
       if (!animateReady || !rootRef.current) return;
 
+      setEntranceDone(false);
+      setIsPlaying(false);
       timelineRef.current?.kill();
-      timelineRef.current = buildHeroVideoTimeline(
-        rootRef.current,
-        prefersReducedMotion(),
-      );
+
+      const reduced = prefersReducedMotion();
+      timelineRef.current = buildHeroVideoTimeline(rootRef.current, reduced);
+
+      if (reduced) {
+        setEntranceDone(true);
+      } else {
+        timelineRef.current.eventCallback('onComplete', () => {
+          setEntranceDone(true);
+        });
+      }
 
       return () => {
         timelineRef.current?.kill();
@@ -37,17 +73,27 @@ export default function HeroVideoShowcase() {
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !showVideo) return;
 
     video.defaultMuted = true;
     video.muted = isMuted;
+    setIsPlaying(true);
+
+    video.play().catch(() => {
+      setIsPlaying(false);
+    });
+  }, [showVideo, isMuted]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !showVideo) return;
 
     if (isPlaying) {
       video.play().catch(() => {});
     } else {
       video.pause();
     }
-  }, [isPlaying, isMuted]);
+  }, [showVideo, isPlaying, isMuted]);
 
   return (
     <div
@@ -57,7 +103,7 @@ export default function HeroVideoShowcase() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(100%,380px)] aspect-square bg-brand-gold/15 blur-[100px] rounded-full pointer-events-none" />
       <div className="absolute top-1/3 left-2/3 -translate-x-1/2 -translate-y-1/2 w-[min(100%,250px)] aspect-square bg-emerald-500/10 blur-[90px] rounded-full pointer-events-none" />
 
-      <div className="hero-video-enter hero-video-await relative w-full max-w-[620px] bg-brand-surface/75 backdrop-blur-md rounded-2xl border border-emerald-500/15 hover:border-brand-gold/30 transition-all duration-500 group shadow-[0_20px_50px_rgba(0,0,0,0.45),0_0_40px_rgba(16,185,129,0.08)] overflow-hidden z-10 will-change-transform">
+      <div className="hero-video-enter hero-video-await relative w-full max-w-[620px] bg-brand-surface/75 rounded-2xl border border-emerald-500/15 group shadow-[0_20px_50px_rgba(0,0,0,0.45),0_0_40px_rgba(16,185,129,0.08)] overflow-hidden z-10 will-change-transform">
         <div className="relative w-full aspect-video bg-brand-deep">
           <div className="absolute top-0 inset-x-0 h-10 sm:h-12 bg-gradient-to-b from-black/80 to-transparent z-20 px-3 sm:px-4 flex items-center justify-between text-[9px] sm:text-[10px] text-white/60 font-mono tracking-widest uppercase">
             <span className="flex items-center gap-1">
@@ -70,20 +116,22 @@ export default function HeroVideoShowcase() {
           <video
             ref={videoRef}
             src={FOUNDER_INTRO_VIDEO}
-            autoPlay
             loop
             muted
             playsInline
-            preload="none"
-            aria-label="Founder introduction demo video"
-            onLoadedMetadata={(e) => {
-              e.currentTarget.muted = true;
-              e.currentTarget.play().catch(() => {});
-            }}
-            className={`absolute inset-0 w-full h-full object-contain bg-brand-deep transition-opacity duration-700 ${isPlaying ? 'opacity-100' : 'opacity-30'}`}
+            preload="auto"
+            aria-hidden={!showVideo}
+            aria-label={showVideo ? 'Founder introduction demo video' : undefined}
+            className={`absolute inset-0 w-full h-full object-contain bg-brand-deep transition-opacity duration-500 ${
+              showVideo ? (isPlaying ? 'opacity-100' : 'opacity-30') : 'opacity-0 invisible'
+            }`}
           >
             <track kind="captions" srcLang="en" label="English" src="/captions/hero-demo.vtt" />
           </video>
+
+          {!showVideo && (
+            <div className="absolute inset-0 bg-brand-deep z-[1]" aria-hidden="true" />
+          )}
 
           <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none z-10" />
           <div className="absolute inset-x-0 top-0 h-1/4 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10" />
@@ -92,7 +140,8 @@ export default function HeroVideoShowcase() {
             <button
               type="button"
               onClick={() => setIsMuted(!isMuted)}
-              className="w-8 h-8 rounded-full bg-black/70 border border-white/10 flex items-center justify-center text-white hover:text-brand-gold hover:bg-black/90 active:scale-95 transition-all cursor-pointer shadow-lg backdrop-blur-sm"
+              disabled={!showVideo}
+              className="w-8 h-8 rounded-full bg-black/70 border border-white/10 flex items-center justify-center text-white hover:text-brand-gold hover:bg-black/90 active:scale-95 transition-all cursor-pointer shadow-lg backdrop-blur-sm disabled:opacity-40"
               title={isMuted ? 'Unmute' : 'Mute'}
               aria-label={isMuted ? 'Unmute video' : 'Mute video'}
             >
@@ -100,8 +149,9 @@ export default function HeroVideoShowcase() {
             </button>
             <button
               type="button"
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="w-8 h-8 rounded-full bg-brand-gold flex items-center justify-center text-black hover:bg-yellow-400 active:scale-95 transition-all cursor-pointer shadow-lg"
+              onClick={() => showVideo && setIsPlaying(!isPlaying)}
+              disabled={!showVideo}
+              className="w-8 h-8 rounded-full bg-brand-gold flex items-center justify-center text-black hover:bg-yellow-400 active:scale-95 transition-all cursor-pointer shadow-lg disabled:opacity-40"
               title={isPlaying ? 'Pause' : 'Play'}
               aria-label={isPlaying ? 'Pause video' : 'Play video'}
             >
@@ -120,7 +170,7 @@ export default function HeroVideoShowcase() {
             </div>
           </div>
 
-          {!isPlaying && (
+          {showVideo && !isPlaying && (
             <button
               type="button"
               onClick={() => setIsPlaying(true)}

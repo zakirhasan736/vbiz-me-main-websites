@@ -54,9 +54,9 @@ export const INVISIBLE_ADVANTAGE_VIDEO = '/The-Invisible-Advantage-Final.mp4';
 
 /** Live AI assistant avatar (portrait JPEG). */
 export const LIVE_AGENT_AVATAR = {
-  src: '/ai-live-agent-image.jpeg',
-  width: 669,
-  height: 958,
+  src: '/ai-live-agent-avatar.webp',
+  width: 112,
+  height: 112,
   alt: 'Live AI assistant',
   panel: { width: 40, height: 40, sizes: '40px' },
   fab: { width: 56, height: 56, sizes: '56px' },

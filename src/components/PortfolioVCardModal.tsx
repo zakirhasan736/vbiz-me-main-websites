@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ExternalLink, ArrowLeft } from 'lucide-react';
 import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
-import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
+import { DeferredPhoneMockupFrame } from '@/components/DeferredPhoneMockupFrame';
 import { LazyQRCodeImage } from '@/components/LazyQRCodeImage';
 import { getPortfolioQrImageSrc, type PortfolioQrCard } from '@/lib/portfolio-qr-cards';
 
@@ -176,10 +176,11 @@ export function PortfolioVCardModal({
                   </p>
 
                   <VCardInteractiveLane className="w-full flex flex-col items-center">
-                    <PhoneMockupFrame
+                    <DeferredPhoneMockupFrame
                       src={card.demoUrl}
                       title={`${card.displayName} Live View`}
                       size="modal"
+                      requireInView={false}
                     />
                   </VCardInteractiveLane>
                 </motion.div>

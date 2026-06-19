@@ -1,5 +1,45 @@
-@import "lenis/dist/lenis.css";
 @import "tailwindcss";
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent],
+.lenis [data-lenis-prevent-wheel],
+.lenis [data-lenis-prevent-touch],
+.lenis [data-lenis-prevent-vertical],
+.lenis [data-lenis-prevent-horizontal] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+.lenis.lenis-autoToggle {
+  transition-property: overflow;
+  transition-duration: 1ms;
+  transition-behavior: allow-discrete;
+}
+
+html,
+body {
+  overscroll-behavior: none;
+}
+
+img,
+video {
+  will-change: transform;
+}
+
+[data-parallax] {
+  will-change: transform;
+}
 
 @keyframes hero-orb-fade {
   0%,
@@ -163,6 +203,13 @@ html {
 .banner-description-pending .hero-desc-line-wrap,
 .banner-description-pending .hero-desc-char {
   opacity: 0;
+}
+
+@media (max-width: 767px) {
+  .section-hero.hero-banner-pending .hero-eyebrow {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

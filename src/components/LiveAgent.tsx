@@ -52,8 +52,13 @@ async function resolveLiveAgentApiKey(): Promise<string> {
   }
 }
 
-export function LiveAgent() {
-  const [isOpen, setIsOpen] = useState(false);
+type LiveAgentProps = {
+  initialOpen?: boolean;
+  autoConnect?: boolean;
+};
+
+export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgentProps) {
+  const [isOpen, setIsOpen] = useState(initialOpen);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -120,7 +125,7 @@ export function LiveAgent() {
         sessionRef.current.send({ text });
       }
     } catch (e) {
-      console.error('Could not send conversation nudge:', e);
+      console.warn('Could not send conversation nudge:', e);
     }
   };
 
@@ -203,18 +208,20 @@ export function LiveAgent() {
   }, []);
 
   useEffect(() => {
-    if (!keyReady || !aiRef.current) return;
+    if (!autoConnect || !keyReady || !aiRef.current) return;
 
-    void startConnection();
     setIsOpen(true);
+    void startConnection();
+  }, [autoConnect, keyReady]);
 
+  useEffect(() => {
     const onPageHide = () => disconnect();
     window.addEventListener('pagehide', onPageHide);
 
     return () => {
       window.removeEventListener('pagehide', onPageHide);
     };
-  }, [keyReady]);
+  }, []);
 
   const initAudioOutput = () => {
     if (!pcmContextRef.current) {
@@ -289,7 +296,7 @@ export function LiveAgent() {
         cancelAnimationFrame(checkSpeakingRef.current);
       }
     } catch (e) {
-      console.error("Disconnect error", e);
+      console.warn("Disconnect error", e);
     }
     
     setIsConnected(false);
@@ -390,9 +397,9 @@ export function LiveAgent() {
                   session.send({ text: introPrompt });
                 }
               } catch (e) {
-                console.error("Could not send initial prompt:", e);
+                console.warn("Could not send initial prompt:", e);
               }
-            }).catch((e: any) => console.error("Could not get session:", e));
+            }).catch((e: any) => console.warn("Could not get session:", e));
 
             const { processor, silentOut } = createMicProcessingChain(audioContext, stream);
             processorRef.current = processor;
@@ -415,11 +422,11 @@ export function LiveAgent() {
                   sessionPromise.then((session) => {
                     session.sendRealtimeInput(payload);
                   }).catch((err) => {
-                    console.error('Error sending input', err);
+                    console.warn('Error sending input', err);
                   });
                 }
               } catch (err) {
-                console.error('Error sending mic audio', err);
+                console.warn('Error sending mic audio', err);
               }
             };
           },
@@ -497,7 +504,7 @@ export function LiveAgent() {
           },
           onerror: (err: any) => {
             const errDetails = err ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : "unknown";
-            console.error("Live API Error:", err, "Details:", errDetails);
+            console.warn("Live API Error:", err, "Details:", errDetails);
             setError(`Connection error: ${err?.message || errDetails}`);
             disconnect();
           },
@@ -509,7 +516,7 @@ export function LiveAgent() {
       
       sessionRef.current = await sessionPromise;
     } catch (err: any) {
-      console.error('Failed to start Live API', err);
+      console.warn('Failed to start Live API', err);
       setError(err?.message || 'Could not start voice session.');
       disconnect();
     } finally {
@@ -539,7 +546,7 @@ export function LiveAgent() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            className="pointer-events-auto bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 shadow-sm w-72 flex flex-col gap-4 relative overflow-hidden"
+            className="pointer-events-auto bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 shadow-sm w-72 min-h-[194px] flex flex-col gap-4 relative overflow-hidden"
           >
              {isSpeaking && (
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-800/30 via-transparent to-transparent opacity-50 animate-pulse pointer-events-none" />
@@ -564,9 +571,9 @@ export function LiveAgent() {
                     </span>
                   )}
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col min-w-0">
                   <span className="font-bold text-sm text-zinc-100 tracking-wide">Live AI Assistant</span>
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                  <span className="text-[10px] text-zinc-500 uppercase tracking-widest truncate max-w-[172px]">
                     {isConnecting
                       ? 'Connecting...'
                       : isConnected
@@ -582,9 +589,9 @@ export function LiveAgent() {
             </div>
 
             {error && (
-              <div className="text-red-400 text-xs flex items-center gap-1.5 p-2 bg-red-400/10 rounded-xl z-10 border border-red-500/20">
+              <div className="text-red-400 text-xs flex items-center gap-1.5 p-2 bg-red-400/10 rounded-xl z-10 border border-red-500/20 min-h-9">
                 <AlertCircle size={14} className="shrink-0" />
-                <span>{error}</span>
+                <span className="line-clamp-2 leading-snug">{error}</span>
               </div>
             )}
 
@@ -627,8 +634,8 @@ export function LiveAgent() {
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 relative border overflow-hidden ${
-          isOpen ? 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 border-zinc-800 shadow-sm' : 'bg-zinc-100 text-zinc-950 border-white hover:scale-105 shadow-sm active:scale-95'
+        className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-300 relative overflow-hidden shadow-sm ${
+          isOpen ? 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' : 'bg-zinc-100 text-zinc-950 hover:scale-105 active:scale-95'
         }`}
         aria-label={isOpen ? 'Close live AI assistant' : 'Open live AI assistant'}
       >

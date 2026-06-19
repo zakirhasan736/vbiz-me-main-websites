@@ -1,11 +1,11 @@
-import Home from '@/components/views/Home';
+import { DeferredHome } from '@/components/views/DeferredHome';
 import { HeroSection } from '@/components/hero/HeroSection';
 
 export default function HomePage() {
   return (
     <>
       <HeroSection />
-      <Home />
+      <DeferredHome />
     </>
   );
 }
