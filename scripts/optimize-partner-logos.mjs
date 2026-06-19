@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import sharp from 'sharp';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const SRC_DIR = path.join(ROOT, 'public', 'partner-logo');
@@ -13,6 +12,17 @@ const DEFAULT_QUALITY = 48;
 /** Logos flagged by Lighthouse — compress a bit harder */
 const HEAVY_QUALITY = 38;
 const HEAVY_LOGO_IDS = new Set(['5', '10']);
+
+let sharp;
+try {
+  sharp = (await import('sharp')).default;
+} catch {
+  console.warn(
+    '⚠ sharp is not installed — skipping partner logo optimization.\n' +
+      '  Run `npm install` (includes devDependencies) or commit public/partner-logo-optimized/*.webp.',
+  );
+  process.exit(0);
+}
 
 async function optimizeOne(filename) {
   const match = filename.match(/^partner-logo-(\d+)\.(png|jpe?g)$/i);
