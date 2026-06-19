@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mic, Square, Loader2, Volume2, MicOff, AlertCircle } from 'lucide-react';
-import { loadLiveAgentRuntime } from '@/lib/live-agent-runtime';
+import { GoogleGenAI, LiveServerMessage, Modality, Type, StartSensitivity, EndSensitivity } from '@google/genai';
 import {
   createMicProcessingChain,
   encodeMicChunk,
@@ -55,23 +55,17 @@ async function resolveLiveAgentApiKey(): Promise<string> {
 type LiveAgentProps = {
   initialOpen?: boolean;
   autoConnect?: boolean;
-  deferUntilSiteLoad?: boolean;
 };
 
-export function LiveAgent({
-  initialOpen = false,
-  autoConnect = false,
-  deferUntilSiteLoad = false,
-}: LiveAgentProps) {
-  const [showWidget, setShowWidget] = useState(!deferUntilSiteLoad);
-  const [entranceComplete, setEntranceComplete] = useState(!deferUntilSiteLoad);
-  const [isOpen, setIsOpen] = useState(initialOpen && !deferUntilSiteLoad);
+export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgentProps) {
+  const [isOpen, setIsOpen] = useState(initialOpen);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [keyReady, setKeyReady] = useState(false);
 
   const sessionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -86,6 +80,7 @@ export function LiveAgent({
   const _lastAudioTime = useRef<number>(0);
   const isMutedRef = useRef(false);
   const isSpeakingRef = useRef(false);
+  const aiRef = useRef<GoogleGenAI | null>(null);
   const isConnectedRef = useRef(false);
   const isConnectingRef = useRef(false);
   const lastUserActivityRef = useRef(0);
@@ -93,18 +88,6 @@ export function LiveAgent({
   const userSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const agentSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const nudgeCountRef = useRef(0);
-
-  useEffect(() => {
-    if (!deferUntilSiteLoad) return;
-    const frame = requestAnimationFrame(() => setShowWidget(true));
-    return () => cancelAnimationFrame(frame);
-  }, [deferUntilSiteLoad]);
-
-  useEffect(() => {
-    if (!deferUntilSiteLoad || entranceComplete || !showWidget) return;
-    const fallback = window.setTimeout(() => setEntranceComplete(true), 600);
-    return () => window.clearTimeout(fallback);
-  }, [deferUntilSiteLoad, entranceComplete, showWidget]);
 
   useEffect(() => {
     isMutedRef.current = isMuted;
@@ -206,15 +189,30 @@ export function LiveAgent({
   }, []);
 
   useEffect(() => {
-    if (!autoConnect || !entranceComplete) return;
+    let cancelled = false;
+    void resolveLiveAgentApiKey()
+      .then((key) => {
+        if (cancelled) return;
+        aiRef.current = new GoogleGenAI({ apiKey: key });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : 'Could not load Live Agent config.');
+      })
+      .finally(() => {
+        if (!cancelled) setKeyReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    const openTimer = window.setTimeout(() => {
-      setIsOpen(true);
-      void startConnection();
-    }, 200);
+  useEffect(() => {
+    if (!autoConnect || !keyReady || !aiRef.current) return;
 
-    return () => window.clearTimeout(openTimer);
-  }, [autoConnect, entranceComplete]);
+    setIsOpen(true);
+    void startConnection();
+  }, [autoConnect, keyReady]);
 
   useEffect(() => {
     const onPageHide = () => disconnect();
@@ -309,21 +307,14 @@ export function LiveAgent({
   };
 
   const startConnection = async () => {
-    if (isConnectedRef.current || isConnectingRef.current) return;
+    if (isConnectedRef.current || isConnectingRef.current || !aiRef.current) return;
 
     isConnectingRef.current = true;
     setIsConnecting(true);
     setError(null);
     initAudioOutput();
-
+    
     try {
-      const [runtime, apiKey] = await Promise.all([
-        loadLiveAgentRuntime(),
-        resolveLiveAgentApiKey(),
-      ]);
-      const { GoogleGenAI, Modality, Type, StartSensitivity, EndSensitivity } = runtime;
-      const ai = new GoogleGenAI({ apiKey });
-
       const stream = await navigator.mediaDevices.getUserMedia(LIVE_AGENT_MIC_CONSTRAINTS);
       mediaStreamRef.current = stream;
       
@@ -333,7 +324,7 @@ export function LiveAgent({
 
       await pcmContextRef.current?.resume();
       
-      const sessionPromise = ai.live.connect({
+      const sessionPromise = aiRef.current.live.connect({
         model: "gemini-3.1-flash-live-preview",
         config: {
           responseModalities: [Modality.AUDIO],
@@ -439,22 +430,8 @@ export function LiveAgent({
               }
             };
           },
-          onmessage: (e: unknown) => {
-             const message = e as {
-               toolCall?: {
-                 functionCalls?: Array<{
-                   id?: string;
-                   name?: string;
-                   args?: Record<string, string>;
-                 }>;
-               };
-               serverContent?: {
-                 modelTurn?: { parts?: Array<{ inlineData?: { data?: string } }> };
-                 interrupted?: boolean;
-                 inputTranscription?: { text?: string };
-                 turnComplete?: boolean;
-               };
-             };
+          onmessage: (e: any) => {
+             const message = e as LiveServerMessage;
              
              if (message.toolCall) {
                const functionCalls = message.toolCall.functionCalls;
@@ -556,26 +533,20 @@ export function LiveAgent({
   };
 
   return (
-    <motion.div
-      className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[100] size-14 pointer-events-none"
-      style={{ contain: 'layout style paint' }}
-      initial={deferUntilSiteLoad ? { opacity: 0, scale: 0.92 } : false}
-      animate={showWidget ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.92 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-      onAnimationComplete={() => {
-        if (showWidget && deferUntilSiteLoad) {
-          setEntranceComplete(true);
-        }
-      }}
+    <motion.div 
+      drag
+      dragMomentum={false}
+      className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[100] flex flex-col items-end gap-4 pointer-events-none"
     >
+      
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={false}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 12 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="pointer-events-auto absolute bottom-[calc(100%+1rem)] right-0 bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 shadow-sm w-72 min-h-[218px] flex flex-col gap-4 relative overflow-hidden"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+            className="pointer-events-auto bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 shadow-sm w-72 min-h-[194px] flex flex-col gap-4 relative overflow-hidden"
           >
              {isSpeaking && (
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-800/30 via-transparent to-transparent opacity-50 animate-pulse pointer-events-none" />
@@ -590,6 +561,7 @@ export function LiveAgent({
                     width={LIVE_AGENT_AVATAR.panel.width}
                     height={LIVE_AGENT_AVATAR.panel.height}
                     sizes={LIVE_AGENT_AVATAR.panel.sizes}
+                    priority
                     className={`w-10 h-10 rounded-full object-cover border ${
                       isConnected ? 'border-zinc-100' : 'border-zinc-700'
                     } ${isSpeaking ? 'ring-2 ring-zinc-100/80 ring-offset-2 ring-offset-zinc-950' : ''}`}
@@ -617,14 +589,12 @@ export function LiveAgent({
               </div>
             </div>
 
-            <div className="min-h-9 z-10">
-              {error ? (
-                <div className="text-red-400 text-xs flex items-center gap-1.5 p-2 bg-red-400/10 rounded-xl border border-red-500/20">
-                  <AlertCircle size={14} className="shrink-0" />
-                  <span className="line-clamp-2 leading-snug">{error}</span>
-                </div>
-              ) : null}
-            </div>
+            {error && (
+              <div className="text-red-400 text-xs flex items-center gap-1.5 p-2 bg-red-400/10 rounded-xl z-10 border border-red-500/20 min-h-9">
+                <AlertCircle size={14} className="shrink-0" />
+                <span className="line-clamp-2 leading-snug">{error}</span>
+              </div>
+            )}
 
             <div className="flex items-center justify-center gap-3 mt-2 z-10">
               {isConnected ? (
@@ -646,7 +616,7 @@ export function LiveAgent({
               ) : (
                 <button
                   onClick={toggleConnection}
-                  disabled={isConnecting}
+                  disabled={isConnecting || !keyReady}
                   aria-label={
                     isConnecting
                       ? 'Connecting to live AI assistant'
@@ -665,7 +635,7 @@ export function LiveAgent({
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`pointer-events-auto absolute inset-0 w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-300 relative overflow-hidden shadow-sm ${
+        className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-300 relative overflow-hidden shadow-sm ${
           isOpen ? 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' : 'bg-zinc-100 text-zinc-950 hover:scale-105 active:scale-95'
         }`}
         aria-label={isOpen ? 'Close live AI assistant' : 'Open live AI assistant'}
@@ -676,7 +646,7 @@ export function LiveAgent({
           width={LIVE_AGENT_AVATAR.fab.width}
           height={LIVE_AGENT_AVATAR.fab.height}
           sizes={LIVE_AGENT_AVATAR.fab.sizes}
-          loading="lazy"
+          priority
           className="w-full h-full object-cover"
         />
         {isConnected && !isOpen && (
