@@ -1,13 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import {
   PARTNER_LOGOS,
-  PARTNER_LOGO_MARQUEE_ROW_A,
-  PARTNER_LOGO_MARQUEE_ROW_B,
   PARTNER_LOGO_MOBILE_HEIGHT,
   PARTNER_LOGO_MOBILE_WIDTH,
 } from '@/lib/partner-logos';
+import { usePartnerMarqueeLayout } from '@/components/hero/usePartnerMarqueeLayout';
 
 type PartnerLogo = (typeof PARTNER_LOGOS)[number];
 
@@ -70,56 +68,25 @@ function StaticLogoGrid() {
 }
 
 export function PartnerLogoMarquee() {
-  const [loopDuplicate, setLoopDuplicate] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const sync = () => {
-      const reduced = mq.matches;
-      setReducedMotion(reduced);
-      setLoopDuplicate(!reduced);
-    };
-    sync();
-    mq.addEventListener('change', sync);
-    return () => mq.removeEventListener('change', sync);
-  }, []);
-
-  if (reducedMotion) {
-    return (
-      <div
-        className="partner-logo-marquee relative w-full"
-        aria-label="Trusted partner company logos"
-        role="region"
-      >
-        <StaticLogoGrid />
-      </div>
-    );
-  }
+  const layout = usePartnerMarqueeLayout();
+  const loopDuplicate = layout !== 'static';
 
   return (
     <div
-      className="partner-logo-marquee relative w-full"
+      className={`partner-logo-marquee relative w-full partner-logo-marquee--${layout}`}
       aria-label="Trusted partner company logos"
       role="region"
     >
-      <div className="partner-logo-marquee__desktop-only">
-        <MarqueeTrack logos={PARTNER_LOGOS} loopDuplicate={loopDuplicate} trackKey="desktop" />
-      </div>
-
-      <div className="partner-logo-marquee__mobile-rows">
+      {layout === 'static' ? (
+        <StaticLogoGrid />
+      ) : (
         <MarqueeTrack
-          logos={PARTNER_LOGO_MARQUEE_ROW_A}
+          logos={PARTNER_LOGOS}
           loopDuplicate={loopDuplicate}
-          trackKey="row-a"
+          trackKey={layout}
+          reverse={layout === 'mobile'}
         />
-        <MarqueeTrack
-          logos={PARTNER_LOGO_MARQUEE_ROW_B}
-          reverse
-          loopDuplicate={loopDuplicate}
-          trackKey="row-b"
-        />
-      </div>
+      )}
     </div>
   );
 }

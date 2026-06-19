@@ -1,5 +1,5 @@
 import { Check } from 'lucide-react';
-import { HeroBannerAnimator } from '@/components/hero/HeroBannerAnimator';
+import { HeroBannerAnimatorDeferred } from '@/components/hero/HeroBannerAnimatorDeferred';
 import { HeroBannerDescription } from '@/components/hero/HeroBannerDescription';
 import { HeroHeading } from '@/components/hero/HeroHeading';
 import { HeroPrimaryCta } from '@/components/hero/HeroPrimaryCta';
@@ -11,10 +11,12 @@ import { HeroTrustBar } from '@/components/hero/HeroTrustBar';
 import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 
+const HERO_LCP_MOTION_BOOT = `(function(){function go(){if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;document.documentElement.classList.add("hero-lcp-motion")}if("requestAnimationFrame"in window){requestAnimationFrame(function(){requestAnimationFrame(go)})}else{go()}})();`;
+
 /** Hero shell — title and description SSR outside any client boundary for LCP. */
 export function HeroSection() {
   return (
-    <section className="section-hero hero-banner-pending relative min-h-screen flex flex-col justify-center pt-38 pb-16 z-20 overflow-hidden bg-brand-dark">
+    <section className="section-hero hero-banner-pending relative min-h-screen flex flex-col justify-center pt-38 pb-16 z-20 overflow-x-hidden bg-brand-dark">
       <PageHeroBackground />
       <HeroAmbientLazy />
 
@@ -31,6 +33,8 @@ export function HeroSection() {
           <div className="mb-6 sm:mb-8 max-w-2xl">
             <HeroBannerDescription />
           </div>
+
+          <script dangerouslySetInnerHTML={{ __html: HERO_LCP_MOTION_BOOT }} />
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto z-50 relative">
             <div className="hero-primary-cta-item w-full sm:w-auto">
@@ -55,7 +59,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          <HeroBannerAnimator />
+          <HeroBannerAnimatorDeferred />
         </div>
 
         <HeroVideoLazy />

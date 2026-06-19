@@ -28,7 +28,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
           <div className="min-h-screen overflow-x-hidden bg-brand-dark font-sans selection:bg-brand-gold selection:text-brand-dark transition-colors duration-500">
             <GsapRevealController />
             <Navbar />
-            <main className="overflow-hidden">
+            <main className="overflow-x-hidden">
               <PageTransitionOverlay>{children}</PageTransitionOverlay>
             </main>
             <DeferredFooter />

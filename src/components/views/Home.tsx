@@ -1,11 +1,11 @@
 'use client';
 
 import { 
-  ArrowRight, BarChart, Edit, Lightbulb, Play, Scan, Send, Video, 
+  ArrowRight, BarChart, Lightbulb, Play, Scan, Send, 
   ChevronLeft, ChevronRight, VolumeX, Volume2, Sparkles, Check, 
   Building, Car, Award, Scissors, Utensils, Star, Smartphone, Calendar, 
   MapPin, ThumbsUp, HelpCircle, FileText, Pause, Briefcase, X,
-  QrCode, TrendingUp, Layers, Bot, Bell, Wallet, ExternalLink
+  QrCode, TrendingUp, ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import React, { useRef, useState, useEffect } from 'react';
@@ -29,6 +29,8 @@ import {
   SectionReveal,
 } from '@/components/animations/reveal';
 import { CapabilityCard } from '@/components/ui/CapabilityCard';
+import { CapabilityIcon } from '@/components/ui/CapabilityIcon';
+import type { CapabilityIconName } from '@/lib/capability-icons';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 gsap.registerPlugin(ScrollTrigger);
@@ -1074,61 +1076,66 @@ const FinalCTA = () => {
 // HOW CAN WE HELP YOU FEATURE CLINIC
 // ==========================================
 const HowCanWeHelp = () => {
-  const features = [
+  const features: {
+    title: string;
+    desc: string;
+    icon: CapabilityIconName;
+    index: string;
+  }[] = [
     {
-      title: "Customizable Design",
-      desc: "Include your logo, brand colors, and unique design elements to reflect your professional identity.",
-      icon: <Edit size={22} />,
-      index: "01"
+      title: 'Customizable Design',
+      desc: 'Include your logo, brand colors, and unique design elements to reflect your professional identity.',
+      icon: 'edit',
+      index: '01',
     },
     {
-      title: "Dynamic Intro Videos",
-      desc: "Personalized videos that introduce you and your business, tailored to your profession or brand.",
-      icon: <Video size={22} />,
-      index: "02"
+      title: 'Dynamic Intro Videos',
+      desc: 'Personalized videos that introduce you and your business, tailored to your profession or brand.',
+      icon: 'video',
+      index: '02',
     },
     {
-      title: "Engagement Features",
-      desc: "Include call-to-action buttons, such as “Book Now” to drive immediate engagement.",
-      icon: <Sparkles size={22} />,
-      index: "03"
+      title: 'Engagement Features',
+      desc: 'Include call-to-action buttons, such as “Book Now” to drive immediate engagement.',
+      icon: 'sparkles',
+      index: '03',
     },
     {
-      title: "Social Media",
-      desc: "Clickable icons leading to your social media profiles (e.g., LinkedIn, Twitter, Facebook).",
-      icon: <Layers size={22} />,
-      index: "04"
+      title: 'Social Media',
+      desc: 'Clickable icons leading to your social media profiles (e.g., LinkedIn, Twitter, Facebook).',
+      icon: 'layers',
+      index: '04',
     },
     {
-      title: "Analytics and Tracking",
-      desc: "Monitor how often your vCard is viewed or shared, providing valuable insights into your networking efforts.",
-      icon: <TrendingUp size={22} />,
-      index: "05"
+      title: 'Analytics and Tracking',
+      desc: 'Monitor how often your vCard is viewed or shared, providing valuable insights into your networking efforts.',
+      icon: 'trending-up',
+      index: '05',
     },
     {
-      title: "QR Code Sharing",
-      desc: "Share your vCard instantly via a custom QR code that can be scanned with any smartphone.",
-      icon: <QrCode size={22} />,
-      index: "06"
+      title: 'QR Code Sharing',
+      desc: 'Share your vCard instantly via a custom QR code that can be scanned with any smartphone.',
+      icon: 'qr-code',
+      index: '06',
     },
     {
-      title: "AI Assistance Integration",
-      desc: "Unleash intelligent smart greetings, speech-to-text notes transcription, and automated AI lead scoring pipelines.",
-      icon: <Bot size={22} />,
-      index: "07"
+      title: 'AI Assistance Integration',
+      desc: 'Unleash intelligent smart greetings, speech-to-text notes transcription, and automated AI lead scoring pipelines.',
+      icon: 'bot',
+      index: '07',
     },
     {
-      title: "Customized Notifications",
-      desc: "Get real-time push reminders, system activity alerts, and automatic SMS updates directly on contact saves.",
-      icon: <Bell size={22} />,
-      index: "08"
+      title: 'Customized Notifications',
+      desc: 'Get real-time push reminders, system activity alerts, and automatic SMS updates directly on contact saves.',
+      icon: 'bell',
+      index: '08',
     },
     {
-      title: "Digital Wallet Feature",
-      desc: "Allow prospects to save your beautiful, verified touchless card straight into Apple Wallet and Google Pay.",
-      icon: <Wallet size={22} />,
-      index: "09"
-    }
+      title: 'Digital Wallet Feature',
+      desc: 'Allow prospects to save your beautiful, verified touchless card straight into Apple Wallet and Google Pay.',
+      icon: 'wallet',
+      index: '09',
+    },
   ];
 
   const containerVariants = {
@@ -1201,7 +1208,7 @@ const HowCanWeHelp = () => {
                 <div className="h-[2px] w-8 bg-brand-gold/25 group-hover:w-16 group-hover:bg-brand-gold/60 transition-all duration-500 mb-6" />
 
                 <div className="capability-card__icon p-3.5 rounded-2xl bg-brand-gold/[0.06] border border-brand-gold/20 text-brand-gold mb-6 group-hover:bg-brand-gold/[0.12] inline-block">
-                  {feat.icon}
+                  <CapabilityIcon name={feat.icon} />
                 </div>
                 
                 <h3 className="text-brand-text font-medium text-lg tracking-wide mb-3 group-hover:text-brand-gold transition-colors duration-300">{feat.title}</h3>

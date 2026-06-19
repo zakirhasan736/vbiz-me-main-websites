@@ -7,7 +7,11 @@ export type HeroTitleWord = {
 
 /** Three meaningful hero lines. */
 export const HERO_TITLE_LINES: HeroTitleWord[][] = [
-  [{ text: 'The' }, { text: 'Virtual' }, { text: 'Business' }, { text: 'Card' }],
-  [{ text: 'That' }, { text: 'Sells', accent: true }],
+  [{ text: 'The' }, { text: 'Virtual' }, { text: 'Business' }, { text: 'Card' }, { text: 'That' }, { text: 'Sells', accent: true }],
   [{ text: 'Before' }, { text: 'You' }, { text: 'Even' }, { text: 'Speak' }],
 ];
+
+export const HERO_TITLE_LINE_TEXT = [
+  'The Virtual Business Card That Sells',
+  'Before You Even Speak',
+] as const;
