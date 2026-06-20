@@ -63,7 +63,13 @@ export const Navbar: React.FC = () => {
         initial={{ y: -100 }}
         animate={{ y: hidden ? -100 : 0 }}
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-        className={`fixed top-0 inset-x-0 z-99  flex justify-center transition-all duration-700 ${
+        style={
+          {
+            /* CSS var lets @supports safe-area rule know the base padding */
+            '--navbar-base-pt': scrolled ? '1rem' : '1.5rem',
+          } as React.CSSProperties
+        }
+        className={`fixed top-0 inset-x-0 z-99 flex justify-center transition-all duration-700 ${
           scrolled ? 'pt-4 md:pt-5' : 'pt-6'
         }`}
       >

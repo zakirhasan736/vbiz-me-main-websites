@@ -60,11 +60,14 @@ export default function HeroVideoShowcase() {
 
     video.addEventListener('loadeddata', markReady);
     video.addEventListener('canplay', markReady);
+    // Safari fires canplaythrough reliably
+    video.addEventListener('canplaythrough', markReady);
     video.addEventListener('error', onError);
 
     return () => {
       video.removeEventListener('loadeddata', markReady);
       video.removeEventListener('canplay', markReady);
+      video.removeEventListener('canplaythrough', markReady);
       video.removeEventListener('error', onError);
     };
   }, [videoSrc, animationKey]);
@@ -100,14 +103,24 @@ export default function HeroVideoShowcase() {
     const video = videoRef.current;
     if (!video || !showVideo) return;
 
+    // Safari requires defaultMuted = true before play() for autoplay policy
     video.defaultMuted = true;
-    video.muted = isMuted;
+    video.muted = true; // always start muted — Safari blocks unmuted autoplay
     setIsPlaying(true);
 
-    video.play().catch(() => {
-      setIsPlaying(false);
-    });
-  }, [showVideo, isMuted]);
+    const attemptPlay = () => {
+      video.play().catch(() => {
+        setIsPlaying(false);
+      });
+    };
+
+    // Safari sometimes needs a tick before play() works after src assignment
+    if (video.readyState >= HTMLMediaElement.HAVE_ENOUGH_DATA) {
+      attemptPlay();
+    } else {
+      video.addEventListener('canplaythrough', attemptPlay, { once: true });
+    }
+  }, [showVideo]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const video = videoRef.current;
@@ -142,16 +155,21 @@ export default function HeroVideoShowcase() {
             <video
               ref={videoRef}
               src={videoSrc}
+              autoPlay
               loop
               muted
               playsInline
               preload="auto"
+              /* x-webkit-airplay="deny" prevents AirPlay overlay on macOS Safari */
+              x-webkit-airplay="deny"
+              disablePictureInPicture
               aria-hidden={!showVideo}
               aria-label={showVideo ? 'Founder introduction demo video' : undefined}
               className={`absolute inset-0 w-full h-full object-contain bg-brand-deep transition-opacity duration-500 ${
                 showVideo ? (isPlaying ? 'opacity-100' : 'opacity-30') : 'opacity-0 invisible'
               }`}
             >
+              <source src={videoSrc} type="video/mp4" />
               <track kind="captions" srcLang="en" label="English" src="/captions/hero-demo.vtt" />
             </video>
           ) : null}

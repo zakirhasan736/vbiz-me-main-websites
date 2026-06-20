@@ -138,8 +138,13 @@ export default function NavigationBar() {
                    loop
                    muted
                    playsInline
-                   src="https://www.vbizme.com/wp-content/uploads/2025/02/scrolling-navigation-Bar-1.mp4"
-                />
+                   preload="metadata"
+                >
+                  <source
+                    src="https://www.vbizme.com/wp-content/uploads/2025/02/scrolling-navigation-Bar-1.mp4"
+                    type="video/mp4"
+                  />
+                </video>
               </div>
             </ScrollRevealCard>
 

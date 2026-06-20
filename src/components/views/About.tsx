@@ -14,7 +14,7 @@ import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 export default function About() {
   return (
     <div className="bg-brand-dark">
-      <section className="section-hero relative pt-32 pb-20 overflow-hidden min-h-[70vh] flex flex-col justify-center items-center bg-brand-dark">
+      <section className="section-hero relative pt-32 pb-20 overflow-hidden min-h-[70vh]   flex flex-col justify-center items-center bg-brand-dark">
         <PageHeroBackground />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center w-full">
@@ -78,19 +78,22 @@ export default function About() {
               <SiteGlowCard radius={40} className="aspect-[4/5] h-full overflow-hidden">
                 <div className="relative w-full h-full min-h-[320px]">
                   <video
-                    src={FOUNDER_INTRO_VIDEO}
                     autoPlay
                     loop
                     muted
                     playsInline
                     preload="metadata"
                     onLoadedMetadata={(e) => {
-                      e.currentTarget.muted = true;
-                      e.currentTarget.play().catch(() => { });
+                      const v = e.currentTarget;
+                      v.defaultMuted = true;
+                      v.muted = true;
+                      v.play().catch(() => {});
                     }}
                     className="absolute inset-0 w-full h-full object-cover"
                     aria-label="Michaelangelo Casanova intro video"
-                  />
+                  >
+                    <source src={FOUNDER_INTRO_VIDEO} type="video/mp4" />
+                  </video>
                   <div className="founder-video-overlay absolute inset-0 z-10 pointer-events-none" />
                   <div className="absolute bottom-8 left-8 z-20 text-left">
                     <h3 className="founder-video-caption text-2xl font-medium mb-1 tracking-tight">
@@ -143,94 +146,10 @@ export default function About() {
       </section>
 
       {/* 6-D Process */}
-      <section className="site-section hidden bg-brand-dark relative border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center justify-center gap-3 px-4 py-2 rounded-full border border-white/5 bg-[#111] mb-8 relative">
-              <div className="absolute inset-0 rounded-full bg-brand-gold/20 blur-md"></div>
-              <span className="text-[10px] font-medium tracking-[0.1em] uppercase text-brand-gold relative z-10">Methodology</span>
-            </div>
-            <RevealText
-              text="Our 6-D Process"
-              className="text-4xl md:text-5xl font-medium text-white tracking-tight text-center"
-              tag="h2"
-            />
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            {[
-              { num: "01", title: "Discover", bg: "bg-brand-surface", border: "border-white/10", glow: "rgba(212,175,55,0.18)", desc: "We begin by immersing ourselves in your business to fully understand your goals, audience, and vision. This phase includes:", list: ["Conducting comprehensive research and analysis.", "Identifying core objectives and potential challenges.", "Grasping the essence of your brand and its personality."] },
-              { num: "02", title: "Define", bg: "bg-brand-surface", border: "border-white/10", glow: "rgba(59,130,246,0.18)", desc: "Next, we turn insights into a strategic plan. In this stage, we:", list: ["Set clear, measurable objectives.", "Define the project scope and key deliverables.", "Establish timelines and critical milestones."] },
-              { num: "03", title: "Design", bg: "bg-brand-surface", border: "border-white/10", glow: "rgba(168,85,247,0.18)", desc: "Our creative process takes center stage as we craft your unique virtual business card. This phase involves:", list: ["Developing initial design concepts and prototypes.", "Integrating your brand elements—logos, colors, and themes.", "Ensuring the design resonates with your brand identity and goals."] },
-              { num: "04", title: "Develop", bg: "bg-brand-surface", border: "border-white/10", glow: "rgba(34,197,94,0.18)", desc: "Here, our technical team brings the design to life, transforming it into a fully functional digital product. This step includes:", list: ["Writing efficient, high-quality code.", "Incorporating necessary features and functionalities.", "Conducting thorough testing to guarantee performance and quality."] },
-              { num: "05", title: "Deploy", bg: "bg-brand-surface", border: "border-white/10", glow: "rgba(239,68,68,0.18)", desc: "We prepare everything for a flawless launch. In this phase, we:", list: ["Finalize the product and get it ready for release.", "Handle hosting and domain configurations.", "Optimize all elements to ensure a smooth launch."] },
-              { num: "06", title: "Deliver", bg: "bg-brand-surface", border: "border-white/10", glow: "rgba(212,175,55,0.18)", desc: "Finally, we hand over the complete product, ready for you to use and impress. This phase covers:", list: ["Providing comprehensive training and support.", "Delivering all necessary documentation and access.", "Offering continued maintenance and updates."] }
-            ].map((step, idx) => {
-              const direction = idx % 3 === 0 ? "left" : idx % 3 === 1 ? "up" : "right";
-              const delay = (idx % 3) * 0.08;
-              return (
-                <ScrollRevealCard
-                  key={idx}
-                  direction={direction}
-                  delay={delay}
-                  className="h-full"
-                >
-                  <GlowCard
-                    glowColor={step.glow}
-                    className="py-6 px-4 md:py-8 md:px-6 rounded-3xl text-left h-full"
-                  >
-                    <div className="absolute -top-4 -right-4 text-8xl font-bold text-white/[0.03] select-none z-0 group-hover:text-white/[0.05] transition-colors">
-                      {step.num}
-                    </div>
-                    <div className="relative z-10 flex flex-col h-full font-sans">
-                      <div className="text-sm font-bold text-neutral-500 tracking-widest mb-2 font-mono">{step.num}.</div>
-                      <h3 className="text-white font-medium text-2xl mb-4 group-hover:text-brand-gold transition-colors">{step.title}</h3>
-                      <p className="text-neutral-400 text-sm leading-relaxed mb-6 font-light">
-                        {step.desc}
-                      </p>
-                      <ul className="text-neutral-400 text-sm space-y-3 font-light mt-auto">
-                        {step.list.map((item, i) => (
-                          <li key={i} className="flex gap-3 font-sans">
-                            <span className="text-brand-gold/50 mt-1.5 w-1 h-1 rounded-full bg-brand-gold/50 shrink-0" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </GlowCard>
-                </ScrollRevealCard>
-              );
-            })}
-
-          </div>
-        </div>
-      </section>
       <SocialProof />
       {/* CTA Section */}
-      <section className="site-section hidden bg-brand-gold text-black text-center px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.2)_0%,transparent_100%)]" />
-        <div className="relative z-10 max-w-4xl mx-auto">
-          <RevealText
-            text="Ready to start your journey?"
-            className="text-4xl md:text-5xl font-medium tracking-tight mb-8 text-black"
-            tag="h2"
-            centered={true}
-          />
-          <p className="text-xl opacity-80 font-light mb-10 max-w-2xl mx-auto font-sans text-black">
-            Join thousands of professionals completely changing the way they share their digital presence.
-          </p>
-          <div className="flex justify-center font-sans">
-            <MagneticButton
-              href="/contact"
-              className="inline-flex items-center justify-center bg-brand-dark text-white px-8 py-4 rounded-full font-semibold hover:scale-105 transition-transform h-14"
-            >
-              Contact Us Today
-              <ArrowRight size={18} />
-            </MagneticButton>
-          </div>
-        </div>
-      </section>
+
     </div>
   );
 }

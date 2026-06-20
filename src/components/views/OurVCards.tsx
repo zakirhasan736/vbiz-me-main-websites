@@ -169,9 +169,15 @@ export default function OurVCards() {
                     loop
                     muted
                     playsInline
-                    src="https://www.vbizme.com/wp-content/uploads/2024/08/vbizme-2d-explainer-1080p-240823.mp4"
+                    preload="metadata"
                     id="vcard-explainer-video"
-                  />
+                  >
+                    {/* type hint helps Safari pick the right decoder immediately */}
+                    <source
+                      src="https://www.vbizme.com/wp-content/uploads/2024/08/vbizme-2d-explainer-1080p-240823.mp4"
+                      type="video/mp4"
+                    />
+                  </video>
                 </div>
 
                 <div className="text-left px-1 mb-6">

@@ -8,7 +8,11 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { LenisProvider } from '@/components/providers/lenis-context';
 import {
   applyCinematicLenisOptions,
+  applyLenisDocumentClasses,
   buildLenisOptions,
+  clearLenisDocumentClasses,
+  getScrollTriggerPinType,
+  isMacOSSafariDesktop,
   LENIS_EASING,
   LENIS_SCROLL_TO_DURATION,
   prefersReducedScrollMotion,
@@ -16,15 +20,22 @@ import {
 
 gsap.registerPlugin(ScrollTrigger);
 
+ScrollTrigger.config({
+  /** iOS Safari URL bar resize — avoid spurious ScrollTrigger refreshes. */
+  ignoreMobileResize: true,
+});
+
 export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   const [lenis, setLenis] = useState<Lenis | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
+    const reduced = prefersReducedScrollMotion();
     const instance = new Lenis(buildLenisOptions());
 
     document.documentElement.classList.add('lenis', 'lenis-smooth');
     document.body.classList.add('lenis', 'lenis-smooth');
+    applyLenisDocumentClasses(reduced);
 
     instance.on('scroll', ScrollTrigger.update);
 
@@ -33,6 +44,8 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     };
     gsap.ticker.add(tickerRaf);
     gsap.ticker.lagSmoothing(0);
+
+    const pinType = getScrollTriggerPinType();
 
     ScrollTrigger.scrollerProxy(document.documentElement, {
       scrollTop(value) {
@@ -49,31 +62,60 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
           height: window.innerHeight,
         };
       },
+      pinType,
     });
 
     ScrollTrigger.defaults({ scroller: document.documentElement });
 
+    let resizeRaf = 0;
     const refreshLayout = () => {
       instance.resize();
       ScrollTrigger.refresh();
     };
+    const scheduleRefreshLayout = () => {
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0;
+        refreshLayout();
+      });
+    };
 
     refreshLayout();
     window.addEventListener('load', refreshLayout);
-    window.addEventListener('resize', refreshLayout);
+    window.addEventListener('resize', scheduleRefreshLayout);
+    window.addEventListener('orientationchange', refreshLayout);
+
+    /* iOS Safari — visualViewport resize when address bar shows/hides (not scroll — that fights Lenis). */
+    const visualViewport = window.visualViewport;
+    const onVisualViewportResize = () => scheduleRefreshLayout();
+    visualViewport?.addEventListener('resize', onVisualViewportResize);
+
+    /* macOS Safari — debounced resize when window is snapped / split-view. */
+    if (isMacOSSafariDesktop()) {
+      window.addEventListener('pageshow', refreshLayout);
+    }
 
     const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const onMotionChange = () => {
-      applyCinematicLenisOptions(instance, prefersReducedScrollMotion());
+      const nowReduced = prefersReducedScrollMotion();
+      applyCinematicLenisOptions(instance, nowReduced);
+      applyLenisDocumentClasses(nowReduced);
+      refreshLayout();
     };
     motionQuery.addEventListener('change', onMotionChange);
 
     setLenis(instance);
 
     return () => {
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
       motionQuery.removeEventListener('change', onMotionChange);
+      visualViewport?.removeEventListener('resize', onVisualViewportResize);
       window.removeEventListener('load', refreshLayout);
-      window.removeEventListener('resize', refreshLayout);
+      window.removeEventListener('resize', scheduleRefreshLayout);
+      window.removeEventListener('orientationchange', refreshLayout);
+      if (isMacOSSafariDesktop()) {
+        window.removeEventListener('pageshow', refreshLayout);
+      }
       gsap.ticker.remove(tickerRaf);
       ScrollTrigger.scrollerProxy(document.documentElement, {});
       ScrollTrigger.defaults({ scroller: window });
@@ -81,6 +123,7 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       setLenis(null);
       document.documentElement.classList.remove('lenis', 'lenis-smooth');
       document.body.classList.remove('lenis', 'lenis-smooth');
+      clearLenisDocumentClasses();
     };
   }, []);
 

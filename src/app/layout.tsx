@@ -1,7 +1,15 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { AppProviders } from '@/components/providers/app-providers';
 import './globals.css';
+
+export const viewport: Viewport = {
+  // viewport-fit=cover lets Safari populate env(safe-area-inset-*) for notch/Dynamic Island
+  viewportFit: 'cover',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 const inter = Inter({
   subsets: ['latin'],
@@ -30,6 +38,11 @@ export const metadata: Metadata = {
   title: 'vBiz Me | The Virtual Business Card That Sells For You',
   description:
     'Elevate your professional identity with vBiz Me — the advanced digital business card platform engineered for visionaries.',
+  // viewport-fit=cover: enables env(safe-area-inset-*) for iPhone notch / Dynamic Island
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'black-translucent',
+  },
 };
 
 export default function RootLayout({
