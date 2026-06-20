@@ -747,6 +747,7 @@ body.theme-light .portfolio-qr-slider-card {
 
 body.theme-light .navbar-logo-shell {
   background-color: #0a0a0a !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
 }
 
 body.theme-light .navbar-nav-link {

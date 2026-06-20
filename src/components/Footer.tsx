@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useLenis } from '@/components/providers/lenis-context';
+import { useTheme } from '@/components/providers/theme-provider';
 import { LENIS_SCROLL_TO_DURATION } from '@/lib/lenis-config';
 import { VBIZ_LOGO } from '@/lib/site-assets';
 import { RevealText } from '@/components/animations/reveal';
@@ -60,6 +61,7 @@ function FooterSocialLink({
 
 export const Footer = () => {
   const lenis = useLenis();
+  const { theme } = useTheme();
   const footerRef = useFooterCinematicAnimations();
 
   const scrollToTop = () => {
@@ -170,6 +172,11 @@ export const Footer = () => {
             className="col-span-2 md:col-span-4 flex flex-col items-center md:items-start text-center md:text-left border-b border-white/5 pb-8 md:border-0 md:pb-0"
           >
             <Link href="/" data-footer-brand-item className="group flex items-center mb-4 md:mb-8">
+            <span
+                className={`navbar-logo-shell inline-flex items-center justify-center rounded-full px-1  py-1 transition-transform duration-500 group-hover:scale-[1.03] ${
+                  theme === 'light' ? 'bg-black shadow-[0_4px_20px_rgba(0,0,0,0.18)]' : ''
+                }`}
+              >
               <Image
                 src={VBIZ_LOGO.src}
                 alt={VBIZ_LOGO.alt}
@@ -178,10 +185,11 @@ export const Footer = () => {
                 sizes={VBIZ_LOGO.footer.sizes}
                 className={`${VBIZ_LOGO.footer.className} transition-transform duration-500 group-hover:scale-105`}
               />
+              </span>
             </Link>
             <p
               data-footer-brand-item
-              className="text-neutral-400 text-xs md:text-sm font-light max-w-sm leading-relaxed mb-5 md:mb-8 mx-auto md:mx-0"
+              className="text-neutral-400 text-sm md:text-base font-light max-w-sm leading-relaxed mb-5 md:mb-8 mx-auto md:mx-0"
             >
               Elevate your professional identity with the most advanced digital business card platform
               engineered for visionaries.

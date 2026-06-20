@@ -13,7 +13,7 @@ export const VBIZ_LOGO = {
     width: 256,
     height: 256,
     sizes: '(min-width: 768px) 256px, 256px',
-    className: 'h-12 md:h-[78px] w-auto object-contain',
+    className: 'h-16 md:h-[78px] w-auto object-contain',
   },
 } as const;
 
