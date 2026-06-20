@@ -1,4 +1,5 @@
-import { DeferredPartnerLogoMarquee } from '@/components/hero/DeferredPartnerLogoMarquee';
+import { PartnerLogoMarqueeShell } from '@/components/hero/PartnerLogoMarqueeShell';
+import { PartnerLogoMarqueeStatic } from '@/components/hero/PartnerLogoMarqueeStatic';
 import { PARTNER_LOGOS } from '@/lib/partner-logos';
 
 /** SSR partner trust strip — entrance animation is CSS-only (no motion bundle). */
@@ -29,7 +30,7 @@ export function HeroTrustBar() {
           </div>
 
           <div className="hero-trust-bar__marquee-lane hero-trust-bar__marquee-lane--enter">
-            <DeferredPartnerLogoMarquee />
+            <PartnerLogoMarqueeShell staticFallback={<PartnerLogoMarqueeStatic />} />
           </div>
         </div>
       </div>

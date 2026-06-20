@@ -578,7 +578,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-            className="pointer-events-auto bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 shadow-sm w-72 min-h-[194px] flex flex-col gap-4 relative overflow-hidden"
+            className="pointer-events-auto bg-zinc-950 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 shadow-sm w-72 min-h-[194px] flex flex-col gap-4 relative overflow-hidden"
           >
             {isSpeaking && (
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-800/30 via-transparent to-transparent opacity-50 animate-pulse pointer-events-none" />
@@ -606,7 +606,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="font-bold text-sm text-zinc-100 tracking-wide">Live AI Assistant</span>
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-widest truncate max-w-[172px]">
+                  <span className="text-[10px] text-zinc-400 uppercase tracking-widest truncate max-w-[172px]">
                     {isConnecting
                       ? 'Connecting...'
                       : isConnected
@@ -622,7 +622,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
             </div>
 
             {error && (
-              <div className="text-red-400 text-xs flex items-center gap-1.5 p-2 bg-red-400/10 rounded-xl z-10 border border-red-500/20 min-h-9">
+              <div className="text-red-300 text-xs flex items-center gap-1.5 p-2 bg-red-950/50 rounded-xl z-10 border border-red-500/30 min-h-9">
                 <AlertCircle size={14} className="shrink-0" />
                 <span className="line-clamp-2 leading-snug">{error}</span>
               </div>
@@ -657,7 +657,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                   className="w-16 h-16 rounded-full bg-zinc-100 hover:bg-white disabled:opacity-50 flex items-center justify-center text-zinc-950 transition-all ml-auto hover:scale-105 active:scale-95 shadow-sm"
                 >
                   {isConnecting ? (
-                    <Loader2 size={24} className="animate-spin text-zinc-500" />
+                    <Loader2 size={24} className="animate-spin text-zinc-400" />
                   ) : (
                     <Mic size={24} strokeWidth={2.5} />
                   )}

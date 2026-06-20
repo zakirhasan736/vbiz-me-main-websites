@@ -11,8 +11,6 @@ import { HeroTrustBar } from '@/components/hero/HeroTrustBar';
 import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 
-const HERO_LCP_MOTION_BOOT = `(function(){function go(){if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;document.documentElement.classList.add("hero-lcp-motion")}if("requestAnimationFrame"in window){requestAnimationFrame(function(){requestAnimationFrame(go)})}else{go()}})();`;
-
 /** Hero shell — title and description SSR outside any client boundary for LCP. */
 export function HeroSection() {
   return (
@@ -33,8 +31,6 @@ export function HeroSection() {
           <div className="mb-6 sm:mb-8 max-w-2xl">
             <HeroBannerDescription />
           </div>
-
-          <script dangerouslySetInnerHTML={{ __html: HERO_LCP_MOTION_BOOT }} />
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto z-50 relative">
             <div className="hero-primary-cta-item w-full sm:w-auto">

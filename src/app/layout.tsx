@@ -27,12 +27,15 @@ const HERO_LCP_CRITICAL_CSS = `
 .hero-title-lcp__accent{color:var(--color-brand-gold,#d4af37);font-weight:inherit;letter-spacing:.01em;display:inline-block;vertical-align:baseline}
 .hero-desc-lcp{display:flex;flex-direction:column;gap:.18em;font-size:1rem;line-height:1.625;font-weight:300;color:#a3a3a3;min-height:calc(3 * 1.55em + 2 * .18em)}
 .hero-title-lcp__line,.hero-desc-lcp__line{display:block;opacity:1;visibility:visible}
-.hero-title-lcp__line{line-height:1.15;min-height:1.15em}
+.hero-title-lcp__line{line-height:1.15;min-height:1.15em;clip-path:none;transform:none;animation:none}
 .hero-desc-lcp__line{line-height:1.55;min-height:1.55em}
 @media(min-width:640px){.hero-title-lcp{font-size:3rem;line-height:1.25;min-height:calc(2 * 1.25em + .08em)}.hero-desc-lcp{font-size:1.125rem;line-height:1.625}}
 @media(min-width:1024px){.hero-title-lcp{font-size:52px}.hero-desc-lcp{font-size:1.25rem;line-height:1.625}}
 @media(max-width:767px){.hero-title-lcp{letter-spacing:-.02em}.hero-desc-lcp,.hero-desc-lcp__line{line-height:1.5;min-height:1.5em}}
 `;
+
+/** Defer desc-line motion until after load so LCP title paints immediately. */
+const HERO_LCP_MOTION_BOOT = `(function(){function go(){if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;document.documentElement.classList.add("hero-lcp-motion")}function schedule(){setTimeout(go,80)}if(document.readyState==="complete"){schedule()}else{window.addEventListener("load",schedule,{once:true})}})();`;
 
 export const metadata: Metadata = {
   title: 'vBiz Me | The Virtual Business Card That Sells For You',
@@ -54,6 +57,7 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <head>
         <style dangerouslySetInnerHTML={{ __html: HERO_LCP_CRITICAL_CSS }} />
+        <script dangerouslySetInnerHTML={{ __html: HERO_LCP_MOTION_BOOT }} />
       </head>
       <body className={`${inter.className} theme-light antialiased`}>
         <script

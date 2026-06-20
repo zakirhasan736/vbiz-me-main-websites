@@ -1112,7 +1112,7 @@ const FinalCTA = () => {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a 
             href="/contact" 
-            className="w-full sm:w-auto px-10 py-4 rounded-full bg-brand-gold hover:bg-yellow-400 text-black font-semibold text-sm tracking-wide transition-all shadow-[0_0_20px_rgba(212,175,55,0.25)]"
+            className="w-full sm:w-auto px-10 py-4 rounded-full site-btn-gold font-semibold text-sm tracking-wide transition-colors shadow-[0_0_20px_rgba(212,175,55,0.25)]"
           >
             Create My Free vCard
           </a>
