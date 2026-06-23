@@ -2601,6 +2601,30 @@ html.safari-light-motion .site-video-player__media--ready {
   opacity: 1;
 }
 
+html.safari-light-motion .site-video-player--hero {
+  contain: strict;
+  isolation: isolate;
+}
+
+html.safari-light-motion .site-video-player--hero .site-video-player__media,
+html.safari-light-motion .site-video-player__media--hero {
+  opacity: 1;
+  transition: none !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  will-change: auto !important;
+  backface-visibility: visible;
+}
+
+html.safari-light-motion .hero-video-showcase__panel {
+  transform: none !important;
+  will-change: auto !important;
+}
+
+html.safari-light-motion [data-hero-entrance-side='right'] .hero-video-showcase__panel {
+  transform: none !important;
+}
+
 .site-video-controls--corner {
   opacity: 1 !important;
   pointer-events: auto !important;

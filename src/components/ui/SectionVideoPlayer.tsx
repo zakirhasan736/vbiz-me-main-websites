@@ -20,6 +20,8 @@ type SectionVideoPlayerProps = {
   preloadOnSiteReady?: boolean;
   /** Safari: muted autoplay when ready (homepage hero). */
   autoplayOnSafari?: boolean;
+  /** Homepage hero — stable playback without Safari in-view pause churn. */
+  heroPlayback?: boolean;
   children?: ReactNode;
 };
 
@@ -35,6 +37,7 @@ export function SectionVideoPlayer({
   objectFit = 'cover',
   preloadOnSiteReady = false,
   autoplayOnSafari = false,
+  heroPlayback = false,
   children,
 }: SectionVideoPlayerProps) {
   const {
@@ -55,16 +58,25 @@ export function SectionVideoPlayer({
     loop,
     preloadOnSiteReady,
     autoplayOnSafari,
+    heroPlayback,
   });
 
   const { forceCenterVisible, onTouchStart } = useVideoTouchReveal();
   const safariPaused = isSafari && !isPlaying && !autoplayOnSafari;
 
   const fitClass = objectFit === 'contain' ? 'object-contain' : 'object-cover';
-  const opacityClass = showVideo
-    ? 'opacity-100 site-video-player__media--ready'
-    : 'opacity-0';
-  const preloadValue = isSafari
+  const opacityClass =
+    heroPlayback && showVideo
+      ? 'opacity-100 site-video-player__media--ready site-video-player__media--hero'
+      : showVideo
+        ? 'opacity-100 site-video-player__media--ready'
+        : 'opacity-0';
+  const preloadValue =
+    heroPlayback && isSafari
+      ? videoSrc
+        ? 'auto'
+        : 'none'
+      : isSafari
     ? videoSrc
       ? 'auto'
       : 'none'
@@ -75,7 +87,7 @@ export function SectionVideoPlayer({
   return (
     <div
       ref={rootRef}
-      className="group/video site-video-player relative h-full w-full min-h-[200px] overflow-hidden"
+      className={`group/video site-video-player relative h-full w-full min-h-[200px] overflow-hidden${heroPlayback ? ' site-video-player--hero' : ''}`}
       onTouchStart={onTouchStart}
     >
       {videoSrc ? (

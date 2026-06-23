@@ -23,6 +23,8 @@ export type UseOptimizedVideoPlaybackOptions = {
   preloadOnSiteReady?: boolean;
   /** Safari: muted autoplay when ready (homepage hero only). */
   autoplayOnSafari?: boolean;
+  /** Homepage hero — stable muted autoplay, no in-view pause churn on Safari. */
+  heroPlayback?: boolean;
 };
 
 /**
@@ -37,6 +39,7 @@ export function useOptimizedVideoPlayback({
   loop = true,
   preloadOnSiteReady = false,
   autoplayOnSafari = false,
+  heroPlayback = false,
 }: UseOptimizedVideoPlaybackOptions) {
   const { revealReady } = usePageTransition();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -46,6 +49,7 @@ export function useOptimizedVideoPlayback({
   const srcResolvedRef = useRef(false);
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const playPromiseRef = useRef<Promise<void> | null>(null);
+  const playbackLockedRef = useRef(false);
   const safariInitRef = useRef(false);
   const framePrimedRef = useRef(false);
 
@@ -60,7 +64,7 @@ export function useOptimizedVideoPlayback({
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const visible = (playWhenInView ? inView : true) && playbackEnabled;
+  const visible = (heroPlayback || (playWhenInView ? inView : true)) && playbackEnabled;
   const effectiveAutoplay = autoplayWhenReady && (!isSafari || autoplayOnSafari);
   const siteReady = revealReady && pageLoaded;
   const canLoadSrc = isSafari
@@ -91,6 +95,11 @@ export function useOptimizedVideoPlayback({
   }, [pageLoaded]);
 
   useEffect(() => {
+    if (heroPlayback) {
+      setInView(true);
+      return;
+    }
+
     if (!playWhenInView) {
       setInView(true);
       return;
@@ -135,7 +144,7 @@ export function useOptimizedVideoPlayback({
       clearPauseTimer();
       observer.disconnect();
     };
-  }, [playWhenInView, isSafari]);
+  }, [playWhenInView, isSafari, heroPlayback]);
 
   useEffect(() => {
     if (!canLoadSrc || srcResolvedRef.current) return;
@@ -162,7 +171,7 @@ export function useOptimizedVideoPlayback({
   }, [canLoadSrc, src]);
 
   const primeSafariFirstFrame = useCallback((video: HTMLVideoElement) => {
-    if (!isSafari || framePrimedRef.current || !video.paused) return;
+    if (!isSafari || heroPlayback || framePrimedRef.current || !video.paused) return;
     framePrimedRef.current = true;
     try {
       if (video.currentTime < 0.01) {
@@ -171,7 +180,7 @@ export function useOptimizedVideoPlayback({
     } catch {
       /* seek may fail before data loaded */
     }
-  }, [isSafari]);
+  }, [isSafari, heroPlayback]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -188,7 +197,12 @@ export function useOptimizedVideoPlayback({
       setHasMetadata(true);
       primeSafariFirstFrame(video);
     };
-    const onPlaying = () => setIsPlaying(true);
+    const onPlaying = () => {
+      setIsPlaying(true);
+      if (heroPlayback) {
+        playbackLockedRef.current = true;
+      }
+    };
     const onPause = () => {
       if (!video.ended) setIsPlaying(false);
     };
@@ -213,7 +227,7 @@ export function useOptimizedVideoPlayback({
       video.removeEventListener('pause', onPause);
       video.removeEventListener('error', onError);
     };
-  }, [videoSrc, primeSafariFirstFrame]);
+  }, [videoSrc, primeSafariFirstFrame, heroPlayback]);
 
   const applyPlayback = useCallback(() => {
     const video = videoRef.current;
@@ -225,9 +239,14 @@ export function useOptimizedVideoPlayback({
     video.playsInline = true;
 
     const wantsPlay =
-      visible && isPlaying && (userStartedRef.current || effectiveAutoplay);
+      visible &&
+      isPlaying &&
+      (userStartedRef.current || effectiveAutoplay || playbackLockedRef.current);
 
     if (!wantsPlay) {
+      if (heroPlayback && playbackLockedRef.current && !userPausedRef.current) {
+        return;
+      }
       if (!video.paused) {
         video.pause();
       }
@@ -250,7 +269,7 @@ export function useOptimizedVideoPlayback({
         setIsPlaying(false);
       }
     });
-  }, [videoSrc, isMuted, loop, visible, isPlaying, effectiveAutoplay]);
+  }, [videoSrc, isMuted, loop, visible, isPlaying, effectiveAutoplay, heroPlayback]);
 
   useEffect(() => {
     applyPlayback();
@@ -269,7 +288,7 @@ export function useOptimizedVideoPlayback({
         videoRef.current?.pause();
         return;
       }
-      if (visible && isPlaying) {
+      if (visible && (isPlaying || playbackLockedRef.current)) {
         applyPlayback();
       }
     };
@@ -283,6 +302,9 @@ export function useOptimizedVideoPlayback({
     setIsPlaying((prev) => {
       const next = !prev;
       userPausedRef.current = !next;
+      if (!next) {
+        playbackLockedRef.current = false;
+      }
       return next;
     });
   }, []);
@@ -295,6 +317,7 @@ export function useOptimizedVideoPlayback({
 
   const pause = useCallback(() => {
     userPausedRef.current = true;
+    playbackLockedRef.current = false;
     setIsPlaying(false);
   }, []);
 

@@ -16,9 +16,15 @@ type HeroSlideEntranceProps = {
   side: 'left' | 'right';
   children: ReactNode;
   className?: string;
+  onEntranceComplete?: () => void;
 };
 
-export function HeroSlideEntrance({ side, children, className = '' }: HeroSlideEntranceProps) {
+export function HeroSlideEntrance({
+  side,
+  children,
+  className = '',
+  onEntranceComplete,
+}: HeroSlideEntranceProps) {
   const { animateReady } = useHeroAnimateReady();
 
   if (prefersReducedMotion()) {
@@ -43,6 +49,9 @@ export function HeroSlideEntrance({ side, children, className = '' }: HeroSlideE
       transition={{
         duration: getSlideDuration(distance),
         ease: PREMIUM_EASE,
+      }}
+      onAnimationComplete={() => {
+        if (animateReady) onEntranceComplete?.();
       }}
     >
       {children}
