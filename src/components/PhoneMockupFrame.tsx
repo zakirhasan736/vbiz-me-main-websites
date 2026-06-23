@@ -53,16 +53,10 @@ export const PhoneMockupFrame = forwardRef<HTMLDivElement, PhoneMockupFrameProps
       <div
         ref={ref}
         className={`vcard-phone-mockup bg-neutral-950 border-neutral-800 relative z-10 flex flex-col overflow-hidden pointer-events-auto touch-auto mx-auto ${styles.shell} ${className}`}
-        data-lenis-prevent
-        data-lenis-prevent-touch
-        data-lenis-prevent-wheel
         style={{ maxWidth: styles.maxWidth }}
       >
         <div
           className={`vcard-phone-screen w-full flex-1 min-h-0 bg-[#080808] ${styles.screen} overflow-hidden flex flex-col relative pointer-events-auto touch-auto`}
-          data-lenis-prevent
-          data-lenis-prevent-touch
-          data-lenis-prevent-wheel
         >
           {showLive ? (
             <VCardIframeFrame

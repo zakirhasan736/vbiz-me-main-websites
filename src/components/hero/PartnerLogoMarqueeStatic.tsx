@@ -1,30 +1,26 @@
 import {
-  PARTNER_LOGOS,
-  PARTNER_LOGO_MOBILE_HEIGHT,
-  PARTNER_LOGO_MOBILE_WIDTH,
-  getPartnerLogoMobileRows,
+  PARTNER_DESKTOP_VISIBLE_COUNT,
+  PARTNER_MOBILE_VISIBLE_COUNT,
 } from '@/lib/partner-logos';
 
-type PartnerLogo = (typeof PARTNER_LOGOS)[number];
+function PartnerLogoPlaceholderCell() {
+  return <div className="partner-logo-marquee__cell partner-logo-marquee__cell--placeholder" aria-hidden="true" />;
+}
 
-function StaticLogo({ logo }: { logo: PartnerLogo }) {
+function PlaceholderRow({ count }: { count: number }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={logo.src}
-      alt={logo.alt}
-      width={PARTNER_LOGO_MOBILE_WIDTH}
-      height={PARTNER_LOGO_MOBILE_HEIGHT}
-      className="partner-logo-marquee__cell partner-logo-marquee__logo"
-      decoding="async"
-      draggable={false}
-    />
+    <>
+      {Array.from({ length: count }, (_, index) => (
+        <PartnerLogoPlaceholderCell key={`placeholder-${index}`} />
+      ))}
+    </>
   );
 }
 
-/** SSR partner logos — reserves exact marquee height before client hydration. */
+/** SSR marquee shell — empty cells only (no logo network requests before hydration). */
 export function PartnerLogoMarqueeStatic() {
-  const { rowA, rowB } = getPartnerLogoMobileRows();
+  const mobileSlots = PARTNER_MOBILE_VISIBLE_COUNT + 1;
+  const desktopSlots = PARTNER_DESKTOP_VISIBLE_COUNT + 1;
 
   return (
     <div className="partner-logo-marquee-static" aria-hidden="true">
@@ -32,16 +28,12 @@ export function PartnerLogoMarqueeStatic() {
         <div className="partner-logo-marquee__rows">
           <div className="partner-logo-marquee__viewport">
             <div className="partner-logo-marquee__track partner-logo-marquee__track--static">
-              {rowA.map((logo) => (
-                <StaticLogo key={`ssr-a-${logo.src}`} logo={logo} />
-              ))}
+              <PlaceholderRow count={mobileSlots} />
             </div>
           </div>
           <div className="partner-logo-marquee__viewport">
             <div className="partner-logo-marquee__track partner-logo-marquee__track--static">
-              {rowB.map((logo) => (
-                <StaticLogo key={`ssr-b-${logo.src}`} logo={logo} />
-              ))}
+              <PlaceholderRow count={mobileSlots} />
             </div>
           </div>
         </div>
@@ -50,9 +42,7 @@ export function PartnerLogoMarqueeStatic() {
       <div className="partner-logo-marquee partner-logo-marquee--desktop partner-logo-marquee-static__desktop hidden md:block">
         <div className="partner-logo-marquee__viewport">
           <div className="partner-logo-marquee__track partner-logo-marquee__track--static">
-            {PARTNER_LOGOS.map((logo) => (
-              <StaticLogo key={`ssr-d-${logo.src}`} logo={logo} />
-            ))}
+            <PlaceholderRow count={desktopSlots} />
           </div>
         </div>
       </div>

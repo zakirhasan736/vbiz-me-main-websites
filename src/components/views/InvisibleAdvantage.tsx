@@ -1,12 +1,19 @@
 'use client';
 
-import { ChevronDown, ChevronUp, Pause, Play, Sparkles, Volume2, VolumeX } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { RevealText, RevealParagraph, BannerDescription, ScrollRevealCard } from '@/components/animations/reveal';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
+import {
+  RevealGridItem,
+  SectionRevealRoot,
+  SectionRevealStaggerList,
+  BANNER_REVEAL_STAGGER,
+  getTwoColumnDirection,
+} from '@/components/animations/reveal';
 import { INVISIBLE_ADVANTAGE_VIDEO } from '@/lib/site-assets';
+import { renderHighlightedText } from '@/lib/text-highlight';
 import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
+import { SectionVideoPlayer } from '@/components/ui/SectionVideoPlayer';
 
 export default function InvisibleAdvantage() {
   const [activeAccordion, setActiveAccordion] = useState<number | null>(0);
@@ -36,207 +43,123 @@ export default function InvisibleAdvantage() {
 
   return (
     <div className="bg-brand-dark min-h-screen">
-      {/* Hero + featured video — single column, video first interaction */}
-      <section className="section-hero relative pt-32 pb-16 overflow-hidden bg-brand-dark">
+      {/* Banner — eyebrow, title, subtitle, video, caption in one reveal group */}
+      <section className="section-hero site-section--reveal relative pt-32 pb-12 overflow-visible bg-brand-dark">
         <PageHeroBackground />
 
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col items-center text-center mb-8 md:mb-10">
-            <SectionEyebrow label="The Secret Weapon" variant="hero" className="mb-6" />
+        <SectionRevealRoot
+          viewport="header"
+          simultaneous={false}
+          replayOnNavigate
+          className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+        >
+          <SectionRevealStaggerList
+            stagger={BANNER_REVEAL_STAGGER.ITEM}
+            delayChildren={BANNER_REVEAL_STAGGER.DELAY_CHILDREN}
+            className="flex flex-col items-center text-center"
+          >
+            <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="w-full flex justify-center mb-6">
+              <SectionEyebrow label="The Secret Weapon" variant="hero" />
+            </RevealGridItem>
 
-            <RevealText
-              text="Invisible Advantage"
-              className="text-4xl sm:text-5xl md:text-6xl font-sans font-medium text-white mb-4 tracking-tight leading-[1.1] text-center"
-              tag="h1"
-              highlightedWords={['Advantage']}
-            />
+            <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="w-full mb-4">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-sans font-medium text-white tracking-tight leading-[1.1] text-center">
+                {renderHighlightedText('Invisible Advantage', ['Advantage'])}
+              </h1>
+            </RevealGridItem>
 
-            <BannerDescription
-              text="The Advantage You Can't See... But Your Clients Feel Immediately"
-              className="text-neutral-400 text-base md:text-lg font-light max-w-2xl leading-relaxed"
-            />
-          </div>
+            <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="w-full max-w-2xl mb-8 md:mb-10">
+              <p className="text-neutral-400 text-base md:text-lg font-light leading-relaxed text-center">
+                The Advantage You Can&apos;t See... But Your Clients Feel Immediately
+              </p>
+            </RevealGridItem>
 
-          <ScrollRevealCard direction="up" className="w-full">
-            <AdvantageVideoPlayer />
-          </ScrollRevealCard>
+            <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="w-full">
+              <div className="relative w-full bg-brand-surface/80 rounded-[2rem] border border-emerald-500/15 overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.55),0_0_40px_rgba(16,185,129,0.08)]">
+                <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-brand-gold/40 to-transparent pointer-events-none z-20" />
+                <div className="relative aspect-video bg-brand-deep min-h-[220px] sm:min-h-[280px]">
+                  <SectionVideoPlayer
+                    src={INVISIBLE_ADVANTAGE_VIDEO}
+                    ariaLabel="The Invisible Advantage presentation video"
+                    playWhenInView
+                    objectFit="contain"
+                    className="absolute inset-0 h-full w-full"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none z-10" />
+                </div>
+                <div className="px-4 sm:px-5 py-4 border-t border-emerald-500/10 bg-brand-elevated/90">
+                  <p className="text-[11px] text-neutral-400 font-light leading-relaxed text-left">
+                    A quick walkthrough of the hidden psychology and technology powering every vBiz Me card.
+                  </p>
+                </div>
+              </div>
+            </RevealGridItem>
 
-          <BannerDescription
-            text="See how strategy, psychology, and technology combine behind every vBiz Me card — turning a simple scan into trust, engagement, and real business momentum."
-            className="text-neutral-500 text-sm md:text-base font-light leading-relaxed max-w-2xl mt-8"
-          />
-        </div>
+            <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="w-full max-w-2xl mt-8">
+              <p className="text-neutral-500 text-sm md:text-base font-light leading-relaxed text-center">
+                See how strategy, psychology, and technology combine behind every vBiz Me card — turning a simple scan into trust, engagement, and real business momentum.
+              </p>
+            </RevealGridItem>
+          </SectionRevealStaggerList>
+        </SectionRevealRoot>
       </section>
 
       {/* Content Section */}
-      <section className="site-section bg-brand-dark relative">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.04)_0%,transparent_70%)] pointer-events-none" />
+      <section className="site-section site-section--reveal bg-brand-dark relative">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.04)_0%,transparent_70%)] pointer-events-none" />
         <div className="max-w-4xl mx-auto px-4 relative z-10">
-          
-          <div className="text-center mb-16">
-            <RevealParagraph 
-              text="The Invisible Advantage is the hidden force working behind every vBiz Me card. It's the strategy, psychology, and technology built into your digital presence that turns a simple scan into real interest — and real business."
-              className="text-neutral-300 text-sm md:text-lg leading-relaxed max-w-3xl mx-auto font-light block"
-            />
-          </div>
+          <SectionRevealRoot viewport="content" simultaneous={false} replayOnNavigate>
+            <SectionRevealStaggerList
+              stagger={BANNER_REVEAL_STAGGER.ITEM}
+              delayChildren={BANNER_REVEAL_STAGGER.DELAY_CHILDREN}
+              className="flex flex-col gap-4"
+            >
+              <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="text-center mb-12">
+                <p className="text-neutral-300 text-sm md:text-lg leading-relaxed max-w-3xl mx-auto font-light text-center">
+                  The Invisible Advantage is the hidden force working behind every vBiz Me card. It&apos;s the strategy, psychology, and technology built into your digital presence that turns a simple scan into real interest — and real business.
+                </p>
+              </RevealGridItem>
 
-          {/* Accordion */}
-          <div className="flex flex-col gap-4">
-            {accordionItems.map((item, index) => {
-              const direction = index % 2 === 0 ? "left" : "right";
-              const delay = index * 0.05;
-              return (
-                <ScrollRevealCard 
-                  key={index}
-                  direction={direction}
-                  delay={delay}
+              {accordionItems.map((item, index) => (
+                <RevealGridItem
+                  key={item.title}
+                  direction={getTwoColumnDirection(index)}
+                  distance="MD"
+                  scaleOnUp={false}
                   className="w-full"
                 >
                   <div className="bg-brand-surface rounded-2xl overflow-hidden border border-emerald-500/10 transition-colors hover:border-emerald-500/20 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                    <button 
+                    <button
+                      type="button"
                       onClick={() => setActiveAccordion(activeAccordion === index ? null : index)}
                       className="w-full flex items-center justify-between py-6 px-4 md:py-8 md:px-6 text-left focus:outline-none group relative overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-brand-gold/0 via-brand-gold/5 to-brand-gold/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out opacity-0 group-hover:opacity-100" />
-                      <span className={`text-lg md:text-xl font-medium tracking-tight relative z-10 transition-colors duration-300 ${activeAccordion === index ? 'text-brand-gold' : 'text-white'}`}>
+                      <span
+                        className={`text-lg md:text-xl font-medium tracking-tight relative z-10 transition-colors duration-300 ${activeAccordion === index ? 'text-brand-gold' : 'text-white'}`}
+                      >
                         {item.title}
                       </span>
-                      <motion.div
-                        animate={{ rotate: activeAccordion === index ? 180 : 0 }}
-                        transition={{ duration: 0.3 }}
-                        className={`shrink-0 ml-4 relative z-10 ${activeAccordion === index ? 'text-brand-gold' : 'text-neutral-500'}`}
+                      <div
+                        className={`shrink-0 ml-4 transition-transform duration-300 ${activeAccordion === index ? 'text-brand-gold rotate-180' : 'text-neutral-500'}`}
                       >
                         {activeAccordion === index ? <ChevronUp size={24} /> : <ChevronDown size={24} />}
-                      </motion.div>
+                      </div>
                     </button>
-                    <AnimatePresence>
-                      {activeAccordion === index && (
-                        <motion.div 
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="px-4 md:px-6 pb-8 text-neutral-400 text-base leading-relaxed font-light">
-                            {item.content}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    {activeAccordion === index && (
+                      <div className="overflow-hidden">
+                        <div className="px-4 md:px-6 pb-8 text-neutral-400 text-base leading-relaxed font-light">
+                          {item.content}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </ScrollRevealCard>
-              );
-            })}
-          </div>
-
+                </RevealGridItem>
+              ))}
+            </SectionRevealStaggerList>
+          </SectionRevealRoot>
         </div>
       </section>
-    </div>
-  );
-}
-
-function AdvantageVideoPlayer() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isMuted, setIsMuted] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(true);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    video.muted = isMuted;
-
-    if (isPlaying) {
-      video.play().catch(() => setIsPlaying(false));
-    } else {
-      video.pause();
-    }
-  }, [isMuted, isPlaying]);
-
-  const tryPlay = () => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = isMuted;
-    video.play().catch(() => setIsPlaying(false));
-  };
-
-  return (
-    <div className="relative w-full bg-brand-surface/80 rounded-[2rem] border border-emerald-500/15 overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.55),0_0_40px_rgba(16,185,129,0.08)] group hover:border-brand-gold/25 transition-colors duration-500">
-      <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-brand-gold/40 to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.04),transparent_55%)] pointer-events-none" />
-
-      <div className="relative aspect-video bg-brand-deep">
-        <div className="absolute top-0 inset-x-0 h-11 bg-gradient-to-b from-black/80 to-transparent z-20 px-4 flex items-center justify-between text-[10px] text-white/60 font-mono tracking-widest uppercase">
-          <span className="flex items-center gap-1.5">
-            <Sparkles size={10} className="text-brand-gold" />
-            Invisible Advantage
-          </span>
-          <span className="text-brand-gold/80 hidden sm:inline">Full Breakdown</span>
-        </div>
-
-        <video
-          ref={videoRef}
-          src={INVISIBLE_ADVANTAGE_VIDEO}
-          autoPlay
-          muted={isMuted}
-          playsInline
-          preload="auto"
-          controls={isPlaying}
-          onLoadedMetadata={tryPlay}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onEnded={() => setIsPlaying(false)}
-          className={`absolute inset-0 w-full h-full object-contain bg-brand-deep transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-80'}`}
-          aria-label="The Invisible Advantage presentation video"
-        />
-
-        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none z-10" />
-
-        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-2 z-30">
-          <button
-            type="button"
-            onClick={() => setIsMuted(!isMuted)}
-            className="w-9 h-9 rounded-full bg-black/70 border border-white/10 flex items-center justify-center text-white hover:text-brand-gold hover:bg-black/90 active:scale-95 transition-all cursor-pointer shadow-lg backdrop-blur-sm"
-            aria-label={isMuted ? 'Unmute video' : 'Mute video'}
-          >
-            {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="w-9 h-9 rounded-full bg-brand-gold flex items-center justify-center text-black hover:bg-yellow-400 active:scale-95 transition-all cursor-pointer shadow-lg"
-            aria-label={isPlaying ? 'Pause video' : 'Play video'}
-          >
-            {isPlaying ? <Pause size={13} fill="currentColor" /> : <Play size={13} fill="currentColor" className="ml-0.5" />}
-          </button>
-        </div>
-
-        {!isPlaying && (
-          <button
-            type="button"
-            onClick={() => setIsPlaying(true)}
-            className="absolute inset-0 w-full h-full bg-black/45 flex flex-col items-center justify-center z-20 transition-colors cursor-pointer border-none outline-none group/play"
-            aria-label="Play The Invisible Advantage video"
-          >
-            <div className="w-16 h-16 rounded-full bg-brand-gold/95 flex items-center justify-center text-black shadow-[0_0_35px_rgba(212,175,55,0.35)] group-hover/play:scale-110 transition-transform mb-4">
-              <Play size={24} fill="currentColor" className="ml-1 text-black" />
-            </div>
-            <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-white/70">
-              Play Presentation
-            </span>
-          </button>
-        )}
-      </div>
-
-      <div className="px-4 sm:px-5 py-4 border-t border-emerald-500/10 bg-brand-elevated/90 flex items-center justify-between gap-4">
-        <p className="text-[11px] text-neutral-400 font-light leading-relaxed text-left">
-          A quick walkthrough of the hidden psychology and technology powering every vBiz Me card.
-        </p>
-        <span className="text-[9px] font-mono uppercase tracking-widest text-brand-gold/70 shrink-0 hidden sm:inline">
-          HD • Tap to unmute
-        </span>
-      </div>
     </div>
   );
 }

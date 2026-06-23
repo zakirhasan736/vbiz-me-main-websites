@@ -55,6 +55,12 @@ export function VCardIframeFrame({
   }, [minLoaderMs, src]);
 
   useLayoutEffect(() => {
+    if (!src.trim()) {
+      clearHideTimer();
+      setShowLoader(false);
+      return;
+    }
+
     activeSrcRef.current = src;
     mountTimeRef.current = Date.now();
     clearHideTimer();
@@ -95,11 +101,8 @@ export function VCardIframeFrame({
   return (
     <div
       className="vcard-iframe-shell absolute inset-0 h-full w-full min-h-0 touch-auto pointer-events-auto overflow-hidden"
-      data-lenis-prevent
-      data-lenis-prevent-touch
-      data-lenis-prevent-wheel
     >
-      {showLoader && (
+      {showLoader && src.trim().length > 0 && (
         <div
           className="vcard-iframe-loader absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#080808] px-4"
           role="status"
@@ -118,17 +121,19 @@ export function VCardIframeFrame({
           <span className="mt-3 text-[9px] font-light text-neutral-500">Please wait…</span>
         </div>
       )}
-      <iframe
-        key={src}
-        src={src}
-        className={`absolute inset-0 z-[1] h-full w-full border-0 pointer-events-auto touch-auto ${className} ${
-          showLoader ? 'opacity-0' : 'opacity-100'
-        } transition-opacity duration-300`}
-        title={title}
-        onLoad={handleLoad}
-        loading={iframeLoading}
-        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; fullscreen"
-      />
+      {src.trim().length > 0 ? (
+        <iframe
+          key={src}
+          src={src}
+          className={`absolute inset-0 z-[1] h-full w-full border-0 pointer-events-auto touch-auto ${className} ${
+            showLoader ? 'opacity-0' : 'opacity-100'
+          } transition-opacity duration-300`}
+          title={title}
+          onLoad={handleLoad}
+          loading={iframeLoading}
+          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; fullscreen"
+        />
+      ) : null}
     </div>
   );
 }

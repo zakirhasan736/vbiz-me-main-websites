@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'motion/react';
 import { Hand, Smartphone, X } from 'lucide-react';
 import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
 import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
+import { lockDocumentScroll, unlockDocumentScroll } from '@/lib/scroll-utils';
 
 type IndustryVCardMobilePreviewProps = {
   isOpen: boolean;
@@ -17,6 +17,8 @@ type IndustryVCardMobilePreviewProps = {
   company: string;
   previewImage: string;
   highlighted?: boolean;
+  /** When false, live iframe is not mounted (section not yet in view). */
+  iframeEnabled?: boolean;
 };
 
 export function IndustryVCardMobilePreview({
@@ -29,6 +31,7 @@ export function IndustryVCardMobilePreview({
   company,
   previewImage,
   highlighted = false,
+  iframeEnabled = true,
 }: IndustryVCardMobilePreviewProps) {
   const [mounted, setMounted] = useState(false);
   const [phoneLoading, setPhoneLoading] = useState(true);
@@ -68,39 +71,25 @@ export function IndustryVCardMobilePreview({
   useEffect(() => {
     if (!isOpen) return;
     document.body.classList.add('vcard-demo-modal-open');
-    document.body.style.overflow = 'hidden';
+    lockDocumentScroll();
     return () => {
       document.body.classList.remove('vcard-demo-modal-open');
-      document.body.style.overflow = '';
+      unlockDocumentScroll();
     };
   }, [isOpen]);
 
-  const modal = (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.28, ease: 'easeOut' }}
-          onClick={onClose}
-          className="vcard-mobile-bottom-modal industry-vcard-mobile-modal fixed inset-0 flex items-end justify-center bg-black/92 backdrop-blur-xl"
-          data-lenis-prevent
-          data-lenis-prevent-touch
-        >
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="industry-vcard-mobile-title"
-            initial={{ opacity: 0, y: '100%' }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: '100%' }}
-            transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
-            onClick={(e) => e.stopPropagation()}
-            className="relative flex w-full max-w-[460px] max-h-[min(95dvh,820px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto"
-            data-lenis-prevent
-            data-lenis-prevent-touch
-          >
+  const modal = !isOpen || !iframeEnabled || !src ? null : (
+    <div
+      onClick={onClose}
+      className="vcard-mobile-bottom-modal industry-vcard-mobile-modal site-modal-backdrop fixed inset-0 flex items-end justify-center bg-black/92 backdrop-blur-xl"
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="industry-vcard-mobile-title"
+        onClick={(e) => e.stopPropagation()}
+        className="site-modal-panel site-modal-panel--sheet relative flex w-full max-w-[460px] max-h-[min(95dvh,820px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto"
+      >
             <div className="shrink-0 flex justify-center pt-3 pb-1" aria-hidden="true">
               <span className="h-1 w-10 rounded-full bg-white/20" />
             </div>
@@ -164,10 +153,8 @@ export function IndustryVCardMobilePreview({
                 Close preview
               </button>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+      </div>
+    </div>
   );
 
   return (
@@ -183,7 +170,7 @@ export function IndustryVCardMobilePreview({
         }`}
       >
         <PhoneMockupFrame
-          src={src}
+          src=""
           title={title}
           previewImage={previewImage}
           live={false}

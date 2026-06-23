@@ -1,7 +1,8 @@
 'use client';
 
 import type { CSSProperties, ReactNode } from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { isWebKitBrowser } from '@/lib/scroll-config';
 
 type SiteGlowCardProps = {
   children: ReactNode;
@@ -29,14 +30,27 @@ export function SiteGlowCard({
   const cardRef = useRef<HTMLDivElement>(null);
   const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [skipMouseTracking, setSkipMouseTracking] = useState(false);
+
+  useEffect(() => {
+    setSkipMouseTracking(isWebKitBrowser());
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (skipMouseTracking || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     setMouseCoords({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
     });
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    if (skipMouseTracking && cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      setMouseCoords({ x: rect.width / 2, y: rect.height / 2 });
+    }
   };
 
   const innerStyle = {
@@ -52,7 +66,7 @@ export function SiteGlowCard({
       className={`site-glow-card group h-full ${onClick ? 'cursor-pointer' : ''}`}
       style={{ '--site-glow-radius': `${radius}px` } as CSSProperties}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setIsHovered(false)}
       onClick={onClick}
       role={onClick ? 'button' : undefined}

@@ -1,14 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'motion/react';
+import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion';
 import { Menu, X, Moon, Sparkles, Sun } from 'lucide-react';
 import { MagneticButton, MagneticNavLink } from './InteractiveElements';
 import { useTheme } from '@/components/providers/theme-provider';
 import { VBIZ_LOGO } from '@/lib/site-assets';
+
+const NAVBAR_SLIDE_EASE = [0.16, 1, 0.3, 1] as const;
 
 export const Navbar: React.FC = () => {
   const { theme, setTheme } = useTheme();
@@ -19,13 +21,9 @@ export const Navbar: React.FC = () => {
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, 'change', (latest) => {
-    const previous = scrollY.getPrevious() || 0;
+    const previous = scrollY.getPrevious() ?? 0;
 
-    if (latest > 50) {
-      setScrolled(true);
-    } else {
-      setScrolled(false);
-    }
+    setScrolled(latest > 50);
 
     if (latest > 150 && latest > previous) {
       setHidden(true);
@@ -33,6 +31,17 @@ export const Navbar: React.FC = () => {
       setHidden(false);
     }
   });
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
+    if (mobileMenuOpen) setHidden(false);
+  }, [mobileMenuOpen]);
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -60,35 +69,28 @@ export const Navbar: React.FC = () => {
     <>
       <motion.nav
         data-site-navbar
-        initial={{ y: -100 }}
-        animate={{ y: hidden ? -100 : 0 }}
-        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        data-scrolled={scrolled ? 'true' : undefined}
+        initial={{ y: 0 }}
+        animate={{ y: hidden ? -120 : 0 }}
+        transition={{ duration: 0.45, ease: NAVBAR_SLIDE_EASE }}
         style={
           {
-            /* CSS var lets @supports safe-area rule know the base padding */
             '--navbar-base-pt': scrolled ? '1rem' : '1.5rem',
           } as React.CSSProperties
         }
-        className={`fixed top-0 inset-x-0 z-99 flex justify-center transition-all duration-700 ${
+        className={`fixed top-0 inset-x-0 z-99 flex justify-center ${
           scrolled ? 'pt-4 md:pt-5' : 'pt-6'
         }`}
       >
-        <div
-          className={`w-full transition-all duration-700 ${scrolled ? 'max-w-6xl px-4' : 'max-w-7xl px-4 sm:px-6 lg:px-8'}`}
-        >
+        <div className={`w-full ${scrolled ? 'max-w-6xl px-4' : 'max-w-7xl px-4 sm:px-6 lg:px-8'}`}>
           <div
-            className={`relative flex items-center justify-between rounded-full transition-all duration-700 border ${
-              scrolled
-                ? 'bg-brand-surface/80 backdrop-blur-3xl border-brand-gold/10 shadow-[0_20px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.1)] pl-1.5 pr-3 py-2'
-                : 'bg-transparent border-transparent px-1.5 py-2'
-            }`}
+            data-navbar-shell
+            className="relative flex items-center justify-between rounded-full border transition-all duration-700 bg-brand-surface/95 backdrop-blur-3xl border-brand-gold/10 shadow-[0_12px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] pl-1.5 pr-3 py-2"
           >
-            {scrolled && (
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-gold/0 via-brand-gold/5 to-brand-gold/0 opacity-50 pointer-events-none" />
-            )}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-gold/0 via-brand-gold/5 to-brand-gold/0 opacity-40 pointer-events-none" />
             <Link href="/" className="relative z-10 flex-shrink-0 flex items-center pl-1 group">
               <span
-                className={`navbar-logo-shell inline-flex items-center justify-center rounded-full px-1  py-1 transition-transform duration-500 group-hover:scale-[1.03] ${
+                className={`navbar-logo-shell inline-flex items-center justify-center rounded-full px-1 py-1 transition-transform duration-500 group-hover:scale-[1.03] ${
                   theme === 'light' ? 'bg-black shadow-[0_4px_20px_rgba(0,0,0,0.18)]' : ''
                 }`}
               >
@@ -190,11 +192,14 @@ export const Navbar: React.FC = () => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
+            key="nav-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="site-nav-mobile-overlay site-modal-backdrop fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
             onClick={() => setMobileMenuOpen(false)}
-            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
+            aria-hidden={false}
           />
         )}
       </AnimatePresence>
@@ -202,10 +207,11 @@ export const Navbar: React.FC = () => {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
+            key="nav-drawer"
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            transition={{ duration: 0.32, ease: NAVBAR_SLIDE_EASE }}
             className="fixed inset-y-0 left-0 w-[280px] z-40 bg-brand-surface border-r border-emerald-500/10 pt-28 px-8 lg:hidden shadow-2xl flex flex-col"
           >
             <div className="flex flex-col gap-5 items-start">

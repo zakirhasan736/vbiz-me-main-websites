@@ -1,12 +1,22 @@
 'use client';
 
 import { Facebook, Twitter, Youtube, ArrowRight } from 'lucide-react';
-import { motion } from 'motion/react';
 import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
-import { RevealText, BannerDescription, ScrollRevealCard } from '@/components/animations/reveal';
+import {
+  RevealText,
+  BannerDescription,
+  SectionRevealRoot,
+  SectionRevealGrid,
+  RevealGridItem,
+  ScrollRevealCard,
+  getTwoColumnDirection,
+  getGridStaggerForColumns,
+} from '@/components/animations/reveal';
 import { SocialProof } from '@/components/SocialProof';
-import { FOUNDER_INTRO_VIDEO } from '@/lib/site-assets';
+import { SectionVideoPlayer } from '@/components/ui/SectionVideoPlayer';
+import { ABOUT_HERO_YOUTUBE_VIDEO_ID, FOUNDER_INTRO_VIDEO } from '@/lib/site-assets';
 import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
+import { YouTubeHeroBackground } from '@/components/ui/YouTubeHeroBackground';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { SiteGlowIcon } from '@/components/ui/SiteGlowIcon';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
@@ -14,14 +24,22 @@ import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 export default function About() {
   return (
     <div className="bg-brand-dark">
-      <section className="section-hero relative pt-32 pb-20 overflow-hidden min-h-[70vh]   flex flex-col justify-center items-center bg-brand-dark">
-        <PageHeroBackground />
+      <section
+        aria-labelledby="about-hero-title"
+        className="section-hero section-hero--video-bg relative pt-32 pb-10 md:pb-12 overflow-hidden flex flex-col justify-center items-center bg-brand-dark"
+      >
+        <YouTubeHeroBackground
+          videoId={ABOUT_HERO_YOUTUBE_VIDEO_ID}
+          title="About vBiz Me background video"
+        />
+        <PageHeroBackground overVideo />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center w-full">
-          <div className="text-center max-w-4xl mx-auto">
+          <div className="page-hero-video-content text-center max-w-4xl mx-auto">
             <SectionEyebrow label="Our Story" variant="hero" />
 
             <RevealText
+              id="about-hero-title"
               text="Redefining Connections."
               className="text-5xl md:text-7xl font-sans font-medium tracking-tight text-white mb-8 leading-[1.1]"
               tag="h1"
@@ -30,7 +48,7 @@ export default function About() {
 
             <BannerDescription
               text="At vBiz Me, we revolutionize networking with dynamic virtual business cards. Our platform helps you make an instant impact by combining engaging intro videos, customizable designs, and seamless sharing via QR codes or links."
-              className="text-xl text-neutral-400 max-w-3xl mx-auto font-light leading-relaxed"
+              className="text-lg md:text-xl text-neutral-200 max-w-3xl mx-auto font-normal leading-relaxed"
             />
           </div>
         </div>
@@ -39,8 +57,12 @@ export default function About() {
       {/* Vision & Mission Cards */}
       <section className="site-section bg-brand-dark relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <ScrollRevealCard direction="left" className="h-full">
+          <SectionRevealRoot viewport="content">
+          <SectionRevealGrid
+            className="grid grid-cols-1 md:grid-cols-2 gap-8"
+            stagger={getGridStaggerForColumns(2)}
+          >
+            <RevealGridItem direction={getTwoColumnDirection(0)} distance="LG" scaleOnUp={false} className="h-full">
               <GlowCard className="py-6 px-4 md:py-8 md:px-6 rounded-[2.5rem] shadow-2xl h-full" glowColor="rgba(212,175,55,0.18)">
                 <div className="relative z-10">
                   <h3 className="text-brand-text font-medium text-3xl mb-6 tracking-tight">Our Vision</h3>
@@ -52,9 +74,9 @@ export default function About() {
                   </p>
                 </div>
               </GlowCard>
-            </ScrollRevealCard>
+            </RevealGridItem>
 
-            <ScrollRevealCard direction="right" className="h-full">
+            <RevealGridItem direction={getTwoColumnDirection(1)} distance="LG" scaleOnUp={false} className="h-full">
               <GlowCard className="py-6 px-4 md:py-8 md:px-6 rounded-[2.5rem] shadow-2xl h-full" glowColor="rgba(43,108,176,0.18)">
                 <div className="relative z-10">
                   <h3 className="text-brand-text font-medium text-3xl mb-6 tracking-tight">Our Mission</h3>
@@ -63,8 +85,9 @@ export default function About() {
                   </p>
                 </div>
               </GlowCard>
-            </ScrollRevealCard>
-          </div>
+            </RevealGridItem>
+          </SectionRevealGrid>
+          </SectionRevealRoot>
         </div>
       </section>
 
@@ -77,30 +100,21 @@ export default function About() {
             <ScrollRevealCard direction="left" className="w-full lg:w-2/5 relative">
               <SiteGlowCard radius={40} className="aspect-[4/5] h-full overflow-hidden">
                 <div className="relative w-full h-full min-h-[320px]">
-                  <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="metadata"
-                    onLoadedMetadata={(e) => {
-                      const v = e.currentTarget;
-                      v.defaultMuted = true;
-                      v.muted = true;
-                      v.play().catch(() => {});
-                    }}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    aria-label="Michaelangelo Casanova intro video"
+                  <SectionVideoPlayer
+                    src={FOUNDER_INTRO_VIDEO}
+                    ariaLabel="Michaelangelo Casanova intro video"
+                    playWhenInView
+                    objectFit="cover"
+                    className="absolute inset-0 h-full w-full"
                   >
-                    <source src={FOUNDER_INTRO_VIDEO} type="video/mp4" />
-                  </video>
-                  <div className="founder-video-overlay absolute inset-0 z-10 pointer-events-none" />
-                  <div className="absolute bottom-8 left-8 z-20 text-left">
-                    <h3 className="founder-video-caption text-2xl font-medium mb-1 tracking-tight">
-                      Michaelangelo Casanova
-                    </h3>
-                    <p className="founder-video-caption-sub text-sm tracking-widest uppercase">CEO & Founder</p>
-                  </div>
+                    <div className="founder-video-overlay absolute inset-0 z-10 pointer-events-none" />
+                    <div className="absolute bottom-8 left-8 z-20 text-left pointer-events-none">
+                      <h3 className="founder-video-caption text-2xl font-medium mb-1 tracking-tight">
+                        Michaelangelo Casanova
+                      </h3>
+                      <p className="founder-video-caption-sub text-sm tracking-widest uppercase">CEO & Founder</p>
+                    </div>
+                  </SectionVideoPlayer>
                 </div>
               </SiteGlowCard>
               <div className="absolute -inset-4 bg-brand-gold/10 rounded-[3rem] -z-10 blur-xl opacity-50 pointer-events-none" />

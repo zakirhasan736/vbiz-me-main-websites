@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'motion/react';
 import { X, ExternalLink, ArrowLeft } from 'lucide-react';
 import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
 import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
 import { LazyQRCodeImage } from '@/components/LazyQRCodeImage';
 import { getPortfolioQrImageSrc, type PortfolioQrCard } from '@/lib/portfolio-qr-cards';
+import { lockDocumentScroll, unlockDocumentScroll } from '@/lib/scroll-utils';
 import { useMobileViewport } from '@/lib/use-mobile-viewport';
 
 type ModalView = 'qr' | 'live';
@@ -75,10 +75,10 @@ export function PortfolioVCardModal({
   useEffect(() => {
     if (!isOpen) return;
     document.body.classList.add('vcard-demo-modal-open');
-    document.body.style.overflow = 'hidden';
+    lockDocumentScroll();
     return () => {
       document.body.classList.remove('vcard-demo-modal-open');
-      document.body.style.overflow = '';
+      unlockDocumentScroll();
     };
   }, [isOpen]);
 
@@ -200,46 +200,34 @@ export function PortfolioVCardModal({
     </div>
   );
 
-  const modal = (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.28, ease: 'easeOut' }}
-          onClick={onClose}
-          className={
-            isMobileSheet
-              ? 'vcard-mobile-bottom-modal portfolio-vcard-modal-backdrop fixed inset-0 flex items-end justify-center bg-black/92 backdrop-blur-xl'
-              : 'portfolio-vcard-modal-backdrop fixed inset-0 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xl'
-          }
-          id={`${modalId}-backdrop`}
-          data-lenis-prevent
-          data-lenis-prevent-touch
-        >
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={`${modalId}-title`}
-            initial={isMobileSheet ? { opacity: 0, y: '100%' } : { opacity: 0, scale: 0.96, y: 16 }}
-            animate={isMobileSheet ? { opacity: 1, y: 0 } : { opacity: 1, scale: 1, y: 0 }}
-            exit={isMobileSheet ? { opacity: 0, y: '100%' } : { opacity: 0, scale: 0.96, y: 16 }}
-            transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
-            onClick={(e) => e.stopPropagation()}
-            className={
-              isMobileSheet
-                ? `portfolio-vcard-modal relative flex w-full max-w-[460px] max-h-[min(95dvh,820px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto ${
-                    view === 'live' ? '' : 'text-center'
-                  }`
-                : `portfolio-vcard-modal relative w-full max-h-[95vh] overflow-y-auto rounded-[2.5rem] border border-white/10 bg-brand-surface px-4 py-6 text-center shadow-[0_20px_50px_rgba(0,0,0,0.9)] pointer-events-auto md:px-6 md:py-8 ${
-                    view === 'live' ? 'max-w-[460px]' : 'max-w-[400px]'
-                  }`
-            }
-            id={`${modalId}-modal`}
-            data-lenis-prevent
-            data-lenis-prevent-touch
-          >
+  const modal = isOpen ? (
+    <div
+      onClick={onClose}
+      className={
+        isMobileSheet
+          ? 'vcard-mobile-bottom-modal portfolio-vcard-modal-backdrop site-modal-backdrop fixed inset-0 flex items-end justify-center bg-black/92 backdrop-blur-xl'
+          : 'portfolio-vcard-modal-backdrop site-modal-backdrop fixed inset-0 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xl'
+      }
+      id={`${modalId}-backdrop`}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`${modalId}-title`}
+        onClick={(e) => e.stopPropagation()}
+        className={
+          isMobileSheet
+            ? `portfolio-vcard-modal site-modal-panel site-modal-panel--sheet relative flex w-full max-w-[460px] max-h-[min(95dvh,820px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto ${
+                view === 'live' ? '' : 'text-center'
+              }`
+            : `portfolio-vcard-modal site-modal-panel relative w-full max-h-[95vh] overflow-y-auto rounded-[2.5rem] border border-white/10 bg-brand-surface px-4 py-6 text-center shadow-[0_20px_50px_rgba(0,0,0,0.9)] pointer-events-auto md:px-6 md:py-8 ${
+                view === 'live' ? 'max-w-[460px]' : 'max-w-[400px]'
+              }`
+        }
+        id={`${modalId}-modal`}
+        data-lenis-prevent
+        data-lenis-prevent-touch
+      >
             {!isMobileSheet && (
               <>
                 <div className="pointer-events-none absolute top-0 right-0 h-32 w-32 bg-brand-gold/5 blur-[50px]" />
@@ -279,39 +267,24 @@ export function PortfolioVCardModal({
                   : 'flex flex-col items-center'
               }
             >
-              <AnimatePresence mode="wait">
-                {view === 'qr' ? (
-                  <motion.div
-                    key="qr"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className="flex flex-col items-center"
-                  >
-                    {qrContent}
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="live"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25 }}
-                    className={`flex flex-col items-center ${isMobileSheet ? 'w-full items-stretch pt-1' : 'pt-2'}`}
-                  >
-                    {liveContent}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {view === 'qr' ? (
+                <div key="qr" className="flex flex-col items-center">
+                  {qrContent}
+                </div>
+              ) : (
+                <div
+                  key="live"
+                  className={`flex flex-col items-center ${isMobileSheet ? 'w-full items-stretch pt-1' : 'pt-2'}`}
+                >
+                  {liveContent}
+                </div>
+              )}
             </div>
 
             {isMobileSheet ? mobileBottomClose : null}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+      </div>
+    </div>
+  ) : null;
 
   return createPortal(modal, document.body);
 }

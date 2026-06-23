@@ -1,24 +1,14 @@
 'use client';
 
 import type { CSSProperties, ReactNode } from 'react';
-import { useRef, useState } from 'react';
-import { useGSAP } from '@gsap/react';
-import {
-  animateGSAPReveal,
-  GSAP_CONSTANTS,
-  GSAP_DEFAULT_START,
-} from '@/lib/gsap-animation-utils';
-import { usePageTransition } from '@/components/providers/page-transition-context';
+import { useEffect, useState } from 'react';
+import { isWebKitBrowser } from '@/lib/scroll-config';
 
 type CapabilityCardProps = {
   children: ReactNode;
   className?: string;
   index?: number;
   glowColor?: string;
-  reveal?: {
-    direction?: 'up' | 'down' | 'left' | 'right';
-    delay?: number;
-  };
 };
 
 const TILT_VARIANTS = ['capability-card--tilt-left', 'capability-card--tilt-right', 'capability-card--tilt-forward'] as const;
@@ -29,41 +19,31 @@ export function CapabilityCard({
   className = '',
   index = 0,
   glowColor = DEFAULT_GLOW,
-  reveal,
 }: CapabilityCardProps) {
   const tiltClass = TILT_VARIANTS[index % TILT_VARIANTS.length];
-  const cardRef = useRef<HTMLDivElement>(null);
   const [mouseCoords, setMouseCoords] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
-  const { revealReady, animationKey } = usePageTransition();
+  const [skipMouseTracking, setSkipMouseTracking] = useState(false);
 
-  useGSAP(
-    () => {
-      if (!reveal || !revealReady || !cardRef.current) return;
-
-      animateGSAPReveal(cardRef.current, {
-        direction: reveal.direction ?? 'up',
-        delay: reveal.delay ?? 0,
-        distance: GSAP_CONSTANTS.DISTANCE,
-        duration: GSAP_CONSTANTS.DURATION,
-        ease: GSAP_CONSTANTS.EASE,
-        blur: GSAP_CONSTANTS.BLUR,
-        start: GSAP_DEFAULT_START,
-      });
-    },
-    {
-      scope: cardRef,
-      dependencies: [reveal?.direction, reveal?.delay, revealReady, animationKey],
-    },
-  );
+  useEffect(() => {
+    setSkipMouseTracking(isWebKitBrowser());
+  }, []);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
+    if (skipMouseTracking) return;
+    const rect = e.currentTarget.getBoundingClientRect();
     setMouseCoords({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
     });
+  };
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsHovered(true);
+    if (skipMouseTracking) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setMouseCoords({ x: rect.width / 2, y: rect.height / 2 });
+    }
   };
 
   const innerStyle = {
@@ -75,18 +55,15 @@ export function CapabilityCard({
 
   return (
     <div
-      ref={cardRef}
-      data-reveal-card={reveal ? true : undefined}
       className={`capability-card site-glow-card group ${tiltClass}`}
       style={
         {
           '--cap-delay': `${(index % 9) * 0.35}s`,
           '--site-glow-radius': '32px',
-          ...(reveal ? { opacity: 0 } : {}),
         } as CSSProperties
       }
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="capability-card__flipper">

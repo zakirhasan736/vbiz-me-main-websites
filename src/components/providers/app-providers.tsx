@@ -1,37 +1,27 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { Navbar } from '@/components/Navbar';
-import { DeferredFooter } from '@/components/DeferredFooter';
+import { Footer } from '@/components/Footer';
 import { LazyLiveAgentLauncher } from '@/components/LazyLiveAgentLauncher';
 import { PageTransitionOverlay } from '@/components/PageTransitionOverlay';
-import { PageTransitionProvider, usePageTransition } from '@/components/providers/page-transition-context';
+import { PageTransitionProvider } from '@/components/providers/page-transition-context';
+import { SafariPerfBoot } from '@/components/providers/safari-perf-boot';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { SmoothScrollProvider } from '@/components/providers/smooth-scroll-provider';
-import { useGsapReveal } from '@/hooks/use-gsap-reveal';
-
-function GsapRevealController() {
-  const pathname = usePathname();
-  const { revealReady, animationKey } = usePageTransition();
-  const routeKey = revealReady ? `${pathname ?? '/'}-${animationKey}` : undefined;
-
-  useGsapReveal(routeKey);
-  return null;
-}
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
+      <SafariPerfBoot />
       <PageTransitionProvider>
         <SmoothScrollProvider>
-          <div className="min-h-screen overflow-x-hidden bg-brand-dark font-sans selection:bg-brand-gold selection:text-brand-dark transition-colors duration-500">
-            <GsapRevealController />
+          <div className="min-h-screen overflow-x-clip bg-brand-dark font-sans selection:bg-brand-gold selection:text-brand-dark">
             <Navbar />
-            <main className="overflow-x-hidden">
+            <main className="overflow-x-clip">
               <PageTransitionOverlay>{children}</PageTransitionOverlay>
             </main>
-            <DeferredFooter />
+            <Footer />
             <LazyLiveAgentLauncher />
           </div>
         </SmoothScrollProvider>

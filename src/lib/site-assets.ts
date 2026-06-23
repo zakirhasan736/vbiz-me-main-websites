@@ -46,11 +46,29 @@ export const PARTNER_LOGO_DISPLAY = {
   height: 76,
 } as const;
 
-/** CEO / founder intro — homepage hero + About page. */
-export const FOUNDER_INTRO_VIDEO = '/vbiz-me-about-video.mp4';
+/** CEO / founder intro — homepage hero + About page (local MP4). */
+export const FOUNDER_INTRO_VIDEO = '/vbiz-me-about-video-1.mp4';
+
+/** About page hero banner — YouTube background embed. */
+export const ABOUT_HERO_YOUTUBE_VIDEO_ID = 'nD5BJgzrEZc';
+
+/** Our vCards page hero banner — YouTube background embed. */
+export const OUR_VCARDS_HERO_YOUTUBE_VIDEO_ID = '3AYexNI6BIk';
+
+/** Navigation Bar page hero banner — YouTube background embed. */
+export const NAVIGATION_BAR_HERO_YOUTUBE_VIDEO_ID = 'vbkry0EM2ec';
+
+/** Pricing page hero banner — YouTube background embed. */
+export const PRICING_HERO_YOUTUBE_VIDEO_ID = 'TMowXlnw940';
 
 /** Invisible Advantage explainer — Advantage page. */
 export const INVISIBLE_ADVANTAGE_VIDEO = '/The-Invisible-Advantage-Final.mp4';
+
+/** Scrolling navigation bar demo — Navigation Bar page (local MP4). */
+export const NAVIGATION_BAR_VIDEO = '/scrolling-navigation-Bar-1.mp4';
+
+/** Our vCards feature grid — 2D explainer demo (local MP4). */
+export const OUR_VCARDS_2D_EXPLAINER_VIDEO = '/vbizme-2d-explainer-1080p-240823.mp4';
 
 /** Live AI assistant avatar (portrait JPEG). */
 export const LIVE_AGENT_AVATAR = {
