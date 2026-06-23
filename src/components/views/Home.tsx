@@ -1,19 +1,14 @@
 'use client';
 
 import { 
-  ArrowRight, BarChart, Lightbulb, Play, Scan, Send, 
-  ChevronLeft, ChevronRight, VolumeX, Volume2, Sparkles, Check, 
-  Building, Car, Award, Scissors, Utensils, Star, Smartphone, Calendar, 
-  MapPin, ThumbsUp, HelpCircle, FileText, Pause, Briefcase, X,
+  ArrowRight, 
+  ChevronLeft, ChevronRight, Sparkles, 
+  Building, Car, Award, Scissors, Utensils, Briefcase, X,
   QrCode, TrendingUp, ExternalLink
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 import React, { useRef, useState, useEffect } from 'react';
 import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { GSAP_DEFAULT_START } from '@/lib/gsap-animation-utils';
-import { LazyQRCodeImage } from '@/components/LazyQRCodeImage';
+import { scrollElementIntoView } from '@/lib/scroll-utils';
 import { DeferredPhoneMockupFrame } from '@/components/DeferredPhoneMockupFrame';
 import { PortfolioVCardModal } from '@/components/PortfolioVCardModal';
 import { IndustryVCardMobilePreview } from '@/components/IndustryVCardMobilePreview';
@@ -23,20 +18,25 @@ import {
   type PortfolioQrCard,
 } from '@/lib/portfolio-qr-cards';
 import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
-import { useLenis } from '@/components/providers/lenis-context';
-import { LENIS_EASING, LENIS_SCROLL_TO_DURATION } from '@/lib/lenis-config';
 import {
   RevealText,
   RevealParagraph,
+  RevealEyebrow,
   ScrollRevealCard,
-  SectionReveal,
+  SectionRevealRoot,
+  SectionRevealHeader,
+  SectionRevealContent,
+  SectionRevealGrid,
+  RevealGridItem,
+  getFourCardDirection,
+  getThreeColumnGridDirection,
+  getGridStaggerForColumns,
 } from '@/components/animations/reveal';
 import { CapabilityCard } from '@/components/ui/CapabilityCard';
 import { CapabilityIcon } from '@/components/ui/CapabilityIcon';
 import type { CapabilityIconName } from '@/lib/capability-icons';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
-gsap.registerPlugin(ScrollTrigger);
 
 const qrSliderItems = PORTFOLIO_QR_CARDS;
 
@@ -132,10 +132,29 @@ const InteractiveDemoSection = () => {
   const [activeIndId, setActiveIndId] = useState('contractor');
   const [mobileDemoOpen, setMobileDemoOpen] = useState(false);
   const [previewHighlighted, setPreviewHighlighted] = useState(false);
+  const [demoIframeReady, setDemoIframeReady] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
   const mobilePreviewRef = useRef<HTMLDivElement>(null);
-  const lenis = useLenis();
-
   const activeObj = industries.find(ind => ind.id === activeIndId) || industries[2];
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const inView = entry.isIntersecting;
+        setDemoIframeReady(inView);
+        if (!inView) {
+          setMobileDemoOpen(false);
+        }
+      },
+      { rootMargin: '0px', threshold: 0.1 },
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
 
   const selectIndustry = (id: string) => {
     setActiveIndId(id);
@@ -148,15 +167,7 @@ const InteractiveDemoSection = () => {
       const target = mobilePreviewRef.current;
       if (!target) return;
 
-      if (lenis) {
-        lenis.scrollTo(target, {
-          offset: -88,
-          duration: LENIS_SCROLL_TO_DURATION,
-          easing: LENIS_EASING,
-        });
-      } else {
-        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      scrollElementIntoView(target, 'center');
 
       setPreviewHighlighted(true);
       window.setTimeout(() => setPreviewHighlighted(false), 1400);
@@ -168,29 +179,39 @@ const InteractiveDemoSection = () => {
   }, [activeIndId]);
 
   return (
-    <section id="see-in-action" className="site-section bg-brand-dark border-b border-white/5 relative z-12 overflow-hidden">
+    <section
+      ref={sectionRef}
+      id="see-in-action"
+      className="site-section site-section--reveal bg-brand-dark border-b border-white/5 relative z-12"
+    >
       <div className="absolute top-1/2 left-1/4 w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <SectionEyebrow label="See It In Action" className="mb-4" />
-          <RevealText 
-            text="See Exactly What Your Customers Will Experience"
-            className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight mb-4 text-white"
-            tag="h2"
-          />
-          <RevealParagraph 
-            text="Pick your industry of interest below, then watch how a live, conversion-focused vBiz Me card operates right from the smartphone mockup."
-            className="text-neutral-400 font-light text-base leading-relaxed"
-          />
-        </div>
+        <SectionRevealRoot className="text-center max-w-3xl mx-auto mb-16">
+          <SectionRevealHeader>
+            <RevealEyebrow label="See It In Action" className="mb-4 mx-auto" delay={0} />
+            <RevealText
+              text="See Exactly What Your Customers Will Experience"
+              className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight mb-4 text-white"
+              tag="h2"
+              delay={0.05}
+            />
+            <RevealParagraph
+              text="Pick your industry of interest below, then watch how a live, conversion-focused vBiz Me card operates right from the smartphone mockup."
+              className="text-neutral-400 font-light text-base leading-relaxed"
+              delay={0.1}
+            />
+          </SectionRevealHeader>
+        </SectionRevealRoot>
+
+        <SectionRevealRoot>
+          <SectionRevealContent>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           {/* Controls column — below phone on mobile, left on xl */}
-          <ScrollRevealCard 
-            direction="right"
+          <ScrollRevealCard
+            direction="left"
+            distance="XL"
             className="order-2 xl:order-1 lg:col-span-12 xl:col-span-5 flex flex-col gap-3"
           >
             <span className="text-xs uppercase tracking-widest text-neutral-500 font-semibold mb-2 block">
@@ -200,24 +221,18 @@ const InteractiveDemoSection = () => {
               {industries.map((ind) => {
                 const isActive = activeIndId === ind.id;
                 return (
-                  <motion.button
+                  <button
                     key={ind.id}
                     type="button"
-                    layout
                     onClick={() => selectIndustry(ind.id)}
-                    whileTap={{ scale: 0.98 }}
-                    className={`relative flex items-center gap-3 p-4 rounded-xl border text-left text-xs uppercase font-bold tracking-wider transition-colors duration-300 overflow-hidden ${
+                    className={`relative flex items-center gap-3 p-4 rounded-xl border text-left text-xs uppercase font-bold tracking-wider transition-colors duration-300 overflow-hidden active:scale-[0.98] ${
                       isActive
                         ? 'border-brand-gold/50 text-brand-text shadow-[0_4px_20px_rgba(212,175,55,0.12)]'
                         : 'bg-brand-card border-white/10 text-brand-text-muted hover:border-brand-gold/25 hover:bg-brand-gold/5'
                     }`}
                   >
                     {isActive && (
-                      <motion.div
-                        layoutId="home-industry-active"
-                        className="absolute inset-0 bg-brand-gold/15 border border-brand-gold/30 rounded-xl"
-                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                      />
+                      <div className="absolute inset-0 bg-brand-gold/15 border border-brand-gold/30 rounded-xl" />
                     )}
                     <span className={`relative z-10 shrink-0 ${isActive ? 'text-brand-gold' : 'text-brand-text-muted'}`}>
                       {ind.icon}
@@ -228,7 +243,7 @@ const InteractiveDemoSection = () => {
                         {ind.company}
                       </span>
                     </div>
-                  </motion.button>
+                  </button>
                 );
               })}
             </div>
@@ -244,7 +259,11 @@ const InteractiveDemoSection = () => {
           </ScrollRevealCard>
 
           {/* Interactive Screen Mockup — popup on mobile, inline on xl+ */}
-          <div className="order-1 xl:order-2 lg:col-span-12 xl:col-span-7 flex flex-col items-center justify-center relative gap-5 pointer-events-auto z-10 home-industry-mockup">
+          <ScrollRevealCard
+            direction="right"
+            distance="XL"
+            className="order-1 xl:order-2 lg:col-span-12 xl:col-span-7 flex flex-col items-center justify-center relative gap-5 pointer-events-auto z-10 home-industry-mockup"
+          >
             <div
               key={activeObj.id}
               className="flex flex-col items-center gap-3 w-full max-w-[407px] mx-auto relative z-10"
@@ -263,13 +282,18 @@ const InteractiveDemoSection = () => {
                 </a>
               </div>
 
-              <div className="hidden xl:block w-full" data-lenis-prevent-touch>
+              <div className="hidden xl:block w-full">
                 <VCardInteractiveLane className="w-full" id="industries-vcard-lane">
                   <DeferredPhoneMockupFrame
                     key={activeObj.demoUrl}
+                    enabled={demoIframeReady}
                     src={activeObj.demoUrl}
                     title={`${activeObj.name} Demo`}
                     size="hero"
+                    requireInView={false}
+                    skipSiteLoadDefer
+                    iframeLoading="lazy"
+                    showUrlInLoader
                   />
                 </VCardInteractiveLane>
                 <p className="text-[11px] text-brand-text-muted text-center font-light mt-3">
@@ -286,18 +310,21 @@ const InteractiveDemoSection = () => {
                   isOpen={mobileDemoOpen}
                   onOpen={() => setMobileDemoOpen(true)}
                   onClose={() => setMobileDemoOpen(false)}
-                  src={activeObj.demoUrl}
+                  src={demoIframeReady ? activeObj.demoUrl : ''}
                   title={`${activeObj.name} Demo`}
                   industryName={activeObj.name}
                   company={activeObj.company}
                   previewImage={activeObj.videoPlaceholder}
                   highlighted={previewHighlighted}
+                  iframeEnabled={demoIframeReady}
                 />
               </div>
             </div>
-          </div>
+          </ScrollRevealCard>
 
         </div>
+          </SectionRevealContent>
+        </SectionRevealRoot>
 
       </div>
     </section>
@@ -308,32 +335,6 @@ const InteractiveDemoSection = () => {
 // PORTFOLIO SECTION (Interactive vCards & Tech Bento)
 // ==========================================
 const PortfolioSection = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.08,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 44, scale: 0.96, filter: 'blur(10px)' },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      filter: 'blur(0px)',
-      transition: {
-        type: 'spring' as const,
-        stiffness: 110,
-        damping: 22,
-        mass: 0.85,
-      },
-    },
-  };
-
   const [selectedCard, setSelectedCard] = useState<any>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanStep, setScanStep] = useState(0); // 0: loading, 1: video pitch, 2: full card
@@ -432,45 +433,51 @@ const PortfolioSection = () => {
   };
 
   return (
-    <section id="portfolio-section" className="site-section bg-brand-dark border-b border-white/5 relative z-10 overflow-hidden">
+    <section id="portfolio-section" className="site-section site-section--reveal bg-brand-dark border-b border-white/5 relative z-10">
       {/* Background ambient lighting */}
       <div className="absolute top-1/2 left-3/4 w-[600px] h-[600px] bg-brand-gold/5 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute top-1/4 left-10 w-[450px] h-[450px] bg-indigo-500/5 blur-[130px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        
-        {/* SECTION HEADER BLOCK */}
-        <SectionReveal id="portfolio-header" className="text-center max-w-4xl mx-auto mb-16">
-          <SectionEyebrow label="Live Showcases" className="mb-4" />
-          <RevealText 
-            text="Portfolio"
-            className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight mb-6 text-white text-center"
-            tag="h2"
-          />
-          <RevealParagraph 
-            text="Share your vCard effortlessly with a QR code or URL link. Scanning or clicking triggers a dynamic intro video, followed by your full vCard, to reflect your unique brand. Our vCards are more than contact information—they are powerful marketing tools that stand out making an instant and lasting impression."
-            className="text-neutral-400 font-light text-base sm:text-lg leading-relaxed max-w-3xl mx-auto"
-          />
 
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <MagneticButton
-              href="/portfolio"
-              className="h-12 px-7 bg-brand-gold text-black text-sm font-bold tracking-wide shadow-[0_4px_24px_rgba(212,175,55,0.25)] hover:shadow-[0_4px_28px_rgba(212,175,55,0.4)]"
-            >
-              View Full Portfolio <ArrowRight size={16} aria-hidden="true" />
-            </MagneticButton>
-            <span className="text-neutral-500 text-xs sm:text-sm font-light">
-              {qrSliderItems.length} live client showcases — tap any card below or open the gallery
-            </span>
-          </div>
-        </SectionReveal>
+        <SectionRevealRoot id="portfolio-header" className="text-center max-w-4xl mx-auto mb-16">
+          <SectionRevealHeader>
+            <RevealEyebrow label="Live Showcases" className="mb-4 mx-auto" delay={0} />
+            <RevealText
+              text="Portfolio"
+              className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight mb-6 text-white text-center"
+              tag="h2"
+              delay={0.05}
+            />
+            <RevealParagraph
+              text="Share your vCard effortlessly with a QR code or URL link. Scanning or clicking triggers a dynamic intro video, followed by your full vCard, to reflect your unique brand. Our vCards are more than contact information—they are powerful marketing tools that stand out making an instant and lasting impression."
+              className="text-neutral-400 font-light text-base sm:text-lg leading-relaxed max-w-3xl mx-auto"
+              delay={0.1}
+            />
+
+            <ScrollRevealCard direction="up" distance="MD" delay={0.16} className="mt-8">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <MagneticButton
+                  href="/portfolio"
+                  className="h-12 px-7 bg-brand-gold text-black text-sm font-bold tracking-wide shadow-[0_4px_24px_rgba(212,175,55,0.25)] hover:shadow-[0_4px_28px_rgba(212,175,55,0.4)]"
+                >
+                  View Full Portfolio <ArrowRight size={16} aria-hidden="true" />
+                </MagneticButton>
+                <span className="text-neutral-500 text-xs sm:text-sm font-light">
+                  {qrSliderItems.length} live client showcases — tap any card below or open the gallery
+                </span>
+              </div>
+            </ScrollRevealCard>
+          </SectionRevealHeader>
+        </SectionRevealRoot>
 
         {/* TWO INTERACTIVE BENTO GRID TECH FEATURES */}
         <div className="grid hidden grid-cols-1 md:grid-cols-2 gap-6 mb-16 max-w-5xl mx-auto">
           
           {/* FEATURE 1: Analytics & Tracking Bento Widget */}
-          <ScrollRevealCard 
+          <ScrollRevealCard
             direction="right"
+            distance="XL"
             id="portfolio-bento-analytics"
             className="py-6 px-4 md:py-8 md:px-6 bg-neutral-950 border border-white/5 rounded-3xl relative overflow-hidden transition-all duration-300 hover:border-brand-gold/30 group"
           >
@@ -517,13 +524,11 @@ const PortfolioSection = () => {
               <div className="h-16 flex items-end gap-1.5 pt-2">
                 {chartData.map((val, idx) => (
                   <div key={idx} className="flex-1 flex flex-col justify-end h-full">
-                    <motion.div 
-                      initial={{ height: '20%' }}
-                      animate={{ height: `${val}%` }}
-                      transition={{ type: "spring", stiffness: 100 }}
-                      className={`w-full rounded-t-md transition-all duration-300 ${
+                    <div
+                      className={`w-full rounded-t-md transition-all duration-500 ${
                         idx === chartData.length - 1 ? 'bg-brand-gold shadow-[0_0_12px_rgba(212,175,55,0.4)]' : 'bg-white/10'
                       }`}
+                      style={{ height: `${val}%` }}
                     />
                   </div>
                 ))}
@@ -552,22 +557,16 @@ const PortfolioSection = () => {
             </button>
 
             {/* Floating pop notification toast */}
-            <AnimatePresence>
-              {trackedEvent && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-neutral-900 border border-brand-gold/30 text-white font-mono text-[9px] px-3 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 z-20"
-                >
-                  <Sparkles size={10} className="text-brand-gold" />
-                  Real-time analytics incremented!
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {trackedEvent && (
+              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-neutral-900 border border-brand-gold/30 text-white font-mono text-[9px] px-3 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 z-20">
+                <Sparkles size={10} className="text-brand-gold" />
+                Real-time analytics incremented!
+              </div>
+            )}
           </ScrollRevealCard>
-          <ScrollRevealCard 
+          <ScrollRevealCard
             direction="left"
+            distance="XL"
             delay={0.12}
             id="portfolio-bento-qrcode"
             className="py-6 px-4 md:py-8 md:px-6 bg-neutral-950 border border-white/5 rounded-3xl relative overflow-hidden transition-all duration-300 hover:border-brand-gold/30 group flex flex-col justify-between"
@@ -637,7 +636,15 @@ const PortfolioSection = () => {
           </ScrollRevealCard>
         </div>
         {/* Dynamic Responsive Carousel Slider for QR Showcase */}
-        <div id="portfolio-slider-container" className="relative group/slider mt-12 max-w-7xl mx-auto px-1">
+        <SectionRevealRoot>
+          <SectionRevealContent>
+        <ScrollRevealCard
+          id="portfolio-slider-container"
+          direction="up"
+          distance="XL"
+          delay={0}
+          className="relative group/slider mt-12 max-w-7xl mx-auto px-1"
+        >
           {/* Navigation Arrows (Visible on hover on desktop) */}
           <button
             onClick={() => scrollSlider('left')}
@@ -658,7 +665,7 @@ const PortfolioSection = () => {
           <div
             ref={sliderRef}
             onScroll={handleSliderScroll}
-            className="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-8 pt-4 px-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="portfolio-qr-slider-lane flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-8 pt-4 px-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {qrSliderItems.map((item, idx) => {
               const qrBgColor = 'ffffff';
@@ -686,13 +693,8 @@ const PortfolioSection = () => {
               };
 
               return (
-                <motion.div
+                <div
                   key={item.id}
-                  variants={itemVariants}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: idx * 0.1 }}
                   onClick={() => {
                     setSelectedQrCard(item);
                     setIsQrModalOpen(true);
@@ -708,11 +710,15 @@ const PortfolioSection = () => {
                         backgroundColor: '#' + qrBgColor
                       }}
                     >
-                      <LazyQRCodeImage
+                      <img
                         src={getPortfolioQrImageSrc(item)}
                         alt={`QR Code — ${item.displayName}`}
+                        width={220}
+                        height={220}
+                        loading="eager"
+                        decoding="async"
                         className="w-full h-full object-contain"
-                        bgcolor={qrBgColor}
+                        draggable={false}
                       />
                     </div>
                   </div>
@@ -724,17 +730,12 @@ const PortfolioSection = () => {
                       <span className="line-clamp-2">{item.displayName}</span>
                     </span>
                   </div>
-                </motion.div>
+                </div>
               );
             })}
 
             {/* Custom Infinite Carousel Explore/Add Card Callout */}
-            <motion.div
-              variants={itemVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: qrSliderItems.length * 0.1 }}
+            <div
               className="portfolio-qr-slider-card snap-center shrink-0 w-[280px] sm:w-[300px] bg-gradient-to-br from-[#2c3a34] to-brand-dark border border-white/5 rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col justify-between"
               id="qr-slider-explore-card"
             >
@@ -754,7 +755,7 @@ const PortfolioSection = () => {
               >
                 View Full Portfolio <ChevronRight size={14} />
               </a>
-            </motion.div>
+            </div>
           </div>
           
           {/* Responsive scroll indicators at bottom of slider */}
@@ -774,7 +775,8 @@ const PortfolioSection = () => {
 
           <ScrollRevealCard
             direction="up"
-            trigger="#portfolio-slider-container"
+            distance="MD"
+            delay={0.12}
             className="mt-10 max-w-3xl mx-auto"
           >
             <div className="relative overflow-hidden rounded-2xl border border-brand-gold/25 bg-gradient-to-r from-brand-card via-brand-surface to-brand-card py-5 px-5 md:py-6 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-5 text-center sm:text-left shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
@@ -795,7 +797,9 @@ const PortfolioSection = () => {
               </MagneticButton>
             </div>
           </ScrollRevealCard>
-        </div>
+        </ScrollRevealCard>
+          </SectionRevealContent>
+        </SectionRevealRoot>
 
       </div>
 
@@ -810,24 +814,12 @@ const PortfolioSection = () => {
       />
 
       {/* IMMERSIVE LIVE CARD SCAN SIMULATOR POPUP HANDLER */}
-      <AnimatePresence>
-        {isScanning && selectedCard && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md overflow-y-auto"
-              data-lenis-prevent
+      {isScanning && selectedCard && (
+        <div className="site-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md overflow-y-auto">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="site-modal-panel relative w-full max-w-sm bg-neutral-950 border border-white/10 rounded-[44px] shadow-2xl p-4 overflow-hidden my-8"
           >
-            {/* Modal outer element wrapper */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-sm bg-neutral-950 border border-white/10 rounded-[44px] shadow-2xl p-4 overflow-hidden my-8"
-            >
               
               {/* Floating top closing X button */}
               <button 
@@ -874,122 +866,14 @@ const PortfolioSection = () => {
                 </button>
               </div>
 
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-    </section>
-  );
-};
-
-// "The Invisible Advantage" Section (Positioning Element)
-
-const InvisibleAdvantageTeaser = () => {
-  return (
-    <section className="site-section hidden bg-neutral-950 border-b border-white/5 relative z-10 overflow-hidden text-center sm:text-left">
-      <div className="absolute bottom-0 right-1/4 w-[450px] h-[450px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <SectionEyebrow label="Strategic Advantage" className="mb-4" />
-            
-            <RevealText 
-              text="Most digital cards are just links vBiz Me is a sales sequence."
-              className="text-3xl sm:text-4xl lg:text-5xl font-medium text-white mb-6 tracking-tight leading-tight text-left"
-              tag="h2"
-              highlightedWords={["sales", "sequence."]}
-            />
-            
-            <RevealParagraph 
-              text="We do not just dump messy contact details. We guide prospect buyers through a proven, psychometric customer sequence:"
-              className="text-neutral-400 font-light text-base leading-relaxed mb-6 block text-left"
-            />
-
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <ScrollRevealCard direction="up" className="h-full">
-                <SiteGlowCard radius={12} className="py-6 px-4 md:py-8 md:px-6 text-left h-full">
-                  <span className="text-brand-gold text-lg font-bold block mb-1">✓ Emotion</span>
-                  <p className="text-[11px] text-brand-text-muted leading-relaxed font-light">
-                    Humanize the initial handshake with a 9s looping intro video.
-                  </p>
-                </SiteGlowCard>
-              </ScrollRevealCard>
-              
-              <ScrollRevealCard direction="right" delay={0.1} className="h-full">
-                <SiteGlowCard radius={12} className="py-6 px-4 md:py-8 md:px-6 text-left h-full">
-                  <span className="text-brand-gold text-lg font-bold block mb-1">✓ Identity</span>
-                  <p className="text-[11px] text-brand-text-muted leading-relaxed font-light">
-                    Displays official corporate role, badges, and background seamlessly.
-                  </p>
-                </SiteGlowCard>
-              </ScrollRevealCard>
-              
-              <ScrollRevealCard direction="left" delay={0.2} className="h-full">
-                <SiteGlowCard radius={12} className="py-6 px-4 md:py-8 md:px-6 text-left h-full">
-                  <span className="text-brand-gold text-lg font-bold block mb-1">✓ Proof</span>
-                  <p className="text-[11px] text-brand-text-muted leading-relaxed font-light">
-                    Verified customer experience reviews loaded direct onto the card.
-                  </p>
-                </SiteGlowCard>
-              </ScrollRevealCard>
-              
-              <ScrollRevealCard direction="down" delay={0.3} className="h-full">
-                <SiteGlowCard radius={12} className="py-6 px-4 md:py-8 md:px-6 text-left h-full">
-                  <span className="text-brand-gold text-lg font-bold block mb-1">✓ Action</span>
-                  <p className="text-[11px] text-brand-text-muted leading-relaxed font-light">
-                    Smart call-to-actions (Book Now, Call Now) configured dynamically.
-                  </p>
-                </SiteGlowCard>
-              </ScrollRevealCard>
-            </div>
-
-            <a 
-              href="/advantage"
-              className="text-white hover:text-brand-gold text-sm font-semibold transition-colors inline-flex items-center gap-1.5 group border-b border-white/10 hover:border-brand-gold pb-1"
-            >
-              Learn the full psychology <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-            </a>
-          </motion.div>
-
-          {/* Visual comparative diagram/infographic */}
-          <ScrollRevealCard 
-            direction="left"
-            className="bg-brand-elevated/90 py-6 px-4 md:py-8 md:px-6 rounded-3xl border border-emerald-500/15 relative overflow-hidden flex flex-col justify-center text-center"
-          >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-brand-gold/5 blur-[50px]" />
-            <h3 className="text-white font-semibold text-lg mb-4 tracking-tight">Structured Direct Comparison</h3>
-            <p className="text-neutral-400 text-xs font-light leading-relaxed mb-6">
-              Why settle for simple link-trees when your professional status deserves an elite high-converting introduction layout?
-            </p>
-
-            <div className="space-y-3 font-medium text-xs">
-              <div className="flex items-center justify-between p-3.5 bg-neutral-900/40 rounded-xl">
-                <span className="text-neutral-400">Paper Card Conversion</span>
-                <span className="text-red-400 font-bold">&lt; 1% (Gets Thrown Away)</span>
-              </div>
-              <div className="flex items-center justify-between p-3.5 bg-neutral-900/40 rounded-xl">
-                <span className="text-neutral-400">Basic Link-in-Bio Profile</span>
-                <span className="text-amber-500 font-bold">~ 4% Engagement Lift</span>
-              </div>
-              <div className="flex items-center justify-between p-3.5 bg-brand-gold/10 border border-brand-gold/20 rounded-xl text-white">
-                <span className="text-brand-gold font-bold">vBiz Me Sequence Conversion</span>
-                <span className="text-green-400 font-bold">+350% Average Lift</span>
-              </div>
-            </div>
-          </ScrollRevealCard>
-
+          </div>
         </div>
-      </div>
+      )}
+
     </section>
   );
 };
+
 
 // How It Works (4 Simple Steps)
 const HowItWorks = () => {
@@ -1016,54 +900,36 @@ const HowItWorks = () => {
     }
   ];
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 25 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
-  };
-
   return (
-    <section className="site-section bg-brand-dark border-b border-white/5 relative z-10 overflow-hidden text-center">
+    <section className="site-section site-section--reveal bg-brand-dark border-b border-white/5 relative z-10 text-center">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <SectionEyebrow label="Four Simple Stages" className="mb-4 mx-auto" />
-          <RevealText 
-            text="How vBiz Me Works"
-            className="text-3xl sm:text-4xl lg:text-5xl font-medium text-brand-text mb-4"
-            tag="h2"
-          />
-          <RevealParagraph 
-            text="Revolutionizing physical relationships is frictionless. We made sure setup, sharing, and capturing deals takes seconds."
-            className="text-brand-text-muted text-sm font-light leading-relaxed"
-          />
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <SectionRevealRoot viewport="content">
+          <SectionRevealHeader className="text-center max-w-2xl mx-auto mb-16">
+            <RevealEyebrow label="Four Simple Stages" className="mb-4 mx-auto" />
+            <RevealText
+              text="How vBiz Me Works"
+              className="text-3xl sm:text-4xl lg:text-5xl font-medium text-brand-text mb-4"
+              tag="h2"
+            />
+            <RevealParagraph
+              text="Revolutionizing physical relationships is frictionless. We made sure setup, sharing, and capturing deals takes seconds."
+              className="text-brand-text-muted text-sm font-light leading-relaxed"
+            />
+          </SectionRevealHeader>
+
+          <SectionRevealGrid
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            stagger={getGridStaggerForColumns(4)}
+          >
           {steps.map((step, index) => {
-            const direction = index === 0 ? "up" : index === 1 ? "right" : index === 2 ? "left" : "down";
-            const delay = index * 0.12;
+            const direction = getFourCardDirection(index);
             return (
-              <ScrollRevealCard 
+              <RevealGridItem
                 key={index}
                 direction={direction}
-                delay={delay}
+                distance="LG"
+                scaleOnUp={false}
                 className="h-full"
               >
                 <SiteGlowCard
@@ -1076,10 +942,11 @@ const HowItWorks = () => {
                   <h3 className="text-lg font-bold text-brand-text mb-2">{step.title}</h3>
                   <p className="text-brand-text-muted text-xs font-light leading-relaxed">{step.desc}</p>
                 </SiteGlowCard>
-              </ScrollRevealCard>
+              </RevealGridItem>
             );
           })}
-        </div>
+          </SectionRevealGrid>
+        </SectionRevealRoot>
 
       </div>
     </section>
@@ -1087,46 +954,7 @@ const HowItWorks = () => {
 };
 
 // Big bold final call to action at the bottom
-const FinalCTA = () => {
-  return (
-    <section className="site-section  hidden bg-gradient-to-b from-neutral-950 to-black relative z-10 overflow-hidden text-center">
-      <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
-      <motion.div 
-        initial={{ opacity: 0, y: 35 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="max-w-4xl mx-auto px-4 relative z-10"
-      >
-        <RevealText 
-          text="Stop Handing Out Cards That Get Thrown Away"
-          className="text-3xl sm:text-4xl lg:text-5xl font-medium text-white mb-4 tracking-tight leading-tight text-center"
-          tag="h2"
-          highlightedWords={["Thrown", "Away"]}
-        />
-        <RevealParagraph 
-          text="Start making every single introduction count — starting today."
-          className="text-neutral-400 font-light text-base leading-relaxed mb-8 max-w-2xl mx-auto text-center block"
-        />
-        
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a 
-            href="/contact" 
-            className="w-full sm:w-auto px-10 py-4 rounded-full site-btn-gold font-semibold text-sm tracking-wide transition-colors shadow-[0_0_20px_rgba(212,175,55,0.25)]"
-          >
-            Create My Free vCard
-          </a>
-          <a 
-            href="/contact" 
-            className="w-full sm:w-auto px-10 py-4 rounded-full border border-white/10 hover:border-brand-gold/40 text-white font-semibold text-sm tracking-wide bg-white/5 hover:bg-white/10 transition-all"
-          >
-            Book a Strategy Call
-          </a>
-        </div>
-      </motion.div>
-    </section>
-  );
-};
+
 
 // ==========================================
 // HOW CAN WE HELP YOU FEATURE CLINIC
@@ -1195,52 +1023,62 @@ const HowCanWeHelp = () => {
   ];
 
   return (
-    <section id="how-we-help" className="site-section site-section-band border-b relative z-10 overflow-visible">
+    <section id="how-we-help" className="site-section site-section-band site-section--reveal border-b relative z-10">
       {/* Decorative cyber grid lines and soft gradient ambient back-glows */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-brand-gold/15 to-transparent pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-brand-gold/[0.03] blur-[150px] rounded-full pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div className="text-center max-w-4xl mx-auto mb-20">
-          {/* Executive pre-header badge */}
-          <SectionEyebrow label="Platform Capabilities" />
+        <SectionRevealRoot viewport="content">
+          <SectionRevealHeader className="text-center max-w-4xl mx-auto mb-20">
+            <RevealEyebrow label="Platform Capabilities" className="mx-auto" />
 
-          <RevealText 
-            text="Created to Convert & Captivate"
-            className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-white mb-6"
-            tag="h2"
-            highlightedWords={["Convert", "&", "Captivate"]}
-          />
-          
-          <RevealParagraph 
-            text="With hyper-focused features that unite dynamic engagement, physical proximity, and digital ease, our smart vCards transform simple introductions into automated, high-converting pipelines."
-            className="text-neutral-400 font-light text-base sm:text-lg leading-relaxed max-w-3xl mx-auto"
-          />
-        </div>
+            <RevealText
+              text="Created to Convert & Captivate"
+              className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tight text-white mb-6"
+              tag="h2"
+              highlightedWords={["Convert", "&", "Captivate"]}
+            />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto capability-card-grid">
+            <RevealParagraph
+              text="With hyper-focused features that unite dynamic engagement, physical proximity, and digital ease, our smart vCards transform simple introductions into automated, high-converting pipelines."
+              className="text-neutral-400 font-light text-base sm:text-lg leading-relaxed max-w-3xl mx-auto"
+            />
+          </SectionRevealHeader>
+
+        <SectionRevealGrid
+          id="platform-capability-cards"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto capability-card-grid overflow-visible"
+          stagger={getGridStaggerForColumns(3)}
+        >
           {features.map((feat, idx) => {
-            const direction = idx % 4 === 0 ? 'up' : idx % 4 === 1 ? 'right' : idx % 4 === 2 ? 'left' : 'down';
-            const delay = (idx % 3) * 0.08;
+            const direction = getThreeColumnGridDirection(idx);
             return (
-              <CapabilityCard
+              <RevealGridItem
                 key={feat.index}
-                index={idx}
-                reveal={{ direction, delay }}
-                className="py-6 px-4 md:py-8 md:px-6 flex flex-col items-start text-left h-full"
+                direction={direction}
+                distance="XL"
+                className="h-full"
+                scaleOnUp={direction === 'up'}
               >
-                <span className="capability-card__index" aria-hidden="true">
-                  // CAP.{feat.index}
-                </span>
-                <CapabilityIcon name={feat.icon} />
-                <h3 className="text-brand-text font-medium text-lg tracking-wide mb-3 group-hover:text-brand-gold transition-colors duration-300">
-                  {feat.title}
-                </h3>
-                <p className="text-brand-text-muted text-sm font-light leading-relaxed">{feat.desc}</p>
-              </CapabilityCard>
+                <CapabilityCard
+                  index={idx}
+                  className="py-6 px-4 md:py-8 md:px-6 flex flex-col items-start text-left h-full"
+                >
+                  <span className="capability-card__index" aria-hidden="true">
+                    // CAP.{feat.index}
+                  </span>
+                  <CapabilityIcon name={feat.icon} />
+                  <h3 className="text-brand-text font-medium text-lg tracking-wide mb-3 group-hover:text-brand-gold transition-colors duration-300">
+                    {feat.title}
+                  </h3>
+                  <p className="text-brand-text-muted text-sm font-light leading-relaxed">{feat.desc}</p>
+                </CapabilityCard>
+              </RevealGridItem>
             );
           })}
-        </div>
+        </SectionRevealGrid>
+        </SectionRevealRoot>
       </div>
     </section>
   );
@@ -1253,9 +1091,6 @@ export default function Home() {
       <InteractiveDemoSection />
       <HowItWorks />
       <PortfolioSection />
-      {/* <InvisibleAdvantageTeaser /> */}
-      {/* <SocialProof /> */}
-      {/* <FinalCTA /> */}
     </div>
   );
 }

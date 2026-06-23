@@ -1,31 +1,17 @@
 'use client';
 
+import { useRef } from 'react';
 import {
   PARTNER_LOGOS,
-  PARTNER_LOGO_MOBILE_HEIGHT,
-  PARTNER_LOGO_MOBILE_WIDTH,
+  PARTNER_DESKTOP_VISIBLE_COUNT,
+  PARTNER_MOBILE_VISIBLE_COUNT,
   getPartnerLogoMobileRows,
 } from '@/lib/partner-logos';
 import { usePartnerMarqueeLayout, useIsPartnerMarqueeDesktop } from '@/components/hero/usePartnerMarqueeLayout';
+import { useMarqueeViewportWidth } from '@/components/hero/useMarqueeViewportWidth';
+import { PartnerLogoCell } from '@/components/hero/PartnerLogoCell';
 
 type PartnerLogo = (typeof PARTNER_LOGOS)[number];
-
-function PartnerLogoImage({ logo, duplicate = false }: { logo: PartnerLogo; duplicate?: boolean }) {
-  return (
-    <img
-      src={logo.src}
-      alt={duplicate ? '' : logo.alt}
-      aria-hidden={duplicate || undefined}
-      width={PARTNER_LOGO_MOBILE_WIDTH}
-      height={PARTNER_LOGO_MOBILE_HEIGHT}
-      className="partner-logo-marquee__cell partner-logo-marquee__logo"
-      loading="lazy"
-      decoding="async"
-      fetchPriority="low"
-      draggable={false}
-    />
-  );
-}
 
 function MarqueeTrack({
   logos,
@@ -38,17 +24,28 @@ function MarqueeTrack({
   loopDuplicate: boolean;
   trackKey: string;
 }) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+
   return (
-    <div className="partner-logo-marquee__viewport">
+    <div className="partner-logo-marquee__viewport" ref={viewportRef}>
       <div
         className={`partner-logo-marquee__track${reverse ? ' partner-logo-marquee__track--reverse' : ''}`}
       >
         {logos.map((logo) => (
-          <PartnerLogoImage key={`${trackKey}-${logo.src}`} logo={logo} />
+          <PartnerLogoCell
+            key={`${trackKey}-${logo.src}`}
+            logo={logo}
+            viewportRef={viewportRef}
+          />
         ))}
         {loopDuplicate
           ? logos.map((logo) => (
-              <PartnerLogoImage key={`${trackKey}-${logo.src}-loop`} logo={logo} duplicate />
+              <PartnerLogoCell
+                key={`${trackKey}-${logo.src}-loop`}
+                logo={logo}
+                duplicate
+                viewportRef={viewportRef}
+              />
             ))
           : null}
       </div>
@@ -57,11 +54,13 @@ function MarqueeTrack({
 }
 
 function StaticLogoGrid() {
+  const viewportRef = useRef<HTMLDivElement>(null);
+
   return (
-    <div className="partner-logo-marquee__viewport">
+    <div className="partner-logo-marquee__viewport" ref={viewportRef}>
       <div className="partner-logo-marquee__track partner-logo-marquee__track--static">
         {PARTNER_LOGOS.map((logo) => (
-          <PartnerLogoImage key={`static-${logo.src}`} logo={logo} />
+          <PartnerLogoCell key={`static-${logo.src}`} logo={logo} viewportRef={viewportRef} />
         ))}
       </div>
     </div>
@@ -81,20 +80,22 @@ function MobileDualRowMarquee({ loopDuplicate }: { loopDuplicate: boolean }) {
 
 function MobileStaticLogoGrid() {
   const { rowA, rowB } = getPartnerLogoMobileRows();
+  const viewportRefA = useRef<HTMLDivElement>(null);
+  const viewportRefB = useRef<HTMLDivElement>(null);
 
   return (
     <div className="partner-logo-marquee__rows">
-      <div className="partner-logo-marquee__viewport">
+      <div className="partner-logo-marquee__viewport" ref={viewportRefA}>
         <div className="partner-logo-marquee__track partner-logo-marquee__track--static">
           {rowA.map((logo) => (
-            <PartnerLogoImage key={`static-a-${logo.src}`} logo={logo} />
+            <PartnerLogoCell key={`static-a-${logo.src}`} logo={logo} viewportRef={viewportRefA} />
           ))}
         </div>
       </div>
-      <div className="partner-logo-marquee__viewport">
+      <div className="partner-logo-marquee__viewport" ref={viewportRefB}>
         <div className="partner-logo-marquee__track partner-logo-marquee__track--static">
           {rowB.map((logo) => (
-            <PartnerLogoImage key={`static-b-${logo.src}`} logo={logo} />
+            <PartnerLogoCell key={`static-b-${logo.src}`} logo={logo} viewportRef={viewportRefB} />
           ))}
         </div>
       </div>
@@ -103,12 +104,16 @@ function MobileStaticLogoGrid() {
 }
 
 export function PartnerLogoMarquee() {
+  const rootRef = useRef<HTMLDivElement>(null);
   const layout = usePartnerMarqueeLayout();
   const isDesktop = useIsPartnerMarqueeDesktop();
   const loopDuplicate = layout !== 'static';
 
+  useMarqueeViewportWidth(rootRef);
+
   return (
     <div
+      ref={rootRef}
       className={`partner-logo-marquee relative w-full partner-logo-marquee--${layout}`}
       aria-label="Trusted partner company logos"
       role="region"

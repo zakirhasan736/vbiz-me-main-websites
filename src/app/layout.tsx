@@ -34,8 +34,9 @@ const HERO_LCP_CRITICAL_CSS = `
 @media(max-width:767px){.hero-title-lcp{letter-spacing:-.02em}.hero-desc-lcp,.hero-desc-lcp__line{line-height:1.5;min-height:1.5em}}
 `;
 
-/** Defer desc-line motion until after load so LCP title paints immediately. */
-const HERO_LCP_MOTION_BOOT = `(function(){function go(){if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return;document.documentElement.classList.add("hero-lcp-motion")}function schedule(){setTimeout(go,80)}if(document.readyState==="complete"){schedule()}else{window.addEventListener("load",schedule,{once:true})}})();`;
+const WEBKIT_PERF_BOOT = `(function(){try{var ua=navigator.userAgent;var chromium=/Chrome|CriOS|Edg|OPR|Chromium/i.test(ua);var firefox=/Firefox|FxiOS/i.test(ua);if(!firefox&&(/AppleWebKit/i.test(ua)&&!chromium||/Safari/i.test(ua)&&!chromium)){document.documentElement.classList.add('safari-light-motion');}}catch(e){}})();`;
+
+/** Hero LCP critical CSS only — no deferred motion boot. */
 
 export const metadata: Metadata = {
   title: 'vBiz Me | The Virtual Business Card That Sells For You',
@@ -56,8 +57,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: WEBKIT_PERF_BOOT }} />
         <style dangerouslySetInnerHTML={{ __html: HERO_LCP_CRITICAL_CSS }} />
-        <script dangerouslySetInnerHTML={{ __html: HERO_LCP_MOTION_BOOT }} />
       </head>
       <body className={`${inter.className} theme-light antialiased`}>
         <script

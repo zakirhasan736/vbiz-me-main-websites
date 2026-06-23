@@ -2,7 +2,6 @@
 
 import React, { useRef, useState } from 'react';
 import Link from 'next/link';
-import { motion } from 'motion/react';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 
 interface GlowCardProps {
@@ -53,7 +52,6 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
-  // Auto-detect attributes for beautiful themed liquid pills
   const isGold = className.includes('bg-brand-gold');
   const fillBgColor = isGold ? '#FFFFFF' : '#D4AF37';
 
@@ -66,7 +64,6 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
     const y = e.clientY - rect.top;
     setCoords({ x, y });
 
-    // Premium Magnetic pull: shift gently towards the cursor
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
     const pullX = (e.clientX - rect.left - centerX) * 0.18;
@@ -99,12 +96,15 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
     setIsHovered(false);
   };
 
-  // Build root class safely
   const buttonClass = `relative overflow-hidden inline-flex items-center justify-center font-semibold rounded-full select-none focus:outline-none transition-shadow duration-300 ${className}`;
+
+  const magneticStyle: React.CSSProperties = {
+    transform: `translate3d(${magneticPos.x}px, ${magneticPos.y}px, 0)`,
+    transition: 'transform 0.18s cubic-bezier(0.22, 1, 0.36, 1)',
+  };
 
   const renderContent = () => (
     <>
-      {/* Liquid Ripple Fill, expanding from entry point */}
       {!isTouchDevice && (
         <span 
           className="absolute rounded-full pointer-events-none transform -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"
@@ -120,12 +120,10 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
         />
       )}
       
-      {/* Mobile Touch Overlay */}
       {isTouchDevice && isHovered && (
         <span className="absolute inset-0 bg-white/10 z-0 pointer-events-none" />
       )}
 
-      {/* Button Content with proper relative layer index */}
       <span className={`relative z-10 flex items-center justify-center gap-2 w-full h-full text-center transition-colors duration-300 ${
         isHovered && !isGold && !isTouchDevice ? 'text-black' : ''
       }`}>
@@ -134,50 +132,50 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
     </>
   );
 
-  const motionProps = {
-    ref: buttonRef as any,
+  const sharedHandlers = {
     onMouseMove: handleMouseMove,
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave,
     onTouchStart: handleTouchStart,
     onTouchEnd: handleTouchEnd,
-    animate: { x: magneticPos.x, y: magneticPos.y },
-    transition: { type: "spring", stiffness: 150, damping: 14, mass: 0.1 },
+    style: magneticStyle,
     className: buttonClass,
-    disabled
   };
 
   if (href) {
     return (
-      <motion.a 
+      <a 
         id={id}
+        ref={buttonRef}
         href={disabled ? undefined : href} 
         onClick={(e) => {
           if (disabled) {
             e.preventDefault();
             return;
           }
-          if (onClick) onClick(e as any);
+          if (onClick) onClick(e as React.MouseEvent);
         }}
-        {...(motionProps as any)}
+        {...sharedHandlers}
       >
         {renderContent()}
-      </motion.a>
+      </a>
     );
   }
 
   return (
-    <motion.button 
+    <button 
       id={id}
+      ref={buttonRef}
       type="button"
+      disabled={disabled}
       onClick={(e) => {
         if (disabled) return;
-        if (onClick) onClick(e as any);
+        if (onClick) onClick(e as React.MouseEvent);
       }}
-      {...(motionProps as any)}
+      {...sharedHandlers}
     >
       {renderContent()}
-    </motion.button>
+    </button>
   );
 };
 
@@ -216,10 +214,12 @@ export const MagneticNavLink: React.FC<MagneticNavLinkProps> = ({
   };
 
   return (
-    <motion.div
-      animate={{ x: magneticPos.x, y: magneticPos.y }}
-      transition={{ type: 'spring', stiffness: 190, damping: 17, mass: 0.12 }}
+    <div
       className="relative"
+      style={{
+        transform: `translate3d(${magneticPos.x}px, ${magneticPos.y}px, 0)`,
+        transition: 'transform 0.18s cubic-bezier(0.22, 1, 0.36, 1)',
+      }}
     >
       <Link
         ref={linkRef}
@@ -248,16 +248,11 @@ export const MagneticNavLink: React.FC<MagneticNavLinkProps> = ({
         />
         <span className="relative z-10">{children}</span>
         {active && (
-          <motion.div
-            layoutId="navbar-indicator"
-            className="absolute inset-0 border border-brand-gold/25 bg-brand-gold/8 rounded-full shadow-[inset_0_1px_2px_rgba(255,255,255,0.12)]"
-            initial={false}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-          >
+          <div className="absolute inset-0 border border-brand-gold/25 bg-brand-gold/8 rounded-full shadow-[inset_0_1px_2px_rgba(255,255,255,0.12)]">
             <div className="absolute -bottom-px inset-x-3 h-px bg-gradient-to-r from-transparent via-[#FFDF65] to-transparent opacity-100 shadow-[0_0_12px_rgba(212,175,55,0.75)]" />
-          </motion.div>
+          </div>
         )}
       </Link>
-    </motion.div>
+    </div>
   );
 };

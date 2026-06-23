@@ -12,9 +12,7 @@ import {
   Star,
   TrendingUp,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { RevealText, RevealParagraph, ScrollRevealCard } from '@/components/animations/reveal';
-import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
+import { RevealText, RevealParagraph, RevealEyebrow, ScrollRevealCard, SectionRevealRoot, SectionRevealHeader, SectionRevealContent } from '@/components/animations/reveal';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 import { SiteGlowIcon } from '@/components/ui/SiteGlowIcon';
 
@@ -227,31 +225,43 @@ export function SocialProof() {
   const nextIdx = (currentIndex + 1) % REVIEWS.length;
 
   return (
-    <section className="site-section bg-brand-dark border-b border-white/5 relative z-10 overflow-hidden text-center animate-fade-in">
+    <section className="site-section site-section--reveal bg-brand-dark border-b border-white/5 relative z-10 overflow-hidden text-center animate-fade-in">
       <div className="absolute top-1/2 right-1/4 w-[600px] h-[600px] bg-brand-gold/[0.03] blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute top-10 left-10 w-[300px] h-[300px] bg-brand-gold/[0.015] blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <SectionEyebrow label="Social Proof & Impact" className="mb-4" />
-          <RevealText
+        <SectionRevealRoot className="text-center max-w-2xl mx-auto mb-16">
+          <SectionRevealHeader>
+            <RevealEyebrow label="Social Proof & Impact" className="mb-4 mx-auto" delay={0} />
+            <RevealText
             text="Real Results from Real Professionals"
             className="text-3xl sm:text-4xl lg:text-5xl font-medium text-brand-text mb-4 tracking-tight leading-tight"
             tag="h2"
+            delay={0.05}
           />
           <RevealParagraph
             text="Hear from leading sales representatives and small businesses who completely digitized their high-value client acquisitions."
             className="text-brand-text-muted text-sm font-light leading-relaxed"
+            delay={0.1}
           />
-        </div>
+          </SectionRevealHeader>
+        </SectionRevealRoot>
 
+        <SectionRevealRoot>
+          <SectionRevealContent>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-20 max-w-5xl mx-auto text-left relative z-10">
           {[
             { value: '0%', label: 'Trash-Bin Waste Rate', direction: 'up' as const, delay: 0 },
             { value: '+47%', label: 'Average Referral Surge', direction: 'right' as const, delay: 0.12 },
             { value: '< 2s', label: 'Frictionless Load Time', direction: 'left' as const, delay: 0.24 },
           ].map((stat) => (
-            <ScrollRevealCard key={stat.label} direction={stat.direction} delay={stat.delay} className="h-full">
+            <ScrollRevealCard
+              key={stat.label}
+              direction={stat.direction}
+              distance="XL"
+              delay={stat.delay}
+              className="h-full"
+            >
               <SiteGlowCard radius={32} className="py-6 px-4 md:py-8 md:px-6 text-left h-full relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-brand-gold/20 to-transparent pointer-events-none" />
                 <span className="text-4xl sm:text-5xl font-extrabold text-brand-gold block mb-1">{stat.value}</span>
@@ -263,33 +273,23 @@ export function SocialProof() {
           ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        <div
           className="social-proof-carousel relative max-w-6xl mx-auto px-2 sm:px-4 md:px-12"
           onMouseEnter={() => setIsPlaying(false)}
           onMouseLeave={() => setIsPlaying(true)}
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-stretch justify-center relative min-h-0 md:min-h-[26rem] pointer-events-auto">
-            <SideTestimonialCard review={REVIEWS[prevIdx]} onClick={handlePrev} />
+            <ScrollRevealCard direction="left" distance="XL" delay={0.05} className="hidden md:block h-full">
+              <SideTestimonialCard review={REVIEWS[prevIdx]} onClick={handlePrev} />
+            </ScrollRevealCard>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentIndex}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                className="social-proof-active-wrap h-full"
-                id="active-testimonial-card"
-              >
-                <ActiveTestimonialCard review={REVIEWS[currentIndex]} />
-              </motion.div>
-            </AnimatePresence>
+            <ScrollRevealCard direction="up" distance="LG" delay={0.1} className="h-full" id="active-testimonial-card">
+              <ActiveTestimonialCard review={REVIEWS[currentIndex]} />
+            </ScrollRevealCard>
 
-            <SideTestimonialCard review={REVIEWS[nextIdx]} onClick={handleNext} />
+            <ScrollRevealCard direction="right" distance="XL" delay={0.15} className="hidden md:block h-full">
+              <SideTestimonialCard review={REVIEWS[nextIdx]} onClick={handleNext} />
+            </ScrollRevealCard>
           </div>
 
           <div className="absolute -left-1 sm:-left-2 md:-left-6 lg:-left-20 top-[42%] md:top-1/2 -translate-y-1/2 z-20 pointer-events-auto">
@@ -346,7 +346,9 @@ export function SocialProof() {
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
+          </SectionRevealContent>
+        </SectionRevealRoot>
       </div>
     </section>
   );

@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'motion/react';
 import { Mic, Square, Loader2, Volume2, MicOff, AlertCircle } from 'lucide-react';
 import { loadLiveAgentRuntime } from '@/lib/live-agent-runtime';
 import {
@@ -26,6 +25,8 @@ import {
   LIVE_AGENT_GREETING_TEXT,
   LIVE_AGENT_GREETING_TRIGGER,
 } from '@/lib/live-agent-prompt';
+import { scheduleAfterSiteLoad } from '@/lib/deferred-load';
+import { isWebKitBrowser } from '@/lib/scroll-config';
 import { LIVE_AGENT_AVATAR, LIVE_AGENT_VOICE } from '@/lib/site-assets';
 
 const SYSTEM_PROMPT = buildLiveAgentSystemPrompt(DEFAULT_CARD_DATA, undefined, {
@@ -210,8 +211,12 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   useEffect(() => {
     if (!autoConnect || !keyReady) return;
 
-    setIsOpen(true);
-    void startConnection();
+    scheduleAfterSiteLoad(() => {
+      setIsOpen(true);
+      if (!isWebKitBrowser()) {
+        void startConnection();
+      }
+    });
   }, [autoConnect, keyReady]);
 
   useEffect(() => {
@@ -265,7 +270,10 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
         scheduleUserSilenceNudge();
       }
     }
-    checkSpeakingRef.current = requestAnimationFrame(monitorSpeaking);
+    checkSpeakingRef.current = window.setTimeout(
+      monitorSpeaking,
+      isCurrentlySpeaking ? 48 : 180,
+    );
   };
 
   const disconnect = () => {
@@ -293,7 +301,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
         pcmContextRef.current = null;
       }
       if (checkSpeakingRef.current) {
-        cancelAnimationFrame(checkSpeakingRef.current);
+        clearTimeout(checkSpeakingRef.current);
       }
     } catch (e) {
       console.warn('Disconnect error', e);
@@ -405,7 +413,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
             lastUserActivityRef.current = Date.now();
             nudgeCountRef.current = 0;
 
-            checkSpeakingRef.current = requestAnimationFrame(monitorSpeaking);
+            checkSpeakingRef.current = window.setTimeout(monitorSpeaking, 48);
 
             sessionPromise
               .then((session: any) => {
@@ -566,20 +574,9 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   };
 
   return (
-    <motion.div
-      drag
-      dragMomentum={false}
-      className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[100] flex flex-col items-end gap-4 pointer-events-none"
-    >
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-            className="pointer-events-auto bg-zinc-950 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 shadow-sm w-72 min-h-[194px] flex flex-col gap-4 relative overflow-hidden"
-          >
+    <div className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[100] flex flex-col items-end gap-4 pointer-events-none">
+      {isOpen && (
+          <div className="pointer-events-auto bg-zinc-950 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 shadow-sm w-72 min-h-[194px] flex flex-col gap-4 relative overflow-hidden">
             {isSpeaking && (
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-800/30 via-transparent to-transparent opacity-50 animate-pulse pointer-events-none" />
             )}
@@ -664,9 +661,8 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                 </button>
               )}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+      )}
 
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -693,6 +689,6 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
           <span className="absolute top-0 right-0 w-3 h-3 bg-zinc-400 rounded-full border-2 border-zinc-900" />
         )}
       </button>
-    </motion.div>
+    </div>
   );
 }

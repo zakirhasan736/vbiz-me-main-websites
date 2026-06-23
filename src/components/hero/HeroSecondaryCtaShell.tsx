@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { lockDocumentScroll, unlockDocumentScroll } from '@/lib/scroll-utils';
 import { scheduleAfterSiteLoad } from '@/lib/deferred-load';
 
 type PopupComponent = typeof import('./HeroCompetitiveAnalysisPopup').HeroCompetitiveAnalysisPopup;
@@ -56,11 +57,11 @@ export function HeroSecondaryCtaShell({ children }: { children: ReactNode }) {
     };
 
     window.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
+    lockDocumentScroll();
 
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
+      unlockDocumentScroll();
     };
   }, [isPopupOpen]);
 

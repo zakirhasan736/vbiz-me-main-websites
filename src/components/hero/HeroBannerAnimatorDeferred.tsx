@@ -9,7 +9,7 @@ const HeroBannerAnimator = dynamic(
   { ssr: false },
 );
 
-/** Defers GSAP hero timeline until after site load so LCP text can paint first. */
+/** Defers hero Motion timeline until after site load so LCP text can paint first. */
 export function HeroBannerAnimatorDeferred() {
   const [ready, setReady] = useState(false);
 
