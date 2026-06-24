@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
 import { 
   Building, Briefcase, Car, Award, Scissors, Utensils, 
   Sparkles, Check, ChevronRight, Phone, MessageSquare, 
@@ -192,27 +191,21 @@ export default function Examples() {
               {industries.map((ind) => {
                 const isActive = ind.id === selectedIndId;
                 return (
-                  <motion.button
+                  <button
                     key={ind.id}
                     type="button"
-                    layout
                     onClick={() => {
                       setSelectedIndId(ind.id);
                       setIsPlaying(true);
                     }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`relative flex items-center gap-3 text-left p-4 rounded-2xl border text-sm transition-colors duration-300 overflow-hidden group ${
+                    className={`relative flex items-center gap-3 text-left p-4 rounded-2xl border text-sm transition-colors duration-300 overflow-hidden group active:scale-[0.98] ${
                       isActive
                         ? 'border-brand-gold/50 text-brand-text shadow-[0_4px_20px_rgba(212,175,55,0.12)]'
                         : 'bg-brand-card border-white/10 text-brand-text-muted hover:border-brand-gold/25 hover:bg-brand-gold/5'
                     }`}
                   >
                     {isActive && (
-                      <motion.div
-                        layoutId="examples-industry-active"
-                        className="absolute inset-0 bg-brand-gold/15 border border-brand-gold/30 rounded-2xl"
-                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                      />
+                      <div className="absolute inset-0 bg-brand-gold/15 border border-brand-gold/30 rounded-2xl" />
                     )}
 
                     <div className={`relative z-10 w-8 h-8 rounded-lg flex items-center justify-center transition-colors duration-300 ${
@@ -225,7 +218,7 @@ export default function Examples() {
                       <span className="font-semibold block text-xs tracking-wide uppercase">{ind.name}</span>
                       <span className="text-xs text-brand-text-muted font-light truncate block">{ind.company}</span>
                     </div>
-                  </motion.button>
+                  </button>
                 );
               })}
             </div>

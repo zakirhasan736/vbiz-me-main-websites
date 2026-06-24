@@ -1,17 +1,17 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, type ReactNode } from 'react';
-import gsap from 'gsap';
-import { useLenis } from '@/components/providers/lenis-context';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { motion } from 'framer-motion';
+import { lockDocumentScroll, scrollToTop, unlockDocumentScroll } from '@/lib/scroll-utils';
 import { usePageTransition } from '@/components/providers/page-transition-context';
+import { LINE_EASE, PAGE_TRANSITION_EASE } from '@/lib/motion-animation-utils';
 
-const LINE_DURATION = 0.32;
-const PANEL_COVER_DURATION = 0.38;
-const REVEAL_DURATION = 0.38;
-const EASE = 'power3.inOut';
-const LINE_EASE = 'power2.inOut';
 const CENTER_LINE_HEIGHT = 2;
+const PANEL_MS = 0.38;
+const LINE_MS = 0.32;
+
+type OverlayPhase = 'idle' | 'cover' | 'covered' | 'reveal-line' | 'reveal-panels';
 
 function isInternalRoute(href: string | null, pathname: string): href is string {
   if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) {
@@ -48,199 +48,92 @@ function waitForPageReady() {
   });
 }
 
+function panelsOpenScale(phase: OverlayPhase): number {
+  if (phase === 'cover' || phase === 'covered' || phase === 'reveal-line') return 1;
+  return 0;
+}
+
 export function PageTransitionOverlay({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const lenis = useLenis();
   const { notifyCoverStart, notifyRevealComplete } = usePageTransition();
-  const overlayRef = useRef<HTMLDivElement>(null);
-  const topPanelRef = useRef<HTMLDivElement>(null);
-  const bottomPanelRef = useRef<HTMLDivElement>(null);
-  const centerLineRef = useRef<HTMLDivElement>(null);
+  const [phase, setPhase] = useState<OverlayPhase>('idle');
   const isTransitioning = useRef(false);
   const isInitialPathname = useRef(true);
   const navigatedViaOverlay = useRef(false);
-  const activeTimeline = useRef<gsap.core.Timeline | null>(null);
+  const coverResolveRef = useRef<(() => void) | null>(null);
+  const revealResolveRef = useRef<(() => void) | null>(null);
 
-  const setOverlayInteractive = useCallback((active: boolean) => {
-    const overlay = overlayRef.current;
-    if (!overlay) return;
-    overlay.style.pointerEvents = active ? 'auto' : 'none';
-    overlay.style.visibility = active ? 'visible' : 'hidden';
+  const finishCover = useCallback(() => {
+    coverResolveRef.current?.();
+    coverResolveRef.current = null;
+    setPhase('covered');
   }, []);
 
-  const resetOverlay = useCallback(() => {
-    const topPanel = topPanelRef.current;
-    const bottomPanel = bottomPanelRef.current;
-    const centerLine = centerLineRef.current;
-    if (!topPanel || !bottomPanel || !centerLine) return;
-
-    gsap.set(topPanel, { scaleY: 0, transformOrigin: 'top center' });
-    gsap.set(bottomPanel, { scaleY: 0, transformOrigin: 'bottom center' });
-    gsap.set(centerLine, { scaleX: 0, transformOrigin: 'center center' });
-  }, []);
+  const finishReveal = useCallback(() => {
+    unlockDocumentScroll();
+    notifyRevealComplete();
+    isTransitioning.current = false;
+    revealResolveRef.current?.();
+    revealResolveRef.current = null;
+    setPhase('idle');
+  }, [notifyRevealComplete]);
 
   const playCover = useCallback(() => {
-    const topPanel = topPanelRef.current;
-    const bottomPanel = bottomPanelRef.current;
-    const centerLine = centerLineRef.current;
-    if (!topPanel || !bottomPanel || !centerLine) return Promise.resolve();
-
-    lenis?.stop();
-
-    activeTimeline.current?.kill();
-    notifyCoverStart();
-    setOverlayInteractive(true);
-    resetOverlay();
-
     return new Promise<void>((resolve) => {
-      const tl = gsap.timeline({
-        onComplete: () => {
-          activeTimeline.current = null;
-          resolve();
-        },
-      });
-
-      tl.to(
-        topPanel,
-        {
-          scaleY: 1,
-          duration: PANEL_COVER_DURATION,
-          ease: EASE,
-          transformOrigin: 'top center',
-        },
-        0,
-      );
-      tl.to(
-        bottomPanel,
-        {
-          scaleY: 1,
-          duration: PANEL_COVER_DURATION,
-          ease: EASE,
-          transformOrigin: 'bottom center',
-        },
-        '<',
-      );
-
-      activeTimeline.current = tl;
+      coverResolveRef.current = resolve;
+      notifyCoverStart();
+      lockDocumentScroll();
+      setPhase('cover');
     });
-  }, [lenis, notifyCoverStart, resetOverlay, setOverlayInteractive]);
+  }, [notifyCoverStart]);
 
   const playReveal = useCallback(() => {
-    const topPanel = topPanelRef.current;
-    const bottomPanel = bottomPanelRef.current;
-    const centerLine = centerLineRef.current;
-    if (!topPanel || !bottomPanel || !centerLine) {
-      isTransitioning.current = false;
-      return Promise.resolve();
-    }
-
-    activeTimeline.current?.kill();
-
-    gsap.set(topPanel, { scaleY: 1, transformOrigin: 'top center' });
-    gsap.set(bottomPanel, { scaleY: 1, transformOrigin: 'bottom center' });
-    gsap.set(centerLine, { scaleX: 0, transformOrigin: 'center center' });
-
     return new Promise<void>((resolve) => {
-      const tl = gsap.timeline({
-        onComplete: () => {
-          resetOverlay();
-          setOverlayInteractive(false);
-          isTransitioning.current = false;
-          activeTimeline.current = null;
-          lenis?.start();
-          notifyRevealComplete();
-          resolve();
-        },
-      });
-
-      tl.to(centerLine, {
-        scaleX: 1,
-        duration: LINE_DURATION,
-        ease: LINE_EASE,
-      });
-
-      tl.to(
-        topPanel,
-        {
-          scaleY: 0,
-          duration: REVEAL_DURATION,
-          ease: EASE,
-          transformOrigin: 'top center',
-        },
-        '>',
-      );
-      tl.to(
-        bottomPanel,
-        {
-          scaleY: 0,
-          duration: REVEAL_DURATION,
-          ease: EASE,
-          transformOrigin: 'bottom center',
-        },
-        '<',
-      );
-
-      activeTimeline.current = tl;
+      revealResolveRef.current = resolve;
+      setPhase('reveal-line');
     });
-  }, [lenis, notifyRevealComplete, resetOverlay, setOverlayInteractive]);
+  }, []);
 
-  const scrollToTop = useCallback(() => {
-    if (lenis) {
-      lenis.scrollTo(0, { immediate: true });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
-    }
-  }, [lenis]);
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (isTransitioning.current) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
 
-  const runTransitionTo = useCallback(
-    async (href: string) => {
-      if (isTransitioning.current) return;
+      const anchor = (e.target as Element | null)?.closest('a');
+      if (!anchor) return;
+
+      const href = anchor.getAttribute('href');
+      const currentPath = pathname ?? '/';
+      if (!isInternalRoute(href, currentPath)) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
       isTransitioning.current = true;
       navigatedViaOverlay.current = true;
 
-      await playCover();
-      scrollToTop();
-      router.push(href);
-    },
-    [playCover, router, scrollToTop],
-  );
-
-  useEffect(() => {
-    resetOverlay();
-  }, [resetOverlay]);
-
-  useEffect(() => {
-    const onClick = (event: MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0) return;
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-
-      const anchor = (event.target as Element | null)?.closest('a');
-      if (!anchor || anchor.target === '_blank' || anchor.hasAttribute('download')) return;
-
-      const href = anchor.getAttribute('href');
-      if (!isInternalRoute(href, pathname ?? '/')) return;
-
-      event.preventDefault();
-      void runTransitionTo(href);
+      void (async () => {
+        await playCover();
+        scrollToTop();
+        router.push(href!);
+      })();
     };
 
     document.addEventListener('click', onClick, true);
     return () => document.removeEventListener('click', onClick, true);
-  }, [pathname, runTransitionTo]);
+  }, [pathname, playCover, router]);
 
   useEffect(() => {
     if (isInitialPathname.current) {
       isInitialPathname.current = false;
-      resetOverlay();
-      setOverlayInteractive(false);
       return;
     }
 
-    if (!navigatedViaOverlay.current) {
-      return;
-    }
-
+    if (!navigatedViaOverlay.current) return;
     navigatedViaOverlay.current = false;
 
     let cancelled = false;
@@ -257,40 +150,56 @@ export function PageTransitionOverlay({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [pathname, playReveal, resetOverlay, setOverlayInteractive]);
+  }, [pathname, playReveal]);
 
   useEffect(() => {
     return () => {
-      activeTimeline.current?.kill();
+      unlockDocumentScroll();
     };
   }, []);
+
+  const overlayVisible = phase !== 'idle';
+  const panelScale = panelsOpenScale(phase);
+  const lineScale = phase === 'reveal-line' ? 1 : 0;
 
   return (
     <>
       {children}
       <div
-        ref={overlayRef}
-        className="fixed inset-0 z-[10000] pointer-events-none overflow-hidden"
-        style={{ visibility: 'hidden' }}
-        aria-hidden="true"
+        className="page-transition-overlay fixed inset-0 z-[10000] overflow-hidden pointer-events-none"
+        style={{ pointerEvents: overlayVisible ? 'auto' : 'none' }}
+        aria-hidden={!overlayVisible}
       >
-        <div
-          ref={topPanelRef}
-          className="absolute left-0 w-full h-1/2 scale-y-0 will-change-transform bg-brand-dark z-[1]"
-          style={{ top: 0 }}
+        <motion.div
+          className="page-transition-panel page-transition-panel--top"
+          style={{ transformOrigin: 'top center' }}
+          initial={false}
+          animate={{ scaleY: panelScale }}
+          transition={{ duration: PANEL_MS, ease: PAGE_TRANSITION_EASE }}
+          onAnimationComplete={() => {
+            if (phase === 'cover') finishCover();
+            if (phase === 'reveal-panels') finishReveal();
+          }}
         />
-        <div
-          ref={bottomPanelRef}
-          className="absolute left-0 w-full h-1/2 scale-y-0 will-change-transform bg-brand-dark z-[1]"
-          style={{ top: '50%' }}
+        <motion.div
+          className="page-transition-panel page-transition-panel--bottom"
+          style={{ transformOrigin: 'bottom center' }}
+          initial={false}
+          animate={{ scaleY: panelScale }}
+          transition={{ duration: PANEL_MS, ease: PAGE_TRANSITION_EASE }}
         />
-        <div
-          ref={centerLineRef}
-          className="absolute left-0 w-full scale-x-0 will-change-transform bg-brand-gold shadow-[0_0_12px_rgba(238,202,83,0.5)] z-[2] pointer-events-none"
+        <motion.div
+          className="page-transition-line"
           style={{
             top: `calc(50% - ${CENTER_LINE_HEIGHT / 2}px)`,
             height: CENTER_LINE_HEIGHT,
             transformOrigin: 'center center',
+          }}
+          initial={false}
+          animate={{ scaleX: lineScale }}
+          transition={{ duration: LINE_MS, ease: LINE_EASE }}
+          onAnimationComplete={() => {
+            if (phase === 'reveal-line') setPhase('reveal-panels');
           }}
         />
       </div>

@@ -22,15 +22,19 @@ export const PARTNER_LOGO_SIZE = PARTNER_LOGO_DISPLAY;
 export const PARTNER_LOGO_ASPECT = PARTNER_LOGO_DISPLAY.width / PARTNER_LOGO_DISPLAY.height;
 
 /** Mobile marquee logo height — width follows aspect ratio in CSS. */
-export const PARTNER_LOGO_MOBILE_HEIGHT = 50;
+export const PARTNER_LOGO_MOBILE_HEIGHT = 58;
 
 export const PARTNER_LOGO_MOBILE_WIDTH = Math.round(PARTNER_LOGO_MOBILE_HEIGHT * PARTNER_LOGO_ASPECT);
 
 /** Logos visible in the desktop marquee viewport at once. */
-export const PARTNER_DESKTOP_VISIBLE_COUNT = 5;
+export const PARTNER_DESKTOP_VISIBLE_COUNT = 4;
 
 /** Logos visible per row in the mobile dual-row marquee. */
-export const PARTNER_MOBILE_VISIBLE_COUNT = 4;
+export const PARTNER_MOBILE_VISIBLE_COUNT = 3;
+
+/** Safari arrow nav — logos to advance per click. */
+export const PARTNER_SAFARI_ARROW_GROUP_MOBILE = 1;
+export const PARTNER_SAFARI_ARROW_GROUP_DESKTOP = 2;
 
 /** Split 13 logos — first row gets the larger half (7), second row gets 6. */
 export function getPartnerLogoMobileRows(): {

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import { Mail, MapPin, Phone, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
@@ -204,23 +203,15 @@ export default function Contact() {
                   </div>
 
                   {submitStatus === 'success' && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl flex items-center gap-3 text-emerald-400 text-sm"
-                    >
+                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl flex items-center gap-3 text-emerald-400 text-sm">
                       <CheckCircle2 size={16} /> Message sent successfully! We will get in touch shortly.
-                    </motion.div>
+                    </div>
                   )}
 
                   {submitStatus === 'error' && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-red-400/10 border border-red-500/25 rounded-2xl flex items-center gap-3 text-red-400 text-sm"
-                    >
+                    <div className="p-4 bg-red-400/10 border border-red-500/25 rounded-2xl flex items-center gap-3 text-red-400 text-sm">
                       <AlertCircle size={16} /> Something went wrong. Please try again later.
-                    </motion.div>
+                    </div>
                   )}
 
                   <button 
