@@ -81,7 +81,10 @@ export default function InvisibleAdvantage() {
                   <SectionVideoPlayer
                     src={INVISIBLE_ADVANTAGE_VIDEO}
                     ariaLabel="The Invisible Advantage presentation video"
-                    playWhenInView
+                    playWhenInView={false}
+                    autoplayAfterLoad
+                    autoplayOnSafari={false}
+                    preloadOnSiteReady
                     objectFit="contain"
                     className="absolute inset-0 h-full w-full"
                   />

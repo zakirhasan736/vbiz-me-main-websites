@@ -94,6 +94,7 @@ export function SectionVideoPlayer({
         <video
           ref={videoRef}
           src={videoSrc}
+          autoPlay={!isSafari && autoplayAfterLoad}
           loop={loop}
           muted
           playsInline

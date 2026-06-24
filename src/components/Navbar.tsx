@@ -43,6 +43,10 @@ export const Navbar: React.FC = () => {
     if (mobileMenuOpen) setHidden(false);
   }, [mobileMenuOpen]);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/about' },
@@ -88,7 +92,11 @@ export const Navbar: React.FC = () => {
             className="relative flex items-center justify-between rounded-full border transition-all duration-700 bg-brand-surface/95 backdrop-blur-3xl border-brand-gold/10 shadow-[0_12px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] pl-1.5 pr-3 py-2"
           >
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-brand-gold/0 via-brand-gold/5 to-brand-gold/0 opacity-40 pointer-events-none" />
-            <Link href="/" className="relative z-10 flex-shrink-0 flex items-center pl-1 group">
+            <Link
+              href="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className="relative z-10 flex-shrink-0 flex items-center pl-1 group"
+            >
               <span
                 className={`navbar-logo-shell inline-flex items-center justify-center rounded-full px-1 py-1 transition-transform duration-500 group-hover:scale-[1.03] ${
                   theme === 'light' ? 'bg-black shadow-[0_4px_20px_rgba(0,0,0,0.18)]' : ''

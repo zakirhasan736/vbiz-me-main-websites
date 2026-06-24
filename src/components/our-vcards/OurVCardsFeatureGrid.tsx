@@ -150,6 +150,7 @@ export function OurVCardsFeatureGrid() {
                       className="absolute inset-0 h-full w-full object-cover opacity-90"
                       playWhenInView
                       autoplayAfterLoad
+                      autoplayOnSafari={false}
                     />
                   </div>
 

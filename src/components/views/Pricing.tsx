@@ -94,7 +94,7 @@ export default function Pricing() {
       {/* Video banner only */}
       <section
         aria-labelledby="pricing-hero-title"
-        className="section-hero section-hero--video-bg site-section--reveal relative pt-32 pb-10 md:pb-12 overflow-hidden flex flex-col justify-center bg-brand-dark"
+        className="section-hero section-hero--video-bg site-section--reveal relative pb-10 md:pb-12 flex flex-col bg-brand-dark"
       >
         <YouTubeHeroBackground
           videoId={PRICING_HERO_YOUTUBE_VIDEO_ID}

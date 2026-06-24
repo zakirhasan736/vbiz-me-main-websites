@@ -28,8 +28,8 @@ export type UseOptimizedVideoPlaybackOptions = {
 };
 
 /**
- * Safari — preloads when site ready; muted autoplay only when `autoplayOnSafari` is set (hero).
- * Other browsers — muted autoplay when visible.
+ * Safari — manual play unless `autoplayOnSafari` is set (hero only).
+ * Other browsers — muted autoplay when visible / ready, with play() retries.
  */
 export function useOptimizedVideoPlayback({
   src,
@@ -53,7 +53,7 @@ export function useOptimizedVideoPlayback({
   const safariInitRef = useRef(false);
   const framePrimedRef = useRef(false);
 
-  const [isSafari, setIsSafari] = useState(false);
+  const [isSafari] = useState(() => typeof window !== 'undefined' && isWebKitBrowser());
   const [pageLoaded, setPageLoaded] = useState(
     () => typeof document !== 'undefined' && document.readyState === 'complete',
   );
@@ -70,10 +70,6 @@ export function useOptimizedVideoPlayback({
   const canLoadSrc = isSafari
     ? siteReady && (preloadOnSiteReady || inView)
     : visible;
-
-  useEffect(() => {
-    setIsSafari(isWebKitBrowser());
-  }, []);
 
   useEffect(() => {
     if (!isSafari || safariInitRef.current) return;
@@ -281,6 +277,23 @@ export function useOptimizedVideoPlayback({
       setIsPlaying(true);
     }
   }, [visible, isReady, videoSrc, effectiveAutoplay]);
+
+  useEffect(() => {
+    if (isSafari || !visible || !effectiveAutoplay) return;
+
+    const video = videoRef.current;
+    if (!video || !videoSrc || !isReady || userPausedRef.current) return;
+
+    const tryPlay = () => {
+      if (userPausedRef.current) return;
+      void video.play().catch(() => {});
+    };
+
+    tryPlay();
+    requestAnimationFrame(tryPlay);
+    const timers = [50, 150, 350, 750].map((ms) => window.setTimeout(tryPlay, ms));
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [isSafari, visible, effectiveAutoplay, videoSrc, isReady]);
 
   useEffect(() => {
     const onVisibility = () => {

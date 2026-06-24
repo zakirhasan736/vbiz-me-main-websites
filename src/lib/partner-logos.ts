@@ -27,7 +27,7 @@ export const PARTNER_LOGO_MOBILE_HEIGHT = 58;
 export const PARTNER_LOGO_MOBILE_WIDTH = Math.round(PARTNER_LOGO_MOBILE_HEIGHT * PARTNER_LOGO_ASPECT);
 
 /** Logos visible in the desktop marquee viewport at once. */
-export const PARTNER_DESKTOP_VISIBLE_COUNT = 4;
+export const PARTNER_DESKTOP_VISIBLE_COUNT = 5;
 
 /** Logos visible per row in the mobile dual-row marquee. */
 export const PARTNER_MOBILE_VISIBLE_COUNT = 3;

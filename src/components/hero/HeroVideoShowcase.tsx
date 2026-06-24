@@ -7,7 +7,7 @@ import { useHeroAnimateReady } from '@/components/hero/useHeroAnimateReady';
 import { prefersReducedMotion } from '@/lib/motion-animation-utils';
 import { SectionVideoPlayer } from '@/components/ui/SectionVideoPlayer';
 
-/** Hero demo video — local MP4; muted autoplay after entrance settles (Safari-stable). */
+/** Hero demo video — muted autoplay after entrance on non-Safari; Safari uses manual play. */
 export default function HeroVideoShowcase() {
   const { animateReady } = useHeroAnimateReady();
   const [pageLoaded, setPageLoaded] = useState(
@@ -57,7 +57,7 @@ export default function HeroVideoShowcase() {
               playWhenInView={false}
               playbackEnabled={animateReady}
               autoplayAfterLoad={shouldAutoplay}
-              autoplayOnSafari
+              autoplayOnSafari={false}
               preloadOnSiteReady
               heroPlayback
               objectFit="contain"

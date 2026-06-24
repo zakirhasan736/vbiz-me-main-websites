@@ -1,16 +1,17 @@
 'use client';
 
-import { Facebook, Twitter, Youtube, ArrowRight } from 'lucide-react';
-import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
+import { Facebook, Twitter, Youtube } from 'lucide-react';
+import { GlowCard } from '@/components/InteractiveElements';
 import {
-  RevealText,
-  BannerDescription,
   SectionRevealRoot,
   SectionRevealGrid,
+  SectionRevealStaggerList,
+  SectionRevealContent,
   RevealGridItem,
   ScrollRevealCard,
   getTwoColumnDirection,
   getGridStaggerForColumns,
+  BANNER_REVEAL_STAGGER,
 } from '@/components/animations/reveal';
 import { SocialProof } from '@/components/SocialProof';
 import { SectionVideoPlayer } from '@/components/ui/SectionVideoPlayer';
@@ -20,13 +21,26 @@ import { YouTubeHeroBackground } from '@/components/ui/YouTubeHeroBackground';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { SiteGlowIcon } from '@/components/ui/SiteGlowIcon';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
+import { renderHighlightedText } from '@/lib/text-highlight';
+import { useMobileViewport } from '@/lib/use-mobile-viewport';
+import type { SlideDirection } from '@/lib/motion-animation-utils';
+
+function useStackedRevealDirection(columnIndex: number): SlideDirection {
+  const isMobile = useMobileViewport(767);
+  if (isMobile) return 'up';
+  return getTwoColumnDirection(columnIndex);
+}
 
 export default function About() {
+  const visionDirection = useStackedRevealDirection(0);
+  const missionDirection = useStackedRevealDirection(1);
+  const isMobile = useMobileViewport(767);
+
   return (
     <div className="bg-brand-dark">
       <section
         aria-labelledby="about-hero-title"
-        className="section-hero section-hero--video-bg relative pt-32 pb-10 md:pb-12 overflow-hidden flex flex-col justify-center items-center bg-brand-dark"
+        className="section-hero section-hero--video-bg site-section--reveal relative pb-10 md:pb-12 flex flex-col items-center bg-brand-dark"
       >
         <YouTubeHeroBackground
           videoId={ABOUT_HERO_YOUTUBE_VIDEO_ID}
@@ -35,34 +49,49 @@ export default function About() {
         <PageHeroBackground overVideo />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center w-full">
-          <div className="page-hero-video-content text-center max-w-4xl mx-auto">
-            <SectionEyebrow label="Our Story" variant="hero" />
+          <SectionRevealRoot viewport="header" simultaneous={false} replayOnNavigate>
+            <div className="page-hero-video-content text-center max-w-4xl mx-auto">
+              <SectionRevealStaggerList
+                stagger={BANNER_REVEAL_STAGGER.ITEM}
+                delayChildren={BANNER_REVEAL_STAGGER.DELAY_CHILDREN}
+                className="flex flex-col items-center text-center"
+              >
+                <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="w-full flex justify-center mb-4">
+                  <SectionEyebrow label="Our Story" variant="hero" />
+                </RevealGridItem>
 
-            <RevealText
-              id="about-hero-title"
-              text="Redefining Connections."
-              className="text-5xl md:text-7xl font-sans font-medium tracking-tight text-white mb-8 leading-[1.1]"
-              tag="h1"
-              highlightedWords={["Connections."]}
-            />
+                <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="w-full mb-4">
+                  <h1
+                    id="about-hero-title"
+                    className="text-5xl md:text-7xl font-sans font-medium tracking-tight text-white leading-[1.1] text-center"
+                  >
+                    {renderHighlightedText('Redefining Connections.', ['Connections.'])}
+                  </h1>
+                </RevealGridItem>
 
-            <BannerDescription
-              text="At vBiz Me, we revolutionize networking with dynamic virtual business cards. Our platform helps you make an instant impact by combining engaging intro videos, customizable designs, and seamless sharing via QR codes or links."
-              className="text-lg md:text-xl text-neutral-200 max-w-3xl mx-auto font-normal leading-relaxed"
-            />
-          </div>
+                <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="w-full max-w-3xl">
+                  <p
+                    data-banner-description
+                    className="text-lg md:text-xl text-neutral-200 max-w-3xl mx-auto font-normal leading-relaxed text-center"
+                  >
+                    At vBiz Me, we revolutionize networking with dynamic virtual business cards. Our platform helps you make an instant impact by combining engaging intro videos, customizable designs, and seamless sharing via QR codes or links.
+                  </p>
+                </RevealGridItem>
+              </SectionRevealStaggerList>
+            </div>
+          </SectionRevealRoot>
         </div>
       </section>
 
       {/* Vision & Mission Cards */}
-      <section className="site-section bg-brand-dark relative">
+      <section className="site-section site-section--reveal bg-brand-dark relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <SectionRevealRoot viewport="content">
+          <SectionRevealRoot viewport="content" simultaneous={false} replayOnNavigate>
           <SectionRevealGrid
             className="grid grid-cols-1 md:grid-cols-2 gap-8"
             stagger={getGridStaggerForColumns(2)}
           >
-            <RevealGridItem direction={getTwoColumnDirection(0)} distance="LG" scaleOnUp={false} className="h-full">
+            <RevealGridItem direction={visionDirection} distance={isMobile ? 'MD' : 'LG'} scaleOnUp={false} className="h-full">
               <GlowCard className="py-6 px-4 md:py-8 md:px-6 rounded-[2.5rem] shadow-2xl h-full" glowColor="rgba(212,175,55,0.18)">
                 <div className="relative z-10">
                   <h3 className="text-brand-text font-medium text-3xl mb-6 tracking-tight">Our Vision</h3>
@@ -76,7 +105,7 @@ export default function About() {
               </GlowCard>
             </RevealGridItem>
 
-            <RevealGridItem direction={getTwoColumnDirection(1)} distance="LG" scaleOnUp={false} className="h-full">
+            <RevealGridItem direction={missionDirection} distance={isMobile ? 'MD' : 'LG'} scaleOnUp={false} className="h-full">
               <GlowCard className="py-6 px-4 md:py-8 md:px-6 rounded-[2.5rem] shadow-2xl h-full" glowColor="rgba(43,108,176,0.18)">
                 <div className="relative z-10">
                   <h3 className="text-brand-text font-medium text-3xl mb-6 tracking-tight">Our Mission</h3>
@@ -92,12 +121,17 @@ export default function About() {
       </section>
 
       {/* CEO Message Section */}
-      <section className="site-section bg-brand-dark border-t border-white/5 relative overflow-hidden">
+      <section className="site-section site-section--reveal bg-brand-dark border-t border-white/5 relative">
         <div className="absolute top-1/2 right-[-10%] w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+          <SectionRevealRoot viewport="content" simultaneous={false} replayOnNavigate>
+          <SectionRevealContent className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
 
-            <ScrollRevealCard direction="left" className="w-full lg:w-2/5 relative">
+            <ScrollRevealCard
+              direction={isMobile ? 'up' : 'left'}
+              distance={isMobile ? 'MD' : 'LG'}
+              className="w-full lg:w-2/5 relative"
+            >
               <SiteGlowCard radius={40} className="aspect-[4/5] h-full overflow-hidden">
                 <div className="relative w-full h-full min-h-[320px]">
                   <SectionVideoPlayer
@@ -120,7 +154,11 @@ export default function About() {
               <div className="absolute -inset-4 bg-brand-gold/10 rounded-[3rem] -z-10 blur-xl opacity-50 pointer-events-none" />
             </ScrollRevealCard>
 
-            <ScrollRevealCard direction="right" className="w-full lg:w-3/5">
+            <ScrollRevealCard
+              direction={isMobile ? 'up' : 'right'}
+              distance={isMobile ? 'MD' : 'LG'}
+              className="w-full lg:w-3/5"
+            >
               <h2 className="text-4xl md:text-5xl font-medium text-brand-text mb-10 tracking-tight leading-[1.1] text-left">
                 A Message from the <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-text-muted">Founder</span>
               </h2>
@@ -155,7 +193,8 @@ export default function About() {
               </div>
             </ScrollRevealCard>
 
-          </div>
+          </SectionRevealContent>
+          </SectionRevealRoot>
         </div>
       </section>
 

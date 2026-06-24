@@ -88,7 +88,7 @@ export default function NavigationBar() {
       {/* Hero Section */}
       <section
         aria-labelledby="navigation-bar-hero-title"
-        className="section-hero section-hero--video-bg relative pt-32 pb-10 md:pb-12 overflow-hidden flex flex-col justify-center items-center bg-brand-dark"
+        className="section-hero section-hero--video-bg relative pb-10 md:pb-12 flex flex-col items-center bg-brand-dark"
       >
         <YouTubeHeroBackground
           videoId={NAVIGATION_BAR_HERO_YOUTUBE_VIDEO_ID}

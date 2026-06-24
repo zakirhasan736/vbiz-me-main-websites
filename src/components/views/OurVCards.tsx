@@ -17,7 +17,7 @@ export default function OurVCards() {
       {/* Hero Section */}
       <section
         aria-labelledby="our-vcards-hero-title"
-        className="section-hero section-hero--video-bg relative pt-32 pb-10 md:pb-12 overflow-hidden flex flex-col justify-center items-center bg-brand-dark"
+        className="section-hero section-hero--video-bg relative pb-10 md:pb-12 flex flex-col items-center bg-brand-dark"
       >
         <YouTubeHeroBackground
           videoId={OUR_VCARDS_HERO_YOUTUBE_VIDEO_ID}
