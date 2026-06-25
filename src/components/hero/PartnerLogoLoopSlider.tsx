@@ -27,7 +27,6 @@ export function PartnerLogoLoopSlider() {
             <PartnerLogoCell
               key={logo.src}
               logo={logo}
-              viewportRef={viewportRef}
               cellClassName="partner-logo-slider__cell"
               logoClassName="partner-logo-slider__logo"
             />
@@ -37,7 +36,6 @@ export function PartnerLogoLoopSlider() {
               key={`${logo.src}-loop`}
               logo={logo}
               duplicate
-              viewportRef={viewportRef}
               cellClassName="partner-logo-slider__cell"
               logoClassName="partner-logo-slider__logo"
             />

@@ -19,7 +19,7 @@ export function HeroSection() {
       <PageHeroBackground />
       <HeroAmbientLazy />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-grow">
+      <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center flex-grow">
         <HeroSlideEntrance
           side="left"
           className="hero-banner-left lg:col-span-6 flex flex-col relative z-999 items-start text-left"
@@ -47,7 +47,7 @@ export function HeroSection() {
             </div>
           </div>
 
-          <div className="mt-10 flex flex-wrap items-center gap-6 text-neutral-500 text-xs">
+          <div className="mt-10 flex flex-wrap items-center gap-6 text-neutral-500 text-base">
             <div className="hero-trust-item flex items-center gap-1.5">
               <Check size={14} className="text-brand-gold" aria-hidden="true" /> No Application Required
             </div>

@@ -86,7 +86,7 @@ export const Navbar: React.FC = () => {
           scrolled ? 'pt-4 md:pt-5' : 'pt-6'
         }`}
       >
-        <div className={`w-full ${scrolled ? 'max-w-6xl px-4' : 'max-w-7xl px-4 sm:px-6 lg:px-8'}`}>
+        <div className={`w-full ${scrolled ? 'max-w-6xl px-4' : 'max-w-[1344px] px-4 sm:px-6 lg:px-8'}`}>
           <div
             data-navbar-shell
             className="relative flex items-center justify-between rounded-full border transition-all duration-700 bg-brand-surface/95 backdrop-blur-3xl border-brand-gold/10 shadow-[0_12px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)] pl-1.5 pr-3 py-2"

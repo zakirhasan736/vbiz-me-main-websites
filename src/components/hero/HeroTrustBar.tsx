@@ -1,6 +1,6 @@
 'use client';
 
-import { PartnerLogoSwiper } from '@/components/hero/PartnerLogoSwiper';
+import { PartnerLogoMarqueeShell } from '@/components/hero/PartnerLogoMarqueeShell';
 import { useHeroAnimateReady } from '@/components/hero/useHeroAnimateReady';
 import {
   PREMIUM_EASE,
@@ -39,9 +39,9 @@ export function HeroTrustBar() {
             </h2>
           </div>
 
-          <div className="hero-trust-bar__marquee-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="hero-trust-bar__marquee-lane">
-              <PartnerLogoSwiper />
+          <div className="hero-trust-bar__marquee-container">
+            <div className="hero-trust-bar__marquee-lane hero-trust-bar__marquee-lane--enter">
+              <PartnerLogoMarqueeShell />
             </div>
           </div>
         </div>

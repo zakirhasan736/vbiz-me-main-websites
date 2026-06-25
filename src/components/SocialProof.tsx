@@ -1,100 +1,17 @@
 'use client';
 
-import { useEffect, useState, type ElementType } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Award,
-  Briefcase,
-  Building,
-  Car,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Star,
-  TrendingUp,
 } from 'lucide-react';
 import { RevealText, RevealParagraph, RevealEyebrow, ScrollRevealCard, SectionRevealRoot, SectionRevealHeader, SectionRevealContent } from '@/components/animations/reveal';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 import { SiteGlowIcon } from '@/components/ui/SiteGlowIcon';
+import { GOOGLE_REVIEWS, type GoogleReview } from '@/lib/google-reviews';
 
-type Review = {
-  rater: string;
-  role: string;
-  comp: string;
-  quote: string;
-  val: string;
-  initial: string;
-  icon: ElementType;
-  color: string;
-};
-
-const REVIEWS: Review[] = [
-  {
-    rater: 'Dave K.',
-    role: 'Sales Executive',
-    comp: 'Subaru of Hartford',
-    quote:
-      'Closed 3 extra vehicle sales in my first 10 days using vBiz Me. Prospects absolutely love watching a quick welcoming greeting before checking inventory.',
-    val: '5-Star Experience',
-    initial: 'D',
-    icon: Car,
-    color: 'from-brand-gold via-amber-400 to-orange-500',
-  },
-  {
-    rater: 'Samantha L.',
-    role: 'Sales Advisor',
-    comp: 'Gallagher Buick/GMC',
-    quote:
-      'No one throws my card away anymore. It sits perfectly mapped in their active iPhone Wallet. My referral rate surged 47% in two months.',
-    val: '5-Star Experience',
-    initial: 'S',
-    icon: TrendingUp,
-    color: 'from-amber-400 via-brand-gold to-yellow-500',
-  },
-  {
-    rater: 'Marcus Vance',
-    role: 'CEO / Contractor',
-    comp: 'Vance Custom Builders',
-    quote:
-      'Clients take a 9-second tour of my recent kitchen additions, tap direct to call, are highly impressed, and schedule estimates instantly without email delays.',
-    val: '5-Star Experience',
-    initial: 'M',
-    icon: Building,
-    color: 'from-orange-500 via-brand-gold to-amber-500',
-  },
-  {
-    rater: 'Clarissa Thorne',
-    role: 'Lead Broker',
-    comp: 'Apex Luxury Properties',
-    quote:
-      'The brand integration is immaculate. Clients watch our high-production digital greetings, browse our latest listings directly on the card, and schedule viewings seamlessly.',
-    val: '5-Star Experience',
-    initial: 'C',
-    icon: Award,
-    color: 'from-yellow-400 via-amber-500 to-brand-gold',
-  },
-  {
-    rater: 'Dr. Raymond Miller',
-    role: 'Founder',
-    comp: 'Align Chiropractic Clinic',
-    quote:
-      'Our missed appointments plummeted to zero. Clients scan our desk QR, save our smart contact entry directly, and can book real-time adjustments with one tap.',
-    val: '5-Star Experience',
-    initial: 'R',
-    icon: Briefcase,
-    color: 'from-brand-gold via-orange-400 to-yellow-500',
-  },
-  {
-    rater: 'Sophie Dubois',
-    role: 'Creative Director',
-    comp: 'Atelier Design Co.',
-    quote:
-      "My digital card acts as an active, high-converting portfolio deck. We've secured multiple premium design retainers within active networking circles using this platform.",
-    val: '5-Star Experience',
-    initial: 'S',
-    icon: Sparkles,
-    color: 'from-amber-500 via-brand-gold to-orange-500',
-  },
-];
+type Review = GoogleReview;
 
 function StarRow({ size = 12, muted = false }: { size?: number; muted?: boolean }) {
   return (
@@ -132,6 +49,7 @@ function ReviewAuthor({
         <span className="social-proof-card__name">{review.rater}</span>
         <span className="social-proof-card__role">{review.role}</span>
         <span className="social-proof-card__company">{review.comp}</span>
+        <span className="social-proof-card__time text-[11px] text-brand-text-muted/80 font-light">{review.timeAgo}</span>
       </div>
     </div>
   );
@@ -146,7 +64,7 @@ function SideTestimonialCard({ review, onClick }: { review: Review; onClick: () 
         <div className="social-proof-card__header">
           <div className="social-proof-card__badge social-proof-card__badge--muted">
             <StarRow size={11} muted />
-            <span className="social-proof-card__badge-label">Verified</span>
+            <span className="social-proof-card__badge-label">Google</span>
           </div>
           <SiteGlowIcon size={36} ariaLabel="Review industry">
             <Icon size={14} />
@@ -202,34 +120,35 @@ function ActiveTestimonialCard({ review }: { review: Review }) {
 }
 
 export function SocialProof() {
+  const reviews = GOOGLE_REVIEWS;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
 
   useEffect(() => {
     if (!isPlaying) return;
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % REVIEWS.length);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % reviews.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, reviews.length]);
 
   const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % REVIEWS.length);
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % reviews.length);
   };
 
   const handlePrev = () => {
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + REVIEWS.length) % REVIEWS.length);
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + reviews.length) % reviews.length);
   };
 
-  const prevIdx = (currentIndex - 1 + REVIEWS.length) % REVIEWS.length;
-  const nextIdx = (currentIndex + 1) % REVIEWS.length;
+  const prevIdx = (currentIndex - 1 + reviews.length) % reviews.length;
+  const nextIdx = (currentIndex + 1) % reviews.length;
 
   return (
     <section className="site-section site-section--reveal bg-brand-dark border-b border-white/5 relative z-10 overflow-hidden text-center animate-fade-in">
       <div className="absolute top-1/2 right-1/4 w-[600px] h-[600px] bg-brand-gold/[0.03] blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute top-10 left-10 w-[300px] h-[300px] bg-brand-gold/[0.015] blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8">
         <SectionRevealRoot className="text-center max-w-2xl mx-auto mb-16">
           <SectionRevealHeader>
             <RevealEyebrow label="Social Proof & Impact" className="mb-4 mx-auto" delay={0} />
@@ -240,8 +159,8 @@ export function SocialProof() {
             delay={0.05}
           />
           <RevealParagraph
-            text="Hear from leading sales representatives and small businesses who completely digitized their high-value client acquisitions."
-            className="text-brand-text-muted text-sm font-light leading-relaxed"
+            text="Verified 5-star Google reviews from real clients who transformed their networking with vBiz Me."
+            className="text-brand-text-muted font-light text-base sm:text-lg leading-relaxed"
             delay={0.1}
           />
           </SectionRevealHeader>
@@ -262,10 +181,10 @@ export function SocialProof() {
               delay={stat.delay}
               className="h-full"
             >
-              <SiteGlowCard radius={32} className="py-6 px-4 md:py-8 md:px-6 text-left h-full relative overflow-hidden">
+              <SiteGlowCard radius={22} className="py-6 px-4 md:py-8 md:px-6 text-left h-full relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-transparent via-brand-gold/20 to-transparent pointer-events-none" />
                 <span className="text-4xl sm:text-5xl font-extrabold text-brand-gold block mb-1">{stat.value}</span>
-                <span className="text-xs text-brand-text-muted font-semibold uppercase tracking-wider block">
+                <span className="text-base text-brand-text-muted font-semibold uppercase tracking-wider block">
                   {stat.label}
                 </span>
               </SiteGlowCard>
@@ -280,15 +199,15 @@ export function SocialProof() {
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-stretch justify-center relative min-h-0 md:min-h-[26rem] pointer-events-auto">
             <ScrollRevealCard direction="left" distance="XL" delay={0.05} className="hidden md:block h-full">
-              <SideTestimonialCard review={REVIEWS[prevIdx]} onClick={handlePrev} />
+              <SideTestimonialCard review={reviews[prevIdx]} onClick={handlePrev} />
             </ScrollRevealCard>
 
             <ScrollRevealCard direction="up" distance="LG" delay={0.1} className="h-full" id="active-testimonial-card">
-              <ActiveTestimonialCard review={REVIEWS[currentIndex]} />
+              <ActiveTestimonialCard review={reviews[currentIndex]} />
             </ScrollRevealCard>
 
             <ScrollRevealCard direction="right" distance="XL" delay={0.15} className="hidden md:block h-full">
-              <SideTestimonialCard review={REVIEWS[nextIdx]} onClick={handleNext} />
+              <SideTestimonialCard review={reviews[nextIdx]} onClick={handleNext} />
             </ScrollRevealCard>
           </div>
 
@@ -326,7 +245,7 @@ export function SocialProof() {
             </button>
 
             <div className="flex justify-center items-center gap-1">
-              {REVIEWS.map((_, idx) => (
+              {reviews.map((_, idx) => (
                 <button
                   key={idx}
                   type="button"

@@ -37,7 +37,7 @@ export function OurVCardsFeatureGrid() {
     <section className="site-section site-section--reveal bg-neutral-900/20 relative" id="features-section">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.03)_0%,transparent_70%)] pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <SectionRevealRoot viewport="content" simultaneous={false}>
           {/* Header — eyebrow, title, description slide up from 600px */}
           <SectionRevealStaggerList
@@ -56,7 +56,7 @@ export function OurVCardsFeatureGrid() {
             </RevealGridItem>
 
             <RevealGridItem direction="up" distance="XL" scaleOnUp={false} className="w-full max-w-xl">
-              <p className="text-neutral-400 font-light text-sm max-w-xl mx-auto text-center">
+              <p className="text-neutral-400 font-light text-base sm:text-lg max-w-xl mx-auto text-center">
                 Explore the advanced feature matrix configured into every custom smart vCard.
               </p>
             </RevealGridItem>
@@ -78,7 +78,7 @@ export function OurVCardsFeatureGrid() {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.01),transparent)] pointer-events-none" />
 
                 <div>
-                  <h3 className="text-brand-gold font-semibold uppercase tracking-[0.2em] text-xs mb-6 flex items-center gap-2">
+                  <h3 className="text-brand-gold font-semibold uppercase tracking-[0.2em] text-base mb-6 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-brand-gold" />
                     Contact Information
                   </h3>
@@ -116,8 +116,8 @@ export function OurVCardsFeatureGrid() {
                           <item.icon size={14} />
                         </div>
                         <div>
-                          <strong className="text-white text-xs block font-medium">{item.title}</strong>
-                          <span className="text-neutral-400 font-light text-[11px] leading-relaxed block mt-0.5">
+                          <strong className="text-white text-lg block font-medium">{item.title}</strong>
+                          <span className="text-neutral-400 font-light text-base leading-relaxed block mt-0.5">
                             {item.desc}
                           </span>
                         </div>
@@ -158,13 +158,13 @@ export function OurVCardsFeatureGrid() {
                     <span className="text-[10px] font-mono text-brand-gold uppercase tracking-[0.2em] font-semibold block mb-2">
                       ENGAGING MULTIMEDIA HUB
                     </span>
-                    <h3 className="text-white font-medium text-lg mb-3 tracking-tight leading-snug">
+                    <h3 className="text-white font-medium text-lg md:text-xl mb-3 tracking-tight leading-snug">
                       Bring Your vCard to Life with 2D and Whiteboard Explainer Videos!
                     </h3>
-                    <p className="text-neutral-400 font-light text-xs leading-relaxed mb-4">
+                    <p className="text-neutral-400 font-light text-base leading-relaxed mb-4">
                       At vBiz Me, we don&apos;t just offer customizable virtual business cards – we give you the tools to captivate your audience with dynamic 2D explainer and whiteboard videos. Whether you&apos;re looking to simplify complex ideas, showcase your brand story, or create a memorable first impression, these engaging video formats can be easily integrated into your vCard.
                     </p>
-                    <p className="text-neutral-400 font-light text-xs leading-relaxed italic">
+                    <p className="text-neutral-400 font-light text-base leading-relaxed italic">
                       Stand out from the crowd by adding a personal touch to your vCard with a professional explainer video that tells your unique story. Let your clients see the passion behind your business – right from the palm of their hand.
                     </p>
                   </div>
@@ -173,7 +173,7 @@ export function OurVCardsFeatureGrid() {
                 <div className="mt-4 pt-4 border-t border-white/5 w-full">
                   <MagneticButton
                     href="/contact"
-                    className="bg-brand-gold text-black font-semibold py-3.5 px-6 rounded-2xl hover:bg-white hover:text-black uppercase tracking-wider text-xs flex items-center justify-center gap-2.5 transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] w-full"
+                    className="bg-brand-gold text-black font-semibold py-3.5 px-6 rounded-2xl hover:bg-white hover:text-black uppercase tracking-wider text-base flex items-center justify-center gap-2.5 transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)] w-full"
                     id="features-order-vcard-btn"
                   >
                     <FileText size={14} /> ORDER YOUR VCARD NOW!
@@ -192,12 +192,12 @@ export function OurVCardsFeatureGrid() {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(212,175,55,0.01),transparent)] pointer-events-none" />
 
                 <div>
-                  <h3 className="text-brand-gold font-semibold uppercase tracking-[0.2em] text-xs mb-5 flex items-center gap-2">
+                  <h3 className="text-brand-gold font-semibold uppercase tracking-[0.2em] text-base mb-5 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-brand-gold" />
                     Call-to-Action Buttons
                   </h3>
 
-                  <p className="text-neutral-400 font-light text-xs leading-relaxed mb-5">
+                  <p className="text-neutral-400 font-light text-base leading-relaxed mb-5">
                     <strong>Engagement Features:</strong> Include targeted call-to-action buttons, such as “Schedule a Meeting” or “Request a Quote,” to drive immediate user conversions.
                   </p>
 
@@ -211,7 +211,7 @@ export function OurVCardsFeatureGrid() {
                           <btn.icon size={12} />
                         </div>
                         <div className="min-w-0 text-left">
-                          <span className="text-white text-xs font-medium block leading-none">{btn.label}</span>
+                          <span className="text-white text-base font-medium block leading-none">{btn.label}</span>
                           <span className="text-neutral-500 font-light text-[10px] block mt-0.5 truncate">{btn.desc}</span>
                         </div>
                       </div>
@@ -219,21 +219,21 @@ export function OurVCardsFeatureGrid() {
                   </div>
 
                   <div className="mt-5 pt-5 border-t border-white/5 text-left">
-                    <h4 className="text-white text-xs font-medium mb-1.5 flex items-center gap-1.5">
+                    <h4 className="text-white text-base font-medium mb-1.5 flex items-center gap-1.5">
                       <Briefcase size={13} className="text-brand-gold" />
                       Dynamic Portfolios Included
                     </h4>
-                    <p className="text-neutral-400 font-light text-[11px] leading-relaxed">
+                    <p className="text-neutral-400 font-light text-base leading-relaxed">
                       Showcase your work seamlessly, including projects, client case studies, professional certifications, corporate awards, verified reviews, and testimonials.
                     </p>
                   </div>
 
                   <div className="mt-4 pt-4 border-t border-white/5 text-left">
-                    <h4 className="text-white text-xs font-medium mb-1.5 flex items-center gap-1.5">
+                    <h4 className="text-white text-base font-medium mb-1.5 flex items-center gap-1.5">
                       <Share2 size={13} className="text-brand-gold" />
                       Social Media Links
                     </h4>
-                    <p className="text-neutral-400 font-light text-[11px] leading-relaxed">
+                    <p className="text-neutral-400 font-light text-base leading-relaxed">
                       Clickable links with high-contrast styled social media icons leading visitors straight to LinkedIn, Twitter, Facebook, or custom developer indexes.
                     </p>
                   </div>
@@ -258,9 +258,9 @@ export function OurVCardsFeatureGrid() {
                 <div className="absolute top-0 right-0 h-12 w-12 bg-gradient-to-bl from-brand-gold/10 to-transparent pointer-events-none" />
                 <div className="flex items-center gap-2.5 mb-3 text-brand-gold">
                   <Zap size={16} className="animate-pulse" />
-                  <h4 className="text-white font-medium text-sm tracking-tight">Card Auto Data Filling Feature</h4>
+                  <h4 className="text-white font-medium text-base md:text-lg tracking-tight">Card Auto Data Filling Feature</h4>
                 </div>
-                <p className="text-neutral-400 font-light text-xs leading-relaxed">
+                <p className="text-neutral-400 font-light text-base leading-relaxed">
                   Avoid manual configuration! Provide a simple resume text, a previous paper business card picture, or your LinkedIn URL. Our smart parser instantly auto-extracts your coordinates and theme guidelines to pre-build a ready-vCard.
                 </p>
               </div>
@@ -275,14 +275,14 @@ export function OurVCardsFeatureGrid() {
               <div className="bg-gradient-to-br from-[#2a3528] to-[#222e28] border border-brand-gold/30 py-6 px-4 md:py-8 md:px-6 rounded-[2rem] relative overflow-hidden group shadow-[0_0_30px_rgba(212,175,55,0.03)] text-left h-full">
                 <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-gold/15 border border-brand-gold/25 backdrop-blur-sm">
                   <span className="w-1 h-1 rounded-full bg-brand-gold animate-ping" />
-                  <span className="text-[8px] text-brand-gold font-mono uppercase tracking-wider">AI AGENT TWIN</span>
+                  <span className="text-sm text-brand-gold font-mono uppercase tracking-wider">AI AGENT TWIN</span>
                 </div>
 
                 <div className="flex items-center gap-2.5 mb-3 text-brand-gold">
                   <Bot size={16} />
-                  <h4 className="text-white font-semibold text-sm tracking-tight">AI Agent Assistance</h4>
+                  <h4 className="text-white font-semibold text-base md:text-lg tracking-tight">AI Agent Assistance</h4>
                 </div>
-                <p className="text-neutral-400 font-light text-xs leading-relaxed">
+                <p className="text-neutral-400 font-light text-base leading-relaxed">
                   Equip your card with an active smart digital duplicate! This trained model automatically answers direct visitor queries, details core packages, logs inquiries, and books custom times onto your calendar 24/7.
                 </p>
               </div>

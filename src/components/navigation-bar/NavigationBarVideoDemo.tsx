@@ -55,7 +55,7 @@ export function NavigationBarVideoDemo() {
         <p className="text-[10px] font-mono text-brand-gold uppercase tracking-[0.18em] font-semibold mb-1">
           Live Navigation Preview
         </p>
-        <p className="text-[11px] text-neutral-400 font-light leading-relaxed">
+        <p className="text-base text-neutral-400 font-light leading-relaxed">
           Scroll through tabs, portfolios, and CTAs — the same smooth bar your clients see on every vCard.
         </p>
       </div>

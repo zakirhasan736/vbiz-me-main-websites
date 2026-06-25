@@ -619,7 +619,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
             </div>
 
             {error && (
-              <div className="text-red-300 text-xs flex items-center gap-1.5 p-2 bg-red-950/50 rounded-xl z-10 border border-red-500/30 min-h-9">
+              <div className="text-red-300 text-base flex items-center gap-1.5 p-2 bg-red-950/50 rounded-xl z-10 border border-red-500/30 min-h-9">
                 <AlertCircle size={14} className="shrink-0" />
                 <span className="line-clamp-2 leading-snug">{error}</span>
               </div>

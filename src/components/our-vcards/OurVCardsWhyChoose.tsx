@@ -71,7 +71,7 @@ export function OurVCardsWhyChoose() {
       <div className="absolute top-0 right-0 w-[480px] h-[480px] bg-brand-gold/[0.03] blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[360px] h-[360px] bg-emerald-500/[0.03] blur-[100px] rounded-full pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 relative z-10">
+      <div className="max-w-[1344px] mx-auto px-4 relative z-10">
         <SectionRevealRoot viewport="content">
           <div className="flex flex-col lg:flex-row gap-16 lg:gap-20">
             <div className="lg:w-1/3 text-left">
@@ -98,7 +98,7 @@ export function OurVCardsWhyChoose() {
                       <div className="w-7 h-7 rounded-full bg-brand-gold/10 border border-brand-gold/20 flex items-center justify-center shrink-0 group-hover:bg-brand-gold/25 group-hover:scale-110 transition-all duration-300 shadow-[0_0_20px_rgba(212,175,55,0.08)]">
                         <Check size={13} className="text-brand-gold" strokeWidth={3} />
                       </div>
-                      <span className="font-light tracking-wide text-neutral-300 group-hover:text-white transition-colors duration-300">
+                      <span className="font-light text-base md:text-lg tracking-wide text-neutral-300 group-hover:text-white transition-colors duration-300">
                         {feature}
                       </span>
                     </div>
@@ -120,7 +120,7 @@ export function OurVCardsWhyChoose() {
                 />
                 <RevealParagraph
                   text="Choose vBiz Me for unique intro videos with your logo, customizable vCards, professional designs, seamless integration, and exceptional customer support to elevate your networking."
-                  className="text-neutral-400 mb-10 font-light leading-relaxed max-w-2xl text-left"
+                  className="text-neutral-400 mb-10 font-light text-base sm:text-lg leading-relaxed max-w-2xl text-left"
                   centered={false}
                   distance="MD"
                   delay={0.08}
@@ -156,7 +156,7 @@ export function OurVCardsWhyChoose() {
                         <button
                           type="button"
                           onClick={() => setActiveAccordion(isOpen ? null : index)}
-                          className="relative w-full flex items-center justify-between gap-4 py-5 px-5 md:py-6 md:px-7 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 rounded-2xl bg-[#283630]/90 backdrop-blur-sm cursor-pointer"
+                          className="relative w-full flex items-center text-base md:text-lg justify-between gap-4 py-5 px-5 md:py-6 md:px-7 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold/50 rounded-2xl bg-[#283630]/90 backdrop-blur-sm cursor-pointer"
                           aria-expanded={isOpen}
                         >
                           <span className="flex items-start gap-3 min-w-0">
@@ -187,7 +187,7 @@ export function OurVCardsWhyChoose() {
 
                         {isOpen && (
                           <div className="overflow-hidden accordion-panel-open">
-                            <div className="px-5 md:px-7 pb-6 md:pb-7 text-neutral-400 font-light leading-relaxed border-t border-white/5 pt-4">
+                            <div className="px-5 md:px-7 pb-6 md:pb-7 text-neutral-400 text-base md:text-lg font-light leading-relaxed border-t border-white/5 pt-4">
                               {item.content}
                             </div>
                           </div>

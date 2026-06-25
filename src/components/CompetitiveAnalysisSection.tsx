@@ -26,7 +26,7 @@ export function CompetitiveAnalysisSection() {
             />
             <RevealParagraph
               text="See how vBiz Me stacks up against traditional paper cards and basic digital options to deliver unmatched brand impressions."
-              className="text-neutral-400 font-light text-sm max-w-xl mx-auto mt-3 text-center"
+              className="text-neutral-400 font-light text-base sm:text-lg max-w-xl mx-auto mt-3 text-center"
               delay={0.1}
             />
           </SectionRevealHeader>

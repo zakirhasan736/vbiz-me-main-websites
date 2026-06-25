@@ -153,7 +153,7 @@ export default function OurWork() {
                 <h2 className="text-white font-medium text-3xl md:text-4xl mb-4 tracking-tight leading-tight">
                   Let&apos;s Transform Your Digital Presence Together
                 </h2>
-                <p className="text-neutral-400 font-light text-lg leading-relaxed">
+                <p className="text-neutral-400 font-light text-base sm:text-lg leading-relaxed">
                   Ready to elevate your digital presence? Contact us today to discuss how our services can help your business succeed in the digital world.
                 </p>
               </div>

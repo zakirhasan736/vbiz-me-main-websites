@@ -25,7 +25,7 @@ export default function OurVCards() {
         />
         <PageHeroBackground overVideo />
 
-        <div className="max-w-4xl mx-auto px-4 relative z-10 pt-10 text-center w-full">
+        <div className="max-w-4xl mx-auto px-4 relative z-10 pt-0 text-center w-full">
           <div className="page-hero-video-content text-center max-w-4xl mx-auto">
             <RevealEyebrow label="The Ultimate Digital Asset" variant="hero" className="mx-auto" />
 
@@ -52,7 +52,7 @@ export default function OurVCards() {
       <OurVCardsWhyChoose />
 
       <section className="site-section site-section--reveal bg-neutral-900/20 relative pb-0">
-        <div className="max-w-7xl mx-auto px-4 relative z-10">
+        <div className="max-w-[1344px] mx-auto px-4 relative z-10">
           <SectionRevealRoot viewport="content">
             <ScrollRevealCard direction="up" distance="XL" delay={0} className="w-full">
               <div className="mt-12 flex flex-col md:flex-row items-center gap-10 bg-gradient-to-r from-brand-gold/10 to-transparent py-6 px-4 md:py-8 md:px-6 rounded-3xl border border-brand-gold/20 relative overflow-hidden text-left shadow-[0_20px_60px_rgba(212,175,55,0.06)]">
@@ -61,9 +61,9 @@ export default function OurVCards() {
                   <Lightbulb className="text-brand-gold w-10 h-10" />
                 </div>
                 <div className="text-left">
-                  <span className="text-[10px] font-mono tracking-[0.2em] text-brand-gold uppercase font-semibold block mb-1 text-left">Innovative and Memorable</span>
+                  <span className="text-sm font-mono tracking-[0.2em] text-brand-gold uppercase font-semibold block mb-1 text-left">Innovative and Memorable</span>
                   <h3 className="text-white font-medium text-2xl mb-3 tracking-tight text-left">Create a Lasting Impression</h3>
-                  <p className="text-neutral-400 font-light leading-relaxed text-left">
+                  <p className="text-neutral-400 font-light text-base md:text-lg leading-relaxed text-left">
                     vCards are designed to captivate and engage. With dynamic intro videos personalized to your profession, you can make an unforgettable first impression. Whether you&apos;re a tech guru, a creative professional, or a business executive, our vCards showcase your unique brand and personality, making sure you stand out in every interaction.
                   </p>
                 </div>
@@ -94,13 +94,13 @@ export default function OurVCards() {
                 <div className="max-w-2xl relative z-10 flex flex-col items-center mb-10 text-center">
                   <h2 className="text-4xl md:text-5xl font-medium tracking-tight text-white leading-[1.15] mb-5">
                     Transform Your <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-yellow-200 to-white">Digital Professional Identity</span>
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-green-800 to-gold">Digital Professional Identity</span>
                   </h2>
-                  <p className="text-neutral-400 font-light text-base md:text-lg max-w-lg leading-relaxed mb-6">
+                  <p className="text-neutral-400 font-light text-base sm:text-lg max-w-lg leading-relaxed mb-6">
                     Unlock automated pipelines, dynamic intro integrations, and seamless lead conversion. Contact us today to order your customized intelligent vCard!
                   </p>
 
-                  <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-2 text-neutral-500 text-xs font-mono tracking-wide mt-2">
+                  <div className="flex flex-wrap justify-center items-center gap-x-5 gap-y-2 text-neutral-500 text-base font-mono tracking-wide mt-2">
                     <span className="flex items-center gap-1.5"><Check size={12} className="text-brand-gold" /> Automated AI Pipelines</span>
                     <span className="hidden sm:inline text-neutral-700">•</span>
                     <span className="flex items-center gap-1.5"><Check size={12} className="text-brand-gold" /> High-Performance Video</span>
@@ -119,7 +119,7 @@ export default function OurVCards() {
                       <ArrowRight size={16} className="group-hover/btn:translate-x-1.5 transition-transform duration-300" />
                     </MagneticButton>
                   </div>
-                  <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest mt-6 block">
+                  <span className="text-sm font-mono text-neutral-500 uppercase tracking-widest mt-6 block">
                     Zero commitment • Dynamic layouts • Fast setup
                   </span>
                 </div>

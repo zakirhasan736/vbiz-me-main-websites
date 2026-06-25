@@ -115,7 +115,7 @@ const InteractiveDemoSection = () => {
     >
       <div className="absolute top-1/2 left-1/4 w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative">
         <SectionRevealRoot className="text-center max-w-3xl mx-auto mb-16">
           <SectionRevealHeader>
             <RevealEyebrow label="See It In Action" className="mb-4 mx-auto" delay={0} />
@@ -127,7 +127,7 @@ const InteractiveDemoSection = () => {
             />
             <RevealParagraph
               text="Pick your industry of interest below, then watch how a live, conversion-focused vBiz Me card operates right from the smartphone mockup."
-              className="text-neutral-400 font-light text-base leading-relaxed"
+              className="text-neutral-400 font-light text-base sm:text-lg leading-relaxed"
               delay={0.1}
             />
           </SectionRevealHeader>
@@ -143,7 +143,7 @@ const InteractiveDemoSection = () => {
             distance="XL"
             className="order-2 xl:order-1 lg:col-span-12 xl:col-span-5 flex flex-col gap-3"
           >
-            <span className="text-xs uppercase tracking-widest text-neutral-500 font-semibold mb-2 block">
+            <span className="text-base uppercase tracking-widest text-neutral-500 font-semibold mb-2 block">
               1. Toggle Industries
             </span>
             <div className="home-industry-toggle-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-2.5">
@@ -154,7 +154,7 @@ const InteractiveDemoSection = () => {
                     key={ind.id}
                     type="button"
                     onClick={() => selectIndustry(ind.id)}
-                    className={`relative flex items-center gap-3 p-4 rounded-xl border text-left text-xs uppercase font-bold tracking-wider transition-colors duration-300 overflow-hidden active:scale-[0.98] ${
+                    className={`relative flex items-center gap-3 p-4 rounded-xl border text-left text-base uppercase font-bold tracking-wider transition-colors duration-300 overflow-hidden active:scale-[0.98] ${
                       isActive
                         ? 'border-brand-gold/50 text-brand-text shadow-[0_4px_20px_rgba(212,175,55,0.12)]'
                         : 'bg-brand-card border-white/10 text-brand-text-muted hover:border-brand-gold/25 hover:bg-brand-gold/5'
@@ -168,7 +168,7 @@ const InteractiveDemoSection = () => {
                     </span>
                     <div className="relative z-10 min-w-0">
                       <span className={isActive ? 'text-brand-text' : ''}>{ind.name}</span>
-                      <span className="text-[9px] text-brand-text-muted font-light block normal-case mt-0.5 truncate">
+                      <span className="text-sm text-brand-text-muted font-light block normal-case mt-0.5 truncate">
                         {ind.company}
                       </span>
                     </div>
@@ -180,7 +180,7 @@ const InteractiveDemoSection = () => {
             <div className="mt-6">
               <a 
                 href="/examples"
-                className="text-white hover:text-brand-gold text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                className="text-white hover:text-brand-gold text-base font-semibold flex items-center gap-1.5 transition-colors"
               >
                 Browse Full Industry Mockup Library <ChevronRight size={14} />
               </a>
@@ -198,7 +198,7 @@ const InteractiveDemoSection = () => {
               className="flex flex-col items-center gap-3 w-full max-w-[407px] mx-auto relative z-10"
             >
               <div className="w-full px-4 py-2.5 rounded-xl border border-brand-gold/25 bg-brand-card text-center hero-industry-demo-url">
-                <span className="text-[9px] uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
+                <span className="text-sm uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
                   Live Demo URL
                 </span>
                 <a
@@ -281,6 +281,24 @@ const PortfolioSection = () => {
     const children = Array.from(el.children) as HTMLElement[];
     if (children.length === 0) return;
 
+    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+
+    if (isDesktop) {
+      let closestIndex = 0;
+      let minDistance = Infinity;
+
+      children.forEach((child, index) => {
+        const distance = Math.abs(child.offsetLeft - scrollLeft);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      setActiveSliderIdx(closestIndex);
+      return;
+    }
+
     const containerCenter = scrollLeft + clientWidth / 2;
     let closestIndex = 0;
     let minDistance = Infinity;
@@ -297,18 +315,28 @@ const PortfolioSection = () => {
     setActiveSliderIdx(closestIndex);
   };
 
+  const getSliderStep = () => {
+    const el = sliderRef.current;
+    if (!el) return 340;
+    const card = el.querySelector('.portfolio-qr-slider-card') as HTMLElement | null;
+    if (!card) return 340;
+    const gap = Number.parseFloat(getComputedStyle(el).columnGap || getComputedStyle(el).gap) || 24;
+    return card.offsetWidth + gap;
+  };
+
   const scrollToSlide = (index: number) => {
     const el = sliderRef.current;
     if (!el) return;
     const children = Array.from(el.children) as HTMLElement[];
-    if (children[index]) {
-      children[index].scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center'
-      });
-      setActiveSliderIdx(index);
-    }
+    if (!children[index]) return;
+
+    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+    children[index].scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: isDesktop ? 'start' : 'center',
+    });
+    setActiveSliderIdx(index);
   };
 
   const [isMuted, setIsMuted] = useState(true);
@@ -352,13 +380,12 @@ const PortfolioSection = () => {
 
   const scrollSlider = (direction: 'left' | 'right') => {
     const el = sliderRef.current;
-    if (el) {
-      const scrollAmount = 340;
-      el.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
+    if (!el) return;
+    const scrollAmount = getSliderStep();
+    el.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth',
+    });
   };
 
   return (
@@ -367,7 +394,7 @@ const PortfolioSection = () => {
       <div className="absolute top-1/2 left-3/4 w-[600px] h-[600px] bg-brand-gold/5 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute top-1/4 left-10 w-[450px] h-[450px] bg-indigo-500/5 blur-[130px] rounded-full pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative">
 
         <SectionRevealRoot id="portfolio-header" className="text-center max-w-4xl mx-auto mb-16">
           <SectionRevealHeader>
@@ -392,7 +419,7 @@ const PortfolioSection = () => {
                 >
                   View Full Portfolio <ArrowRight size={16} aria-hidden="true" />
                 </MagneticButton>
-                <span className="text-neutral-500 text-xs sm:text-sm font-light">
+                <span className="text-neutral-500 text-base text-base font-light">
                   {qrSliderItems.length} live client showcases — tap any card below or open the gallery
                 </span>
               </div>
@@ -427,7 +454,7 @@ const PortfolioSection = () => {
               </span>
             </div>
 
-            <p className="text-neutral-400 text-xs font-light leading-relaxed mb-6">
+            <p className="text-neutral-400 text-base font-light leading-relaxed mb-6">
               Monitor how often your vCard is viewed or shared, providing valuable insights into your networking efforts.
             </p>
 
@@ -436,15 +463,15 @@ const PortfolioSection = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex gap-4">
                   <div className="flex flex-col">
-                    <span className="text-[9px] uppercase tracking-widest text-neutral-500 font-medium">Link Views</span>
+                    <span className="text-sm uppercase tracking-widest text-neutral-500 font-medium">Link Views</span>
                     <span className="text-lg font-bold text-white font-mono animate-[pulse_2s_infinite]">{views}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[9px] uppercase tracking-widest text-neutral-500 font-medium">Saves Rate</span>
+                    <span className="text-sm uppercase tracking-widest text-neutral-500 font-medium">Saves Rate</span>
                     <span className="text-lg font-bold text-brand-gold font-mono">{saves}</span>
                   </div>
                 </div>
-                <div className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono">
+                <div className="text-sm text-emerald-400 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono">
                   +34.2% Growth
                 </div>
               </div>
@@ -469,7 +496,7 @@ const PortfolioSection = () => {
               type="button"
               onClick={triggerSimulation}
               disabled={trackedEvent}
-              className={`w-full py-3 px-4 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              className={`w-full py-3 px-4 rounded-xl text-base font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 trackedEvent 
                   ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/20' 
                   : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'
@@ -487,7 +514,7 @@ const PortfolioSection = () => {
 
             {/* Floating pop notification toast */}
             {trackedEvent && (
-              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-neutral-900 border border-brand-gold/30 text-white font-mono text-[9px] px-3 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 z-20">
+              <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-neutral-900 border border-brand-gold/30 text-white font-mono text-sm px-3 py-1.5 rounded-full shadow-2xl flex items-center gap-1.5 z-20">
                 <Sparkles size={10} className="text-brand-gold" />
                 Real-time analytics incremented!
               </div>
@@ -518,7 +545,7 @@ const PortfolioSection = () => {
                 </span>
               </div>
 
-              <p className="text-neutral-400 text-xs font-light leading-relaxed mb-6">
+              <p className="text-neutral-400 text-base font-light leading-relaxed mb-6">
                 Share your vCard instantly via a custom QR code that can be scanned with any smartphone.
               </p>
 
@@ -549,9 +576,9 @@ const PortfolioSection = () => {
                     value={qrInput}
                     onChange={handleQrInputChange}
                     placeholder="Enter link, phone, or website..."
-                    className="w-full bg-[#131313] border border-white/10 p-3 rounded-lg text-xs leading-normal text-white placeholder-neutral-600 focus:outline-none focus:border-brand-gold/50"
+                    className="w-full bg-[#131313] border border-white/10 p-3 rounded-lg text-base leading-normal text-white placeholder-neutral-600 focus:outline-none focus:border-brand-gold/50"
                   />
-                  <span className="text-[9px] text-[#666] font-light mt-1.5 block leading-tight">
+                  <span className="text-sm text-[#666] font-light mt-1.5 block leading-tight">
                     Mock destination: <span className="text-brand-gold block font-mono overflow-ellipsis text-[8px]">{qrInput || 'empty'}</span>
                   </span>
                 </div>
@@ -572,7 +599,7 @@ const PortfolioSection = () => {
           direction="up"
           distance="XL"
           delay={0}
-          className="relative group/slider mt-12 max-w-7xl mx-auto px-1"
+          className="relative group/slider mt-12 max-w-[1344px] mx-auto px-1"
         >
           {/* Navigation Arrows (Visible on hover on desktop) */}
           <button
@@ -628,11 +655,11 @@ const PortfolioSection = () => {
                     setSelectedQrCard(item);
                     setIsQrModalOpen(true);
                   }}
-                  className={`portfolio-qr-slider-card snap-center shrink-0 w-[280px] sm:w-[300px] bg-[#2c3a34] border ${cardStyle.borderColor} ${cardStyle.glowColor} ${cardStyle.hoverGlow} rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col items-center justify-between transition-all duration-500 hover:-translate-y-2 group cursor-pointer`}
+                  className={`portfolio-qr-slider-card snap-center lg:snap-start shrink-0 w-[280px] sm:w-[300px] lg:w-auto bg-[#2c3a34] border ${cardStyle.borderColor} ${cardStyle.glowColor} ${cardStyle.hoverGlow} rounded-[2rem] py-4 px-3 sm:py-5 sm:px-4 lg:py-4 lg:px-3 flex flex-col items-center gap-4 transition-all duration-500 hover:-translate-y-2 group cursor-pointer`}
                   id={`qr-slider-card-${item.id}`}
                 >
                   {/* Branded QR from /public */}
-                  <div className="w-full aspect-square bg-white p-3 sm:p-4 rounded-2xl relative overflow-hidden flex items-center justify-center shadow-[inset_0_0_12px_rgba(0,0,0,0.05),0_10px_25px_rgba(0,0,0,0.85)] group-hover:scale-[1.02] transition-transform duration-500">
+                  <div className="portfolio-qr-slider-card__qr-well w-full aspect-square bg-white p-2.5 sm:p-3 rounded-2xl relative overflow-hidden flex items-center justify-center shadow-[inset_0_0_12px_rgba(0,0,0,0.05),0_10px_25px_rgba(0,0,0,0.85)] group-hover:scale-[1.02] transition-transform duration-500">
                     <div 
                       className="w-full h-full rounded-xl overflow-hidden relative bg-white"
                       style={{
@@ -653,8 +680,8 @@ const PortfolioSection = () => {
                   </div>
 
                   {/* Name label below QR (matches branded vCard QR layout) */}
-                  <div className="mt-5 flex flex-col items-center px-1">
-                    <span className="portfolio-qr-slider-card__label inline-flex items-center gap-1.5 px-4 py-2 rounded-full border text-[10.5px] sm:text-[11px] font-medium tracking-wide text-center leading-snug shadow-xl group-hover:border-brand-gold/40 transition-colors max-w-full">
+                  <div className="flex flex-col items-center px-1 w-full">
+                    <span className="portfolio-qr-slider-card__label inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border text-[10.5px] sm:text-[11px] font-medium tracking-wide text-center leading-snug shadow-xl group-hover:border-brand-gold/40 transition-colors max-w-full">
                       <span className="w-1.5 h-1.5 shrink-0 rounded-full bg-brand-gold animate-pulse" />
                       <span className="line-clamp-2">{item.displayName}</span>
                     </span>
@@ -665,22 +692,22 @@ const PortfolioSection = () => {
 
             {/* Custom Infinite Carousel Explore/Add Card Callout */}
             <div
-              className="portfolio-qr-slider-card snap-center shrink-0 w-[280px] sm:w-[300px] bg-gradient-to-br from-[#2c3a34] to-brand-dark border border-white/5 rounded-[2rem] py-6 px-4 md:py-8 md:px-6 flex flex-col justify-between"
+              className="portfolio-qr-slider-card snap-center lg:snap-start shrink-0 w-[280px] sm:w-[300px] lg:w-auto bg-gradient-to-br from-[#2c3a34] to-brand-dark border border-white/5 rounded-[2rem] py-4 px-3 sm:py-5 sm:px-4 lg:py-4 lg:px-3 flex flex-col gap-4"
               id="qr-slider-explore-card"
             >
-              <div className="relative z-10 pt-4 text-left">
-                <div className="w-10 h-10 rounded-xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold flex items-center justify-center mb-6">
+              <div className="relative z-10 text-left">
+                <div className="w-10 h-10 rounded-xl bg-brand-gold/15 border border-brand-gold/30 text-brand-gold flex items-center justify-center mb-4">
                   <Sparkles size={20} />
                 </div>
-                <h3 className="portfolio-qr-explore-card__title font-semibold text-lg mb-2">Full Portfolio Gallery</h3>
-                <p className="portfolio-qr-explore-card__copy text-xs font-light leading-relaxed mb-4">
+                <h3 className="portfolio-qr-explore-card__title font-semibold text-base sm:text-lg mb-2">Full Portfolio Gallery</h3>
+                <p className="portfolio-qr-explore-card__copy text-sm sm:text-base font-light leading-relaxed">
                   Browse every live vCard showcase, QR design, and branded client demo in one dedicated portfolio view.
                 </p>
               </div>
 
               <a
                 href="/portfolio"
-                className="relative z-10 w-full mt-auto py-3.5 px-4 rounded-xl bg-brand-gold hover:bg-yellow-400 text-black font-bold text-xs text-center uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] shadow-[0_4px_20px_rgba(212,175,55,0.2)] hover:shadow-[0_4px_24px_rgba(212,175,55,0.35)]"
+                className="relative z-10 w-full py-3 px-4 rounded-xl bg-brand-gold hover:bg-yellow-400 text-black font-bold text-xs sm:text-sm text-center uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300 hover:scale-[1.02] shadow-[0_4px_20px_rgba(212,175,55,0.2)] hover:shadow-[0_4px_24px_rgba(212,175,55,0.35)]"
               >
                 View Full Portfolio <ChevronRight size={14} />
               </a>
@@ -714,13 +741,13 @@ const PortfolioSection = () => {
                 <p className="text-white font-semibold text-base md:text-lg mb-1">
                   Explore the complete portfolio gallery
                 </p>
-                <p className="text-neutral-400 text-xs md:text-sm font-light leading-relaxed max-w-md">
+                <p className="text-neutral-400 text-base sm:text-lg font-light leading-relaxed max-w-md">
                   Every branded QR, live vCard demo, and client showcase in one browsable grid.
                 </p>
               </div>
               <MagneticButton
                 href="/portfolio"
-                className="relative z-10 shrink-0 h-11 px-6 border border-brand-gold/40 bg-brand-gold/10 text-brand-gold text-xs font-bold uppercase tracking-wider hover:bg-brand-gold hover:text-black transition-colors"
+                className="relative z-10 shrink-0 h-11 px-6 border border-brand-gold/40 bg-brand-gold/10 text-brand-gold text-base font-bold uppercase tracking-wider hover:bg-brand-gold hover:text-black transition-colors"
               >
                 Open Portfolio Page <ExternalLink size={14} aria-hidden="true" />
               </MagneticButton>
@@ -831,7 +858,7 @@ const HowItWorks = () => {
 
   return (
     <section className="site-section site-section--reveal bg-brand-dark border-b border-white/5 relative z-10 text-center">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8">
 
         <SectionRevealRoot viewport="content">
           <SectionRevealHeader className="text-center max-w-2xl mx-auto mb-16">
@@ -843,7 +870,7 @@ const HowItWorks = () => {
             />
             <RevealParagraph
               text="Revolutionizing physical relationships is frictionless. We made sure setup, sharing, and capturing deals takes seconds."
-              className="text-brand-text-muted text-sm font-light leading-relaxed"
+              className="text-brand-text-muted font-light text-base sm:text-lg leading-relaxed"
             />
           </SectionRevealHeader>
 
@@ -869,7 +896,7 @@ const HowItWorks = () => {
                     {step.num}
                   </div>
                   <h3 className="text-lg font-bold text-brand-text mb-2">{step.title}</h3>
-                  <p className="text-brand-text-muted text-xs font-light leading-relaxed">{step.desc}</p>
+                  <p className="text-brand-text-muted text-base font-light leading-relaxed">{step.desc}</p>
                 </SiteGlowCard>
               </RevealGridItem>
             );
@@ -957,7 +984,7 @@ const HowCanWeHelp = () => {
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-brand-gold/15 to-transparent pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-brand-gold/[0.03] blur-[150px] rounded-full pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative">
         <SectionRevealRoot viewport="content">
           <SectionRevealHeader className="text-center max-w-4xl mx-auto mb-20">
             <RevealEyebrow label="Platform Capabilities" className="mx-auto" />
@@ -977,7 +1004,7 @@ const HowCanWeHelp = () => {
 
         <SectionRevealGrid
           id="platform-capability-cards"
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto capability-card-grid overflow-visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1344px] mx-auto capability-card-grid overflow-visible"
           stagger={getGridStaggerForColumns(3)}
         >
           {features.map((feat, idx) => {
@@ -1001,7 +1028,7 @@ const HowCanWeHelp = () => {
                   <h3 className="text-brand-text font-medium text-lg tracking-wide mb-3 group-hover:text-brand-gold transition-colors duration-300">
                     {feat.title}
                   </h3>
-                  <p className="text-brand-text-muted text-sm font-light leading-relaxed">{feat.desc}</p>
+                  <p className="text-brand-text-muted text-base font-light leading-relaxed">{feat.desc}</p>
                 </CapabilityCard>
               </RevealGridItem>
             );

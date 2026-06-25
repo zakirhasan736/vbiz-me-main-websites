@@ -103,7 +103,7 @@ export function IndustryVCardMobilePreview({
                 >
                   {industryName}
                 </h3>
-                <p className="text-xs text-brand-text-muted font-light mt-1">{company}</p>
+                <p className="text-base text-brand-text-muted font-light mt-1">{company}</p>
                
               </div>
 
@@ -117,7 +117,7 @@ export function IndustryVCardMobilePreview({
                       aria-label={`Loading ${industryName} live demo`}
                     >
                       <div className="mb-4 h-12 w-12 animate-spin rounded-full border-2 border-brand-gold/25 border-t-brand-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]" />
-                      <span className="text-xs font-semibold uppercase tracking-widest text-white">
+                      <span className="text-base font-semibold uppercase tracking-widest text-white">
                         Loading live demo
                       </span>
                       <span className="mt-2 max-w-[260px] break-all font-mono text-[10px] leading-snug text-brand-gold">

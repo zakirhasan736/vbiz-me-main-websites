@@ -119,7 +119,7 @@ export default function NavigationBar() {
       {/* Overview Section */}
       <section className="site-section site-section--reveal bg-brand-dark relative">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_left,rgba(212,175,55,0.03)_0%,transparent_50%)] pointer-events-none" />
-        <SectionRevealRoot viewport="content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <SectionRevealRoot viewport="content" className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <SectionRevealContent className="flex flex-col lg:flex-row gap-20 items-center">
             <ScrollRevealCard direction="left" distance="LG" className="lg:w-1/2 text-left">
               <RevealText 
@@ -132,7 +132,7 @@ export default function NavigationBar() {
               
               <RevealParagraph 
                 text="The vBiz Me scrolling navigation bar is a game-changer for digital business cards! Say goodbye to clunky, outdated menus—this sleek, interactive powerhouse keeps everything at your fingertips. Effortlessly glide through your vCard, instantly accessing contact info, social media links, portfolios, and scheduling options with zero hassle. Designed for maximum impact, the scrolling nav bar ensures smooth, intuitive navigation on any device, giving your audience a seamless and engaging experience. Plus, it's fully customizable, so you can brand it your way and make a lasting impression. Whether you're networking, showcasing your business, or closing deals, this cutting-edge feature makes sure your connections never miss a beat."
-                className="text-neutral-400 text-base leading-relaxed mb-8 font-light text-left"
+                className="text-neutral-400 text-base sm:text-lg leading-relaxed mb-8 font-light text-left"
                 centered={false}
                 distance="MD"
               />
@@ -154,7 +154,7 @@ export default function NavigationBar() {
 
       {/* Key Features */}
       <section className="site-section hidden bg-neutral-900/20 relative overflow-hidden">
-        <SectionRevealRoot viewport="content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <SectionRevealRoot viewport="content" className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <SectionRevealHeader className="text-center mb-16">
             <RevealText 
               text="Our Key Features"
@@ -183,7 +183,7 @@ export default function NavigationBar() {
                     <feature.icon size={28} strokeWidth={1.5} />
                   </div>
                   <h3 className="text-white font-medium text-xl mb-4 tracking-tight relative z-10">{feature.title}</h3>
-                  <p className="text-neutral-400 text-sm leading-relaxed font-light relative z-10">{feature.description}</p>
+                  <p className="text-neutral-400 text-base leading-relaxed font-light relative z-10">{feature.description}</p>
                 </div>
               </RevealGridItem>
             ))}
@@ -194,7 +194,7 @@ export default function NavigationBar() {
       {/* Navigation Bar Topics */}
       <section className="site-section site-section--reveal bg-brand-dark relative">
         <div className="absolute top-1/3 right-1/4 w-[600px] h-[600px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
-        <SectionRevealRoot viewport="content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <SectionRevealRoot viewport="content" className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <SectionRevealHeader className="text-center mb-16">
             <RevealEyebrow label="Custom Navigation" className="mb-4 mx-auto" />
             <RevealText 
@@ -205,7 +205,7 @@ export default function NavigationBar() {
             />
             <RevealParagraph
               text="A comprehensive directory of custom tabs and sections designed to highlight your complete brand in single taps."
-              className="text-neutral-400 font-light text-sm max-w-xl mx-auto mt-3 text-center"
+              className="text-neutral-400 font-light text-base sm:text-lg max-w-xl mx-auto mt-3 text-center"
               distance="MD"
             />
           </SectionRevealHeader>
@@ -227,7 +227,7 @@ export default function NavigationBar() {
                   <div className="absolute inset-0 bg-gradient-to-br from-brand-gold/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                   <topic.icon size={40} strokeWidth={1.5} className="text-brand-gold mb-5 group-hover:scale-110 transition-transform duration-500 relative z-10" />
                   <h3 className="text-white font-medium text-base md:text-lg mb-2 leading-tight tracking-tight relative z-10">{topic.title}</h3>
-                  <p className="text-neutral-500 text-xs font-light relative z-10 group-hover:text-neutral-300 transition-colors duration-300">{topic.subtitle}</p>
+                  <p className="text-neutral-500 text-base font-light relative z-10 group-hover:text-neutral-300 transition-colors duration-300">{topic.subtitle}</p>
                 </div>
               </RevealGridItem>
             ))}
@@ -259,7 +259,7 @@ export default function NavigationBar() {
                       Ready to Experience the Future of Networking?
                     </h3>
                     
-                    <p className="text-neutral-300 text-xs md:text-sm font-light leading-relaxed mb-6 text-left">
+                    <p className="text-neutral-300 text-base sm:text-lg font-light leading-relaxed mb-6 text-left">
                       Get Started with vBiz Me Today! Your vBiz Me virtual business card is more than just a digital contact—it's your brand's first impression, portfolio, and networking tool all in one. With seamless navigation and a fully customizable experience, your clients and prospects can instantly access everything they need about you with just one click.
                     </p>
                   </div>
@@ -267,7 +267,7 @@ export default function NavigationBar() {
                   <div className="pt-4 border-t border-white/5">
                     <MagneticButton 
                       href="/contact" 
-                      className="bg-brand-gold text-black font-semibold py-3.5 px-6 rounded-2xl hover:bg-white hover:text-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all duration-300 w-full md:w-auto shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+                      className="bg-brand-gold text-black font-semibold py-3.5 px-6 rounded-2xl hover:bg-white hover:text-black uppercase tracking-wider text-base flex items-center justify-center gap-2 transition-all duration-300 w-full md:w-auto shadow-[0_0_20px_rgba(212,175,55,0.25)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]"
                     >
                       <span>ORDER YOUR VCARD</span>
                       <ArrowRight size={13} className="shrink-0" />
@@ -307,8 +307,8 @@ export default function NavigationBar() {
                           <Check size={11} className="text-emerald-400 font-bold" />
                         </div>
                         <div className="min-w-0 text-left">
-                          <h4 className="text-white text-xs md:text-sm font-medium tracking-tight text-left">{item.title}</h4>
-                          <p className="text-neutral-400 font-light text-[11px] leading-relaxed mt-0.5 group-hover:text-neutral-200 transition-colors duration-300 text-left">{item.desc}</p>
+                          <h4 className="text-white text-base md:text-sm font-medium tracking-tight text-left">{item.title}</h4>
+                          <p className="text-neutral-400 font-light text-base leading-relaxed mt-0.5 group-hover:text-neutral-200 transition-colors duration-300 text-left">{item.desc}</p>
                         </div>
                       </div>
                     ))}

@@ -61,7 +61,7 @@ export function OurVCardsPillarCards() {
                 <h4 className="font-semibold text-white text-xl mb-2 tracking-tight relative z-10">
                   {pillar.title}
                 </h4>
-                <p className="text-neutral-400 font-light text-sm relative z-10">{pillar.desc}</p>
+                <p className="text-neutral-400 font-light text-base leading-relaxed relative z-10">{pillar.desc}</p>
               </GlowCard>
             </RevealGridItem>
           ))}

@@ -28,7 +28,7 @@ const replacements = [
 ];
 
 const skipLine = (line) =>
-  /fixed inset-0|justify-center p-4 bg-black|items-center justify-center p-4|p-4 rounded-xl border text-left text-xs|p-4 rounded-2xl border text-sm|gap-3 p-2 bg-|p-2 md:p-4 rounded-3xl|py-6 px-4 md:py-8 md:px-6/.test(
+  /fixed inset-0|justify-center p-4 bg-black|items-center justify-center p-4|p-4 rounded-xl border text-left text-base|p-4 rounded-2xl border text-sm|gap-3 p-2 bg-|p-2 md:p-4 rounded-3xl|py-6 px-4 md:py-8 md:px-6/.test(
     line,
   );
 

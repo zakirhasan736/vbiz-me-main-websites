@@ -90,7 +90,7 @@ export default function Contact() {
       {/* Main Content */}
       <section className="site-section relative">
         <div className="absolute top-1/2 right-[10%] w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
             
@@ -99,7 +99,7 @@ export default function Contact() {
               <div className="flex flex-col gap-12 text-left">
                 <div>
                   <h2 className="text-3xl md:text-4xl font-medium text-white mb-6 tracking-tight leading-tight">Let's talk about your needs.</h2>
-                  <p className="text-neutral-400 font-light leading-relaxed">
+                  <p className="text-neutral-400 font-light text-base sm:text-lg leading-relaxed">
                     Whether you're looking for an enterprise solution or a personalized vCard, our team is here to help you make an unforgettable impression.
                   </p>
                 </div>
@@ -161,7 +161,7 @@ export default function Contact() {
                         className={`w-full bg-[#111] border ${errors.name ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-brand-gold/50'} px-5 py-4 rounded-xl focus:outline-none focus:bg-[#151515] hover:bg-[#1a1a1a] hover:border-white/20 text-white placeholder-neutral-600 font-light transition-all`}
                         disabled={isSubmitting}
                       />
-                      {errors.name && <span className="text-red-400 text-xs mt-2 ml-1 flex items-center gap-1"><AlertCircle size={12}/> {errors.name}</span>}
+                      {errors.name && <span className="text-red-400 text-base mt-2 ml-1 flex items-center gap-1"><AlertCircle size={12}/> {errors.name}</span>}
                     </div>
                     <div className="flex flex-col">
                       <input 
@@ -186,7 +186,7 @@ export default function Contact() {
                       className={`w-full bg-[#111] border ${errors.email ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-brand-gold/50'} px-5 py-4 rounded-xl focus:outline-none focus:bg-[#151515] hover:bg-[#1a1a1a] hover:border-white/20 text-white placeholder-neutral-600 font-light transition-all`}
                       disabled={isSubmitting}
                     />
-                    {errors.email && <span className="text-red-400 text-xs mt-2 ml-1 flex items-center gap-1"><AlertCircle size={12}/> {errors.email}</span>}
+                    {errors.email && <span className="text-red-400 text-base mt-2 ml-1 flex items-center gap-1"><AlertCircle size={12}/> {errors.email}</span>}
                   </div>
                   
                   <div className="flex flex-col">
@@ -199,7 +199,7 @@ export default function Contact() {
                       className={`w-full bg-[#111] border ${errors.message ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-brand-gold/50'} px-5 py-4 rounded-xl focus:outline-none focus:bg-[#151515] hover:bg-[#1a1a1a] hover:border-white/20 text-white placeholder-neutral-600 font-light transition-all resize-none`}
                       disabled={isSubmitting}
                     />
-                    {errors.message && <span className="text-red-400 text-xs mt-2 ml-1 flex items-center gap-1"><AlertCircle size={12}/> {errors.message}</span>}
+                    {errors.message && <span className="text-red-400 text-base mt-2 ml-1 flex items-center gap-1"><AlertCircle size={12}/> {errors.message}</span>}
                   </div>
 
                   {submitStatus === 'success' && (

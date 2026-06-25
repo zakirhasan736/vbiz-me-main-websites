@@ -161,7 +161,7 @@ export default function Examples() {
       <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-brand-gold/5 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-sky-500/5 blur-[150px] rounded-full pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <SectionEyebrow label="Industry Demo Library" variant="hero" className="mb-4" />
           
@@ -184,7 +184,7 @@ export default function Examples() {
           {/* Left Column: Industry Cards */}
           <ScrollRevealCard direction="left" className="lg:col-span-5 space-y-4 flex flex-col text-left">
             <div className="hidden lg:block mb-3">
-              <span className="text-xs uppercase tracking-widest text-neutral-500 font-medium">Select An Industry</span>
+              <span className="text-base uppercase tracking-widest text-neutral-500 font-medium">Select An Industry</span>
             </div>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3">
@@ -215,8 +215,8 @@ export default function Examples() {
                     </div>
 
                     <div className="relative z-10 truncate min-w-0">
-                      <span className="font-semibold block text-xs tracking-wide uppercase">{ind.name}</span>
-                      <span className="text-xs text-brand-text-muted font-light truncate block">{ind.company}</span>
+                      <span className="font-semibold block text-base tracking-wide uppercase">{ind.name}</span>
+                      <span className="text-base text-brand-text-muted font-light truncate block">{ind.company}</span>
                     </div>
                   </button>
                 );
@@ -229,10 +229,10 @@ export default function Examples() {
               <h3 className="text-brand-gold font-semibold text-sm mb-2 flex items-center gap-2">
                 <Sparkles size={16} /> Every Card Is Optimized
               </h3>
-              <p className="text-neutral-400 text-xs font-light leading-relaxed mb-4">
+              <p className="text-neutral-400 text-base font-light leading-relaxed mb-4">
                 We custom-build or assist in crafting highly converting 9-second introductory videos, professional reviews, easy CTA interfaces, and frictionless Apple/Google Wallet integration.
               </p>
-              <a href="/contact" className="text-xs font-semibold text-white hover:text-brand-gold transition-colors flex items-center gap-1.5 self-start">
+              <a href="/contact" className="text-base font-semibold text-white hover:text-brand-gold transition-colors flex items-center gap-1.5 self-start">
                 Request a Custom Industry Mockup <ChevronRight size={14} />
               </a>
             </div>
@@ -247,7 +247,7 @@ export default function Examples() {
               className="flex flex-col items-center gap-3 w-full max-w-[375px] mx-auto relative z-10"
             >
               <div className="w-full px-4 py-2.5 rounded-xl border border-brand-gold/25 bg-brand-card text-center">
-                <span className="text-[9px] uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
+                <span className="text-sm uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
                   Live Demo URL
                 </span>
                 <a
@@ -294,7 +294,7 @@ export default function Examples() {
               </div>
               <div className="text-left">
                 <span className="text-[10px] text-brand-gold font-bold uppercase tracking-widest block mb-0.5">Quick Scan Demo</span>
-                <p className="text-xs text-neutral-300 font-light leading-relaxed">
+                <p className="text-base text-neutral-300 font-light leading-relaxed">
                   Hover your phone camera over the code to experience vBiz Me. Handheld networking done absolutely right.
                 </p>
               </div>
@@ -310,7 +310,7 @@ export default function Examples() {
             className="text-3xl font-medium text-white mb-4 text-center"
             tag="h2"
           />
-          <p className="text-neutral-400 font-light text-center mb-12 max-w-2xl mx-auto block leading-relaxed">
+          <p className="text-neutral-400 font-light text-base sm:text-lg text-center mb-12 max-w-2xl mx-auto block leading-relaxed">
             These are customized layout structures tailored to solve specific business problems rather than just dump links in a bio.
           </p>
           
@@ -322,11 +322,11 @@ export default function Examples() {
                     <Building />
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-2">Real Estate Professionals</h3>
-                  <p className="text-neutral-400 text-sm font-light leading-relaxed mb-4">
+                  <p className="text-neutral-400 text-base font-light leading-relaxed mb-4">
                     Let your clients take single-tap video tours of listings, review active client video reviews, and schedule private showings instantly from your vCard.
                   </p>
                 </div>
-                <div className="text-xs text-brand-gold font-semibold flex items-center gap-1 pointer-events-none mt-auto">
+                <div className="text-base text-brand-gold font-semibold flex items-center gap-1 pointer-events-none mt-auto">
                   Featured Template • Sells Instantly <ChevronRight size={14} />
                 </div>
               </div>
@@ -339,11 +339,11 @@ export default function Examples() {
                     <Car />
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-2">Automotive Advisors</h3>
-                  <p className="text-neutral-400 text-sm font-light leading-relaxed mb-4">
+                  <p className="text-neutral-400 text-base font-light leading-relaxed mb-4">
                     Let buyers browse VIP stock on-the-spot without complex login systems. Build direct customer confidence on the retail floor within seconds.
                   </p>
                 </div>
-                <div className="text-xs text-brand-gold font-semibold flex items-center gap-1 pointer-events-none mt-auto">
+                <div className="text-base text-brand-gold font-semibold flex items-center gap-1 pointer-events-none mt-auto">
                   Dealership Favorite • One-Tap Save <ChevronRight size={14} />
                 </div>
               </div>
@@ -356,11 +356,11 @@ export default function Examples() {
                     <Utensils />
                   </div>
                   <h3 className="text-lg font-semibold text-white mb-2">Restaurants & Chefs</h3>
-                  <p className="text-neutral-400 text-sm font-light leading-relaxed mb-4">
+                  <p className="text-neutral-400 text-base font-light leading-relaxed mb-4">
                     Skip bulky paper menus. Showcase Chef specials on video, link reservation engines, and gather positive reviews organically before dessert is served.
                   </p>
                 </div>
-                <div className="text-xs text-brand-gold font-semibold flex items-center gap-1 pointer-events-none mt-auto">
+                <div className="text-base text-brand-gold font-semibold flex items-center gap-1 pointer-events-none mt-auto">
                   Organic Signups • Quick Bookings <ChevronRight size={14} />
                 </div>
               </div>

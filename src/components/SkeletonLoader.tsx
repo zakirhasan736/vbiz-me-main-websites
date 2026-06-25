@@ -35,7 +35,7 @@ export const SkeletonLoader: React.FC<SkeletonProps> = ({ pathname }) => {
 
   if (pathname === '/') {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 font-sans text-left min-h-screen">
+      <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 font-sans text-left min-h-screen">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center gap-2 bg-neutral-900/60 px-4 py-2 rounded-full border border-white/5">
@@ -59,7 +59,7 @@ export const SkeletonLoader: React.FC<SkeletonProps> = ({ pathname }) => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 min-h-screen">
+    <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 min-h-screen">
       {heading('w-1/3')}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10">
         {cardSkeleton()}

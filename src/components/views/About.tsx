@@ -48,7 +48,7 @@ export default function About() {
         />
         <PageHeroBackground overVideo />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center w-full">
+        <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center w-full">
           <SectionRevealRoot viewport="header" simultaneous={false} replayOnNavigate>
             <div className="page-hero-video-content text-center max-w-4xl mx-auto">
               <SectionRevealStaggerList
@@ -85,7 +85,7 @@ export default function About() {
 
       {/* Vision & Mission Cards */}
       <section className="site-section site-section--reveal bg-brand-dark relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <SectionRevealRoot viewport="content" simultaneous={false} replayOnNavigate>
           <SectionRevealGrid
             className="grid grid-cols-1 md:grid-cols-2 gap-8"
@@ -123,7 +123,7 @@ export default function About() {
       {/* CEO Message Section */}
       <section className="site-section site-section--reveal bg-brand-dark border-t border-white/5 relative">
         <div className="absolute top-1/2 right-[-10%] w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <SectionRevealRoot viewport="content" simultaneous={false} replayOnNavigate>
           <SectionRevealContent className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
 
@@ -162,7 +162,7 @@ export default function About() {
               <h2 className="text-4xl md:text-5xl font-medium text-brand-text mb-10 tracking-tight leading-[1.1] text-left">
                 A Message from the <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-brand-gold to-brand-text-muted">Founder</span>
               </h2>
-              <div className="sspace-y-4 md:space-y-6 text-brand-text-muted text-lg leading-relaxed font-light text-left">
+              <div className="sspace-y-4 md:space-y-6 text-brand-text-muted text-base sm:text-lg leading-relaxed font-light text-left">
                 <p>Hello and welcome to vBiz Me!</p>
                 <p>
                   I'm Michaelangelo Casanova, and I want to personally thank you for choosing vBiz Me. Your support and trust mean everything to us. We are dedicated to helping you connect and share information in the most innovative and effective ways possible.

@@ -103,7 +103,7 @@ export default function Pricing() {
         <PageHeroBackground overVideo />
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-brand-gold/10 blur-[150px] rounded-full z-0 pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
           <SectionRevealRoot viewport="header" simultaneous={false} replayOnNavigate>
             <div className="page-hero-video-content max-w-4xl mx-auto">
               <SectionRevealStaggerList
@@ -140,7 +140,7 @@ export default function Pricing() {
 
       {/* Pricing cards — separate section below video banner */}
       <section className="site-section site-section--reveal relative pt-4 pb-12 md:pb-16 bg-brand-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <SectionRevealRoot viewport="content" simultaneous={false} replayOnNavigate>
             <SectionRevealGrid
               className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch font-sans"
@@ -181,7 +181,7 @@ export default function Pricing() {
                           }`}
                         >
                           <h3 className="text-2xl font-medium text-white mb-2 tracking-tight">{plan.title}</h3>
-                          <p className="text-sm text-neutral-400 font-light">{plan.subtitle}</p>
+                          <p className="text-base text-neutral-400 font-light">{plan.subtitle}</p>
                         </div>
 
                         <div className="py-6 px-4 md:py-8 md:px-6 w-full text-left">
@@ -218,7 +218,7 @@ export default function Pricing() {
                                     strokeWidth={3}
                                   />
                                 </div>
-                                <span className="text-neutral-300 text-[14px] leading-relaxed font-light">{feature}</span>
+                                <span className="text-neutral-300 text-base leading-relaxed font-light">{feature}</span>
                               </li>
                             ))}
                           </ul>
@@ -236,7 +236,7 @@ export default function Pricing() {
                             {plan.buttonText}
                             <ArrowRight size={16} />
                           </MagneticButton>
-                          <p className="text-neutral-500 text-xs leading-relaxed text-center font-light">
+                          <p className="text-neutral-500 text-base leading-relaxed text-center font-light">
                             {plan.description}
                           </p>
                         </div>
@@ -254,7 +254,7 @@ export default function Pricing() {
             >
               <RevealGridItem direction={getTwoColumnDirection(0)} distance="MD" scaleOnUp={false} className="h-full">
                 <GlowCard glowColor="rgba(212,175,55,0.18)" className="py-6 px-4 md:py-8 md:px-6 rounded-[2.2rem] h-full">
-                  <p className="text-neutral-300 text-[16px] leading-relaxed font-light relative z-10 text-left">
+                  <p className="text-neutral-300 text-base leading-relaxed font-light relative z-10 text-left">
                     At vBiz Me, every customer can create a unique vCard that perfectly represents their personality or business. Start customizing your vCard today and experience the future of digital networking!
                   </p>
                 </GlowCard>
@@ -262,7 +262,7 @@ export default function Pricing() {
 
               <RevealGridItem direction={getTwoColumnDirection(1)} distance="MD" scaleOnUp={false} className="h-full">
                 <GlowCard glowColor="rgba(212,175,55,0.18)" className="py-6 px-4 md:py-8 md:px-6 rounded-[2.2rem] h-full">
-                  <p className="text-neutral-300 text-[16px] leading-relaxed font-light relative z-10 text-left">
+                  <p className="text-neutral-300 text-base leading-relaxed font-light relative z-10 text-left">
                     Our professional templates and flexible configurations offer limitless branding choices. Deliver a beautiful responsive mobile story that converts contacts into customers instantly.
                   </p>
                 </GlowCard>

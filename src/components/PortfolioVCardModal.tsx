@@ -98,7 +98,7 @@ export function PortfolioVCardModal({
             aria-label={`Loading ${card.displayName} live demo`}
           >
             <div className="mb-4 h-12 w-12 animate-spin rounded-full border-2 border-brand-gold/25 border-t-brand-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-white">
+            <span className="text-base font-semibold uppercase tracking-widest text-white">
               Loading live demo
             </span>
             <span className="mt-2 max-w-[260px] break-all font-mono text-[10px] leading-snug text-brand-gold">
@@ -141,7 +141,7 @@ export function PortfolioVCardModal({
       <h3 id={`${modalId}-title`} className="text-white font-bold text-xl mb-2 tracking-tight">
         {card.displayName}
       </h3>
-      <p className="text-neutral-400 font-light text-sm leading-relaxed px-4 mb-6">
+      <p className="text-neutral-400 font-light text-base leading-relaxed px-4 mb-6">
         Scan this QR code or tap below to open the live vCard preview.
       </p>
 
@@ -178,7 +178,7 @@ export function PortfolioVCardModal({
         {card.displayName} Live View
       </h3>
       <p
-        className={`text-neutral-400 font-light leading-relaxed px-2 max-w-sm ${isMobileSheet ? 'text-xs mb-4' : 'text-sm mb-5'}`}
+        className="text-neutral-400 font-light text-base leading-relaxed px-2 max-w-sm mb-5"
       >
         Scroll inside the phone to explore the live vCard.
       </p>

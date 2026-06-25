@@ -118,7 +118,7 @@ export function VCardIframeFrame({
               {loaderUrlLabel}
             </span>
           ) : null}
-          <span className="mt-3 text-[9px] font-light text-neutral-500">Please wait…</span>
+          <span className="mt-3 text-sm font-light text-neutral-500">Please wait…</span>
         </div>
       )}
       {src.trim().length > 0 ? (

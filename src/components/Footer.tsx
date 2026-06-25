@@ -137,7 +137,7 @@ export const Footer = () => {
         id="footer-cta-reveal"
         simultaneous={false}
         replayOnNavigate
-        className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4 md:pt-10"
+        className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4 md:pt-10"
       >
         <SectionRevealStaggerList
           stagger={FOOTER_REVEAL_STAGGER.CTA}
@@ -165,7 +165,7 @@ export const Footer = () => {
           </RevealGridItem>
 
           <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="w-full max-w-xl mx-auto mb-5 md:mb-8">
-            <p className="text-neutral-400 text-sm md:text-base font-light leading-relaxed text-center">
+            <p className="text-neutral-400 text-base sm:text-lg font-light leading-relaxed text-center">
               {CTA_DESCRIPTION}
             </p>
           </RevealGridItem>
@@ -192,7 +192,7 @@ export const Footer = () => {
         id="footer-main-reveal"
         simultaneous={false}
         replayOnNavigate
-        className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+        className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
       >
         <div className="grid grid-cols-2 md:grid-cols-12 gap-8 md:gap-8 lg:gap-8 mb-10 md:mb-20 text-left">
           <div
@@ -226,7 +226,7 @@ export const Footer = () => {
               <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="w-full">
                 <p
                   data-footer-brand-item
-                  className="text-neutral-400 text-sm md:text-base font-light max-w-sm leading-relaxed mb-5 md:mb-8 mx-auto md:mx-0"
+                  className="text-neutral-400 text-base sm:text-lg font-light max-w-sm leading-relaxed mb-5 md:mb-8 mx-auto md:mx-0"
                 >
                   Elevate your professional identity with the most advanced digital business card
                   platform engineered for visionaries.
@@ -252,7 +252,7 @@ export const Footer = () => {
               <RevealGridItem direction="up" distance="MD" scaleOnUp={false}>
                 <h3
                   data-footer-nav-item
-                  className="text-white font-medium text-[10px] md:text-xs tracking-widest uppercase mb-2 md:mb-5 flex items-center gap-2 opacity-80"
+                  className="text-white font-medium text-[10px] md:text-base tracking-widest uppercase mb-2 md:mb-5 flex items-center gap-2 opacity-80"
                 >
                   <span className="w-3 h-px bg-brand-gold hidden md:block" />
                   Platform
@@ -264,7 +264,7 @@ export const Footer = () => {
                   <Link
                     href={href}
                     data-footer-nav-item
-                    className="group hover:text-brand-gold transition-colors duration-300 inline-flex items-center gap-2 text-xs md:text-sm text-neutral-400 font-light"
+                    className="group hover:text-brand-gold transition-colors duration-300 inline-flex items-center gap-2 text-base text-neutral-400 font-light"
                   >
                     <span className="w-0 overflow-hidden group-hover:w-3 transition-all duration-300 h-px rounded-full bg-brand-gold hidden md:inline-block" />
                     {label}
@@ -283,7 +283,7 @@ export const Footer = () => {
               <RevealGridItem direction="up" distance="MD" scaleOnUp={false}>
                 <h3
                   data-footer-contact-item
-                  className="text-white font-medium text-[10px] md:text-xs tracking-widest uppercase mb-1 md:mb-3 flex items-center gap-2 opacity-80"
+                  className="text-white font-medium text-[10px] md:text-base tracking-widest uppercase mb-1 md:mb-3 flex items-center gap-2 opacity-80"
                 >
                   <span className="w-3 h-px bg-brand-gold hidden md:block" />
                   Get in Touch
@@ -294,7 +294,7 @@ export const Footer = () => {
                 <a
                   href="mailto:mcasanova@vbizme.com"
                   data-footer-contact-item
-                  className="flex items-start gap-2.5 group hover:text-brand-gold transition-colors text-xs md:text-sm text-neutral-400 font-light"
+                  className="flex items-start gap-2.5 group hover:text-brand-gold transition-colors text-base text-neutral-400 font-light"
                 >
                   <Mail size={14} className="mt-0.5 shrink-0 text-neutral-500 group-hover:text-brand-gold" />
                   <span className="break-all leading-snug">mcasanova@vbizme.com</span>
@@ -305,7 +305,7 @@ export const Footer = () => {
                 <a
                   href="tel:+18607709893"
                   data-footer-contact-item
-                  className="flex items-center gap-2.5 group hover:text-brand-gold transition-colors text-xs md:text-sm text-neutral-400 font-light"
+                  className="flex items-center gap-2.5 group hover:text-brand-gold transition-colors text-base text-neutral-400 font-light"
                 >
                   <Phone size={14} className="shrink-0 text-neutral-500 group-hover:text-brand-gold" />
                   <span>+1 (860) 770-9893</span>
@@ -315,7 +315,7 @@ export const Footer = () => {
               <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="hidden sm:block">
                 <div
                   data-footer-contact-item
-                  className="flex items-start gap-2.5 group hover:text-brand-gold transition-colors text-xs md:text-sm text-neutral-400 font-light"
+                  className="flex items-start gap-2.5 group hover:text-brand-gold transition-colors text-base text-neutral-400 font-light"
                 >
                   <MapPin size={14} className="mt-0.5 shrink-0 text-neutral-500 group-hover:text-brand-gold" />
                   <span className="leading-snug">Connecticut, United States</span>
@@ -327,7 +327,7 @@ export const Footer = () => {
                   type="button"
                   data-footer-contact-item
                   onClick={scrollToTop}
-                  className="inline-flex items-center justify-center gap-2 w-full md:w-auto px-4 py-2.5 rounded-full border border-white/10 bg-white/5 text-neutral-300 text-xs md:text-sm font-medium hover:text-brand-gold hover:border-brand-gold/30 hover:bg-brand-gold/10 transition-all duration-300 group"
+                  className="inline-flex items-center justify-center gap-2 w-full md:w-auto px-4 py-2.5 rounded-full border border-white/10 bg-white/5 text-neutral-300 text-base font-medium hover:text-brand-gold hover:border-brand-gold/30 hover:bg-brand-gold/10 transition-all duration-300 group"
                   aria-label="Back to top"
                 >
                   <ArrowUp size={16} className="group-hover:-translate-y-0.5 transition-transform" />
@@ -346,17 +346,17 @@ export const Footer = () => {
       >
         <div
           id="footer-bottom"
-          className="w-full border-t border-white/5 pt-5 md:pt-8 text-center px-4 flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-2 md:gap-4 relative z-10 mx-auto max-w-7xl"
+          className="w-full border-t border-white/5 pt-5 md:pt-8 text-center px-4 flex flex-col sm:flex-row justify-center sm:justify-between items-center gap-2 md:gap-4 relative z-10 mx-auto max-w-[1344px]"
         >
           <p
             data-footer-bottom-item
-            className="text-[11px] md:text-[13px] text-neutral-500 font-light tracking-wide"
+            className="text-sm md:text-base text-neutral-500 font-light tracking-wide"
           >
             © {new Date().getFullYear()} vBiz Me. All rights reserved.
           </p>
           <p
             data-footer-bottom-item
-            className="text-[11px] md:text-[13px] text-neutral-500 font-light tracking-wide"
+            className="text-sm md:text-base text-neutral-500 font-light tracking-wide"
           >
             Designed & Developed by{' '}
             <a

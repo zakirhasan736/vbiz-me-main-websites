@@ -51,7 +51,7 @@ export default function InvisibleAdvantage() {
           viewport="header"
           simultaneous={false}
           replayOnNavigate
-          className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
+          className="w-full max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10"
         >
           <SectionRevealStaggerList
             stagger={BANNER_REVEAL_STAGGER.ITEM}
@@ -91,7 +91,7 @@ export default function InvisibleAdvantage() {
                   <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none z-10" />
                 </div>
                 <div className="px-4 sm:px-5 py-4 border-t border-emerald-500/10 bg-brand-elevated/90">
-                  <p className="text-[11px] text-neutral-400 font-light leading-relaxed text-left">
+                  <p className="text-sm text-neutral-400 font-medium leading-relaxed text-left">
                     A quick walkthrough of the hidden psychology and technology powering every vBiz Me card.
                   </p>
                 </div>
@@ -118,7 +118,7 @@ export default function InvisibleAdvantage() {
               className="flex flex-col gap-4"
             >
               <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="text-center mb-12">
-                <p className="text-neutral-300 text-sm md:text-lg leading-relaxed max-w-3xl mx-auto font-light text-center">
+                <p className="text-neutral-300 text-base sm:text-lg leading-relaxed max-w-3xl mx-auto font-light text-center">
                   The Invisible Advantage is the hidden force working behind every vBiz Me card. It&apos;s the strategy, psychology, and technology built into your digital presence that turns a simple scan into real interest — and real business.
                 </p>
               </RevealGridItem>
@@ -151,7 +151,7 @@ export default function InvisibleAdvantage() {
                     </button>
                     {activeAccordion === index && (
                       <div className="overflow-hidden">
-                        <div className="px-4 md:px-6 pb-8 text-neutral-400 text-base leading-relaxed font-light">
+                        <div className="px-4 md:px-6 pb-8 text-neutral-400 text-base md:text-lg leading-relaxed font-light">
                           {item.content}
                         </div>
                       </div>

@@ -68,7 +68,7 @@ export function HeroCompetitiveAnalysisPopup({
           </div>
         </div>
 
-        <div className="shrink-0 px-4 py-4 md:px-6 md:py-5 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+        <div className="shrink-0 px-4 py-4 md:px-6 md:py-5 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-base">
           <p className="text-neutral-500 font-light text-center sm:text-left">
             Designed to transform standard handshakes into premium sales opportunities.
           </p>
