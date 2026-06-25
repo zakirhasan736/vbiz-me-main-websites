@@ -3,9 +3,10 @@
 import { 
   ArrowRight, 
   ChevronLeft, ChevronRight, Sparkles, 
-  Building, Car, Award, Scissors, Utensils, Briefcase, X,
+  Car, Award, Utensils, Briefcase, X, Zap, Landmark,
   QrCode, TrendingUp, ExternalLink
 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import React, { useRef, useState, useEffect } from 'react';
 import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
 import { scrollElementIntoView } from '@/lib/scroll-utils';
@@ -37,105 +38,33 @@ import { CapabilityIcon } from '@/components/ui/CapabilityIcon';
 import type { CapabilityIconName } from '@/lib/capability-icons';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
+import { HOME_INDUSTRIES } from '@/lib/home-industries';
 
 const qrSliderItems = PORTFOLIO_QR_CARDS;
 
+const HOME_INDUSTRY_ICONS: Record<string, ReactNode> = {
+  executive: <Briefcase className="w-4 h-4" />,
+  electrician: <Zap className="w-4 h-4" />,
+  'finance-wealth': <Landmark className="w-4 h-4" />,
+  'auto-sales': <Car className="w-4 h-4" />,
+  'financial-coach': <Award className="w-4 h-4" />,
+  restaurant: <Utensils className="w-4 h-4" />,
+};
+
 // Interactive Demo Component ("See It In Action")
 const InteractiveDemoSection = () => {
-  const industries = [
-    {
-      id: 'contractor',
-      name: 'Contractor',
-      icon: <Briefcase className="w-4 h-4" />,
-      company: 'Casanova Carpentry',
-      introTitle: 'Michaelangelo Casanova — Master Remodeler',
-      videoPlaceholder: 'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?auto=format&fit=crop&q=80&w=400',
-      avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120',
-      tagline: 'See our high-end luxury carpentry portfolios and custom remodels.',
-      services: ['Custom Fine Carpentry', 'Luxury Home Remodeling', 'High-End Timber Decks'],
-      bgColor: 'border-orange-500/20 bg-orange-500/5 hover:border-orange-500/40 text-orange-400',
-      ctaText: 'Get Free Estimate',
-      demoUrl: 'https://app.vbizme.com/vCard/michaelangelo-casanova-2#home'
-    },
-    {
-      id: 'real-estate',
-      name: 'Real Estate',
-      icon: <Building className="w-4 h-4" />,
-      company: 'Vargas Exclusive',
-      introTitle: 'Chago Vargas — Elite Realtor',
-      videoPlaceholder: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&q=80&w=400',
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120',
-      tagline: 'Tour Connecticut\'s most exclusive residential listings instantly.',
-      services: ['Exclusive Luxury Portfolios', 'Targeted Listing Strategy', 'Waterfront Estate Showcase'],
-      bgColor: 'border-cyan-500/20 bg-cyan-500/5 hover:border-cyan-500/40 text-cyan-400',
-      ctaText: 'Book Private Showing',
-      demoUrl: 'https://app.vbizme.com/vCard/chago-vargas#home'
-    },
-    {
-      id: 'auto-sales',
-      name: 'Auto Sales',
-      icon: <Car className="w-4 h-4" />,
-      company: 'Premier Luxury Motors',
-      introTitle: 'Walter Jofre Jr — VIP Client Advisor',
-      videoPlaceholder: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=400',
-      avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=120',
-      tagline: 'Skip dealership runarounds. Instant showroom inventory VIP access.',
-      services: ['Specialist Sourcing', 'Trade Appraisals', 'Fast-Track Credit Advisory'],
-      bgColor: 'border-amber-400/20 bg-amber-400/5 hover:border-amber-400/40 text-amber-300',
-      ctaText: 'Browse VIP Inventory',
-      demoUrl: 'https://app.vbizme.com/vCard/walter-jofre-jr#home'
-    },
-    {
-      id: 'barber',
-      name: 'Master Barber',
-      icon: <Scissors className="w-4 h-4" />,
-      company: 'Dennis Signature Grooming',
-      introTitle: 'Brian Dennis — Master Grooming Expert',
-      videoPlaceholder: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=400',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120',
-      tagline: 'Book a premium barber session or straight-razor trim with ease.',
-      services: ['Razor Beard Contouring', 'Premium Fades & Designs', 'Hot Towel Therapy'],
-      bgColor: 'border-red-500/20 bg-red-500/5 hover:border-red-500/40 text-red-400',
-      ctaText: 'Book Hair Styling',
-      demoUrl: 'https://app.vbizme.com/vCard/brian-dennis#home'
-    },
-    {
-      id: 'coach',
-      name: 'Executive Coach',
-      icon: <Award className="w-4 h-4" />,
-      company: 'Singleton Advisory',
-      introTitle: 'Sheldon Singleton — Growth Coach',
-      videoPlaceholder: 'https://images.unsplash.com/photo-1552581230-c015914626ed?auto=format&fit=crop&q=80&w=400',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120',
-      tagline: 'Transform operations and scale your company from 10M to 100M.',
-      services: ['C-Suite Diagnostics', 'Scaling Blueprint Design', 'Leader Mastermind Access'],
-      bgColor: 'border-purple-500/20 bg-purple-500/5 hover:border-purple-500/40 text-purple-400',
-      ctaText: 'Schedule Advisory Briefing',
-      demoUrl: 'https://app.vbizme.com/vCard/sheldon-singleton#home'
-    },
-    {
-      id: 'restaurant',
-      name: 'Restaurant',
-      icon: <Utensils className="w-4 h-4" />,
-      company: 'Sabor Ecuatoriano',
-      introTitle: 'Sabor Ecuatoriano Kitchen — Elegant Dining',
-      videoPlaceholder: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=400',
-      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120',
-      tagline: 'Secure immediate online reservation. Experience authentic culinary flair.',
-      services: ['Artisan Platters & Drinks', 'Interactive Mobile Dining Menu', 'Gourmet Catering Options'],
-      bgColor: 'border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/40 text-emerald-400',
-      ctaText: 'Reserve Lounge Table',
-      demoUrl: 'https://app.vbizme.com/vCard/sabor-ecuatoriano-3#home'
-    }
-  ];
+  const industries = HOME_INDUSTRIES.map((ind) => ({
+    ...ind,
+    icon: HOME_INDUSTRY_ICONS[ind.id],
+  }));
 
-  const [activeIndId, setActiveIndId] = useState('contractor');
+  const [activeIndId, setActiveIndId] = useState('executive');
   const [mobileDemoOpen, setMobileDemoOpen] = useState(false);
   const [previewHighlighted, setPreviewHighlighted] = useState(false);
   const [demoIframeReady, setDemoIframeReady] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const mobilePreviewRef = useRef<HTMLDivElement>(null);
-  const activeObj = industries.find(ind => ind.id === activeIndId) || industries[2];
+  const activeObj = industries.find((ind) => ind.id === activeIndId) || industries[0];
 
   useEffect(() => {
     const section = sectionRef.current;
