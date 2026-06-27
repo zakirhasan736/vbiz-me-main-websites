@@ -39,10 +39,13 @@ const WEBKIT_PERF_BOOT = `(function(){try{var ua=navigator.userAgent;var chromiu
 /** Hero LCP critical CSS only — no deferred motion boot. */
 
 export const metadata: Metadata = {
-  title: 'vBiz Me | The Virtual Business Card That Sells For You',
+  title: 'Create Interactive Virtual Business Cards | vBiz Me',
   description:
-    'Elevate your professional identity with vBiz Me — the advanced digital business card platform engineered for visionaries.',
+    'Stand out with vBiz Me’s digital business cards—featuring video intros, QR codes & custom designs. Share in seconds, no printing needed!',
   // viewport-fit=cover: enables env(safe-area-inset-*) for iPhone notch / Dynamic Island
+  icons: {
+    icon: '/Vbizme-fav.webp',
+  },
   other: {
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'black-translucent',
