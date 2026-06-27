@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     'Stand out with vBiz Me’s digital business cards—featuring video intros, QR codes & custom designs. Share in seconds, no printing needed!',
   // viewport-fit=cover: enables env(safe-area-inset-*) for iPhone notch / Dynamic Island
   icons: {
-    icon: '/Vbizme-fav.webp',
+    icon: '/logo-vbizme.webp',
   },
   other: {
     'apple-mobile-web-app-capable': 'yes',

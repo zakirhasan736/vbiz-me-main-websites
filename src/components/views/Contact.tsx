@@ -48,17 +48,28 @@ export default function Contact() {
     setSubmitStatus('idle');
 
     try {
-      // Simulate API call to /api/contact
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // We assume it's successful for this demo
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
       setSubmitStatus('success');
       setFormData({ name: '', phone: '', email: '', message: '' });
       
       // Reset success message after 5 seconds
       setTimeout(() => setSubmitStatus('idle'), 5000);
     } catch (error) {
+      console.error('Error sending message:', error);
       setSubmitStatus('error');
+      // Reset error message after 5 seconds
+      setTimeout(() => setSubmitStatus('idle'), 5000);
     } finally {
       setIsSubmitting(false);
     }

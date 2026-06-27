@@ -35,7 +35,12 @@ export default function Pricing() {
     {
       title: 'Essential',
       subtitle: '2-Year Contract • $10 Setup',
-      priceParts: { currency: '$', amount: '9', cents: '95', period: 'Monthly*' },
+      priceParts: {
+        currency: '$',
+        amount: '9',
+        cents: '95',
+        period: 'Monthly*',
+      },
       features: [
         '5 Professional Reviews',
         '5 Custom FAQs',
@@ -45,8 +50,10 @@ export default function Pricing() {
         'Basic Content Edits',
         'Digital QR Code',
       ],
-      description: 'Perfect for professionals establishing their digital presence with essential features',
+      description:
+        'Perfect for professionals establishing their digital presence with essential features',
       buttonText: 'Get Started',
+      url: 'https://buy.stripe.com/3cI14n43n2nabIf6yWcjS0d',
       popular: false,
     },
     {
@@ -62,8 +69,10 @@ export default function Pricing() {
         '7 Custom FAQs and 7 Service Listings',
         'Priority Customer Support',
       ],
-      description: 'The complete solution for established professionals who demand excellence and growth',
+      description:
+        'The complete solution for established professionals who demand excellence and growth',
       buttonText: 'Get Started',
+      url: 'https://buy.stripe.com/28E8wP2Zjge0fYv2iGcjS0f',
       popular: true,
     },
     {
@@ -79,8 +88,10 @@ export default function Pricing() {
         'Advanced Integration Options',
         'Bulk User Onboarding',
       ],
-      description: 'The ultimate corporate solution for executives and teams requiring premium service',
+      description:
+        'The ultimate corporate solution for executives and teams requiring premium service',
       buttonText: 'Get Started',
+      url: 'https://buy.stripe.com/eVqdR98jD8Ly13B6yWcjS0e',
       popular: false,
     },
   ];
@@ -226,7 +237,7 @@ export default function Pricing() {
 
                         <div className="py-6 px-4 md:py-8 md:px-6 flex flex-col items-center mt-auto w-full">
                           <MagneticButton
-                            href="/contact"
+                            href={plan.url}
                             className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-semibold text-sm tracking-wide transition-all duration-300 mb-6 h-14 ${
                               plan.popular
                                 ? 'bg-brand-gold text-black hover:bg-white shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]'
