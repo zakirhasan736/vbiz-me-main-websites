@@ -213,9 +213,12 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
 
     scheduleAfterSiteLoad(() => {
       setIsOpen(true);
-      if (!isWebKitBrowser()) {
-        void startConnection();
-      }
+      // Attempt to start the live connection on all browsers.
+      // Note: some browsers (especially Safari/iOS) may require a user gesture
+      // before `getUserMedia` succeeds and will show a mic permission prompt.
+      void startConnection().catch((err) => {
+        console.warn('Auto-start live agent failed:', err);
+      });
     });
   }, [autoConnect, keyReady]);
 
@@ -225,6 +228,37 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
 
     return () => {
       window.removeEventListener('pagehide', onPageHide);
+    };
+  }, []);
+
+  // Close live agent when site navigation opens (mobile drawer) so nav items are accessible
+  useEffect(() => {
+    const onNavOpen = () => {
+      try {
+        setIsOpen(false);
+        window.dispatchEvent(new CustomEvent('live-agent:minimize'));
+      } catch (e) {}
+    };
+
+    const onNavClose = () => {
+      try {
+        window.dispatchEvent(new CustomEvent('live-agent:nav-closed'));
+      } catch (e) {}
+    };
+
+    const onRestore = () => {
+      try {
+        setIsOpen(true);
+      } catch (e) {}
+    };
+
+    window.addEventListener('site:nav-open', onNavOpen as EventListener);
+    window.addEventListener('site:nav-close', onNavClose as EventListener);
+    window.addEventListener('live-agent:restore', onRestore as EventListener);
+    return () => {
+      window.removeEventListener('site:nav-open', onNavOpen as EventListener);
+      window.removeEventListener('site:nav-close', onNavClose as EventListener);
+      window.removeEventListener('live-agent:restore', onRestore as EventListener);
     };
   }, []);
 
@@ -663,10 +697,12 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
             </div>
           </div>
       )}
+      {/* Minimized indicator: appears when agent is minimized due to nav open */}
+      <AnimateMinimized />
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-300 relative overflow-hidden shadow-sm ${
+        className={`pointer-events-auto w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-transform duration-300 relative overflow-hidden shadow-sm ${
           isOpen
             ? 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
             : 'bg-zinc-100 text-zinc-950 hover:scale-105 active:scale-95'
@@ -690,5 +726,38 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
         )}
       </button>
     </div>
+  );
+}
+
+function AnimateMinimized() {
+  // shows a small clickable bar when LiveAgent is minimized by the nav
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onMinimize = () => setVisible(true);
+    const onNavClosed = () => setVisible(false);
+
+    window.addEventListener('live-agent:minimize', onMinimize as EventListener);
+    window.addEventListener('live-agent:nav-closed', onNavClosed as EventListener);
+
+    return () => {
+      window.removeEventListener('live-agent:minimize', onMinimize as EventListener);
+      window.removeEventListener('live-agent:nav-closed', onNavClosed as EventListener);
+    };
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <button
+      onClick={() => {
+        setVisible(false);
+        window.dispatchEvent(new CustomEvent('live-agent:restore'));
+      }}
+      className="pointer-events-auto h-auto py-3  px-3 rounded-xl bg-zinc-900 text-white text-[10px] leading-tight flex items-center justify-center shadow-md transition-transform hover:scale-75"
+      aria-label="Restore Live AI assistant"
+    >
+    AI Assistant (minimized)
+    </button>
   );
 }

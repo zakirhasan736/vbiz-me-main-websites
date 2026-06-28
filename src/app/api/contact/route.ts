@@ -32,55 +32,60 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send email to your inbox
+    // Send email to your inbox (branded HTML)
     await transporter.sendMail({
-      from: process.env.ZOHO_EMAIL_USER,
-      to: 'info@vbizme.com',
-      subject: `New Contact Form Submission from ${name}`,
+      from: `vBiz Me Contact Form <${process.env.ZOHO_EMAIL_USER}>`,
+      to: process.env.ZOHO_EMAIL_USER || 'info@vbizme.com',
+      subject: `${escapeHtml(email)} — ${escapeHtml(name)}`,
+      replyTo: email,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #0b1020;">New Contact Form Submission</h2>
-          <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
-          
-          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
-          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-          ${phone ? `<p><strong>Phone:</strong> ${escapeHtml(phone)}</p>` : ''}
-          
-          <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
-          
-          <h3 style="color: #0b1020;">Message:</h3>
-          <p style="white-space: pre-wrap; line-height: 1.6;">${escapeHtml(message)}</p>
-          
-          <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
-          <p style="color: #999; font-size: 12px;">This message was sent from your vBiz Me contact form.</p>
+        <div style="font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; max-width:700px; margin:0 auto; border-radius:10px; overflow:hidden; border:1px solid #eee;">
+          <div style="background: linear-gradient(90deg,#0b1020 0%,#151522 100%); padding:18px 20px; color:#fff; display:flex; align-items:center; gap:12px;">
+            <div style="width:46px;height:46px;border-radius:8px;background:#d4af37;display:flex;align-items:center;justify-content:center;font-weight:700;color:#081018">vB</div>
+            <div>
+              <div style="font-size:18px;font-weight:700">vBiz Me</div>
+              <div style="font-size:12px;opacity:0.85">New contact form submission</div>
+            </div>
+          </div>
+
+          <div style="padding:20px; background:#fff; color:#111;">
+            <p style="margin:0 0 12px 0; font-size:15px;">You received a new message via the website contact form.</p>
+
+            <table style="width:100%; font-size:14px; border-collapse:collapse;">
+              <tr>
+                <td style="padding:8px 0; width:120px; color:#555"><strong>From</strong></td>
+                <td style="padding:8px 0;">${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</td>
+              </tr>
+              ${phone ? `<tr><td style="padding:8px 0; color:#555"><strong>Phone</strong></td><td style="padding:8px 0;">${escapeHtml(phone)}</td></tr>` : ''}
+            </table>
+
+            <div style="margin-top:18px; padding:16px; background:#f7f7f8; border-radius:8px; color:#222; white-space:pre-wrap; line-height:1.6;">${escapeHtml(message)}</div>
+
+            <p style="margin:18px 0 0 0; font-size:13px; color:#666">Reply directly using this address: <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>
+          </div>
+
+          <div style="padding:12px 20px; background:#fafafa; font-size:12px; color:#777; text-align:center">vBiz Me — The Virtual Business Card That Sells For You</div>
         </div>
       `,
-      replyTo: email,
     });
 
     // Send confirmation email to user
     await transporter.sendMail({
-      from: process.env.ZOHO_EMAIL_USER,
+      from: `vBiz Me <${process.env.ZOHO_EMAIL_USER}>`,
       to: email,
-      subject: 'We received your message - vBiz Me',
+      subject: 'We received your message — vBiz Me',
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #d4af37;">Thank you, ${escapeHtml(name)}!</h2>
-          <p style="font-size: 16px; line-height: 1.6; color: #333;">
-            We've received your message and will get back to you shortly.
-          </p>
-          
-          <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0; color: #666;"><strong>Your message:</strong></p>
-            <p style="margin: 10px 0 0 0; color: #333; white-space: pre-wrap;">${escapeHtml(message)}</p>
+        <div style="font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; max-width:700px; margin:0 auto; border-radius:10px; overflow:hidden; border:1px solid #eee;">
+          <div style="background:#d4af37; padding:18px 20px; color:#081018; font-weight:700;">vBiz Me</div>
+          <div style="padding:20px; background:#fff; color:#111;">
+            <h2 style="margin:0 0 8px 0;">Thanks, ${escapeHtml(name)}!</h2>
+            <p style="margin:0 0 12px 0; color:#555">We've received your message and will get back to you soon.</p>
+
+            <div style="margin-top:12px; padding:14px; background:#f7f7f8; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHtml(message)}</div>
+
+            <p style="margin:16px 0 0 0; font-size:13px; color:#666">If you need to reach us immediately, reply to this email or contact <a href="mailto:${process.env.ZOHO_EMAIL_USER}">${process.env.ZOHO_EMAIL_USER}</a>.</p>
           </div>
-          
-          <p style="font-size: 14px; color: #999;">
-            Typical response time: 24-48 hours
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;" />
-          <p style="font-size: 12px; color: #999;">vBiz Me - The Virtual Business Card That Sells For You</p>
+          <div style="padding:12px 20px; background:#fafafa; font-size:12px; color:#777; text-align:center">vBiz Me — The Virtual Business Card That Sells For You</div>
         </div>
       `,
     });

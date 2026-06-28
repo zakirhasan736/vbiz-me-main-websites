@@ -63,7 +63,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: WEBKIT_PERF_BOOT }} />
         <style dangerouslySetInnerHTML={{ __html: HERO_LCP_CRITICAL_CSS }} />
       </head>
-      <body className={`${inter.className} theme-light antialiased`}>
+      <body className={`${inter.className} theme-midnight antialiased`}>
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('vbizme-theme');if(t==='ocean'||t==='midnight'||t==='light'){document.body.classList.remove('theme-light','theme-midnight','theme-ocean');document.body.classList.add(t==='ocean'?'theme-ocean':t==='light'?'theme-light':'theme-midnight');}}catch(e){}})();`,

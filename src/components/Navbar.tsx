@@ -34,6 +34,16 @@ export const Navbar: React.FC = () => {
 
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    // Notify other UI (e.g., LiveAgent) when mobile nav opens or closes
+    try {
+      if (mobileMenuOpen) {
+        window.dispatchEvent(new CustomEvent('site:nav-open'));
+      } else {
+        window.dispatchEvent(new CustomEvent('site:nav-close'));
+      }
+    } catch (e) {
+      /* ignore for non-browser environments */
+    }
     return () => {
       document.body.style.overflow = '';
     };
@@ -63,11 +73,11 @@ export const Navbar: React.FC = () => {
   };
 
   const cycleTheme = () => {
-    setTheme(theme === 'light' ? 'midnight' : theme === 'midnight' ? 'ocean' : 'light');
+    setTheme(theme === 'midnight' ? 'light' : theme === 'light' ? 'ocean' : 'midnight');
   };
 
   const themeLabel =
-    theme === 'light' ? 'Midnight Dark' : theme === 'midnight' ? 'Deep Ocean Blue' : 'Light Mode';
+    theme === 'midnight' ? 'Light Mode' : theme === 'light' ? 'Deep Ocean Blue' : 'Midnight Dark';
 
   return (
     <>

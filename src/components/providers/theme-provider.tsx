@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 
-type Theme = 'midnight' | 'ocean' | 'light';
+type Theme = 'midnight' | 'light' | 'ocean';
 
 interface ThemeContextValue {
   theme: Theme;
@@ -16,16 +16,16 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'light',
+  theme: 'midnight',
   setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('light');
+  const [theme, setThemeState] = useState<Theme>('midnight');
 
   useEffect(() => {
     const saved = localStorage.getItem('vbizme-theme');
-    if (saved === 'ocean' || saved === 'midnight' || saved === 'light') {
+    if (saved === 'midnight' || saved === 'light' || saved === 'ocean') {
       setThemeState(saved);
     }
   }, []);
