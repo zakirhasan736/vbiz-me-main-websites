@@ -90,18 +90,23 @@ export default function Compare() {
       {/* Banner + comparison table — one reveal group */}
       <section
         aria-labelledby="compare-hero-title"
-        className="section-hero compare-page-hero site-section--reveal relative pt-40 pb-10 md:pb-14 bg-brand-dark"
+        className="section-hero compare-page-hero site-section--reveal overflow-visible relative pt-40 pb-10 md:pb-14 bg-brand-dark"
       >
         <PageHeroBackground />
         <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-brand-gold/5 blur-[150px] rounded-full pointer-events-none" />
         <div className="absolute bottom-0 left-1/4 w-[600px] h-[600px] bg-red-500/5 blur-[150px] rounded-full pointer-events-none" />
 
-        <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <SectionRevealRoot viewport="header" simultaneous={false} replayOnNavigate>
+        <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 overflow-visible">
+          <SectionRevealRoot
+            viewport="content"
+            simultaneous={false}
+            replayOnNavigate
+            className="overflow-visible"
+          >
             <SectionRevealStaggerList
               stagger={BANNER_REVEAL_STAGGER.ITEM}
               delayChildren={BANNER_REVEAL_STAGGER.DELAY_CHILDREN}
-              className="page-hero-video-content text-center max-w-3xl mx-auto flex flex-col items-center"
+              className="page-hero-video-content text-center max-w-3xl mx-auto flex flex-col items-center overflow-visible"
             >
               <RevealGridItem direction="up" distance="MD" scaleOnUp={false} className="w-full flex justify-center mb-4">
                 <SectionEyebrow label="Head-to-Head Comparison" variant="hero" />

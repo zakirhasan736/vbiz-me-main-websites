@@ -17,7 +17,7 @@ export default function OurVCards() {
       {/* Hero Section */}
       <section
         aria-labelledby="our-vcards-hero-title"
-        className="section-hero section-hero--video-bg relative pb-10 md:pb-12 flex flex-col items-center bg-brand-dark"
+        className="section-hero section-hero--video-bg site-section site-section--reveal overflow-visible relative pb-10 md:pb-12 flex flex-col items-center bg-brand-dark"
       >
         <YouTubeHeroBackground
           videoId={OUR_VCARDS_HERO_YOUTUBE_VIDEO_ID}
@@ -25,24 +25,26 @@ export default function OurVCards() {
         />
         <PageHeroBackground overVideo />
 
-        <div className="max-w-4xl mx-auto px-4 relative z-10 pt-0 text-center w-full">
-          <div className="page-hero-video-content text-center max-w-4xl mx-auto">
-            <RevealEyebrow label="The Ultimate Digital Asset" variant="hero" className="mx-auto" />
+        <SectionRevealRoot viewport="header" simultaneous={false} replayOnNavigate>
+          <div className="max-w-4xl mx-auto px-4 relative z-10 pt-0 text-center w-full">
+            <div className="page-hero-video-content text-center max-w-4xl mx-auto">
+              <RevealEyebrow label="The Ultimate Digital Asset" variant="hero" className="mx-auto" />
 
-            <RevealText
-              id="our-vcards-hero-title"
-              text="Our vCards"
-              className="text-5xl md:text-7xl font-sans font-medium text-white mb-6 tracking-tight leading-[1.1] text-center"
-              tag="h1"
-              highlightedWords={['vCards']}
-            />
+              <RevealText
+                id="our-vcards-hero-title"
+                text="Our vCards"
+                className="text-5xl md:text-7xl font-sans font-medium text-white mb-6 tracking-tight leading-[1.1] text-center"
+                tag="h1"
+                highlightedWords={['vCards']}
+              />
 
-            <BannerDescription
-              text="At vBiz Me, we give you full creative control. Seamlessly integrate with Canva, Adobe Express, or upload custom music to create a truly unique, dynamic experience that represents your brand and captures attention instantly."
-              className="text-lg md:text-xl text-neutral-200 max-w-3xl mx-auto font-normal leading-relaxed mt-4"
-            />
+              <BannerDescription
+                text="At vBiz Me, we give you full creative control. Seamlessly integrate with Canva, Adobe Express, or upload custom music to create a truly unique, dynamic experience that represents your brand and captures attention instantly."
+                className="text-lg md:text-xl text-neutral-200 max-w-3xl mx-auto font-normal leading-relaxed mt-4"
+              />
+            </div>
           </div>
-        </div>
+        </SectionRevealRoot>
       </section>
 
       <OurVCardsFeatureGrid />

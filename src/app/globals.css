@@ -2844,6 +2844,23 @@ footer {
     overflow: visible;
   }
 
+  .site-section.site-section--reveal.overflow-visible {
+    overflow: visible;
+  }
+
+  .overflow-visible-mobile,
+  [data-section-reveal-root],
+  [data-section-reveal-stagger],
+  [data-reveal-card] {
+    overflow: visible !important;
+  }
+
+  .compare-page-hero,
+  .compare-page-hero .page-hero-video-content,
+  .compare-page-hero .page-hero-video-content > * {
+    overflow: visible !important;
+  }
+
   @media (min-width: 768px) {
     .site-section {
       padding-top: 60px;

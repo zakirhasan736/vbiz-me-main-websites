@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Mail, MapPin, Phone, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
-import { RevealText, BannerDescription, ScrollRevealCard } from '@/components/animations/reveal';
+import { RevealText, BannerDescription, ScrollRevealCard, SectionRevealRoot } from '@/components/animations/reveal';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -78,7 +78,7 @@ export default function Contact() {
   return (
     <div className="bg-brand-dark min-h-screen">
       {/* Hero Section */}
-      <section className="section-hero relative pt-32 pb-20 overflow-hidden flex flex-col justify-center items-center min-h-[50vh] bg-brand-dark">
+      <section className="section-hero section-hero--video-bg site-section site-section--reveal relative pt-32 pb-20 overflow-hidden flex flex-col justify-center items-center min-h-[50vh] bg-brand-dark">
         <PageHeroBackground />
 
         <div className="max-w-4xl mx-auto px-4 relative z-10 pt-10 text-center w-full">
@@ -99,11 +99,11 @@ export default function Contact() {
       </section>
 
       {/* Main Content */}
-      <section className="site-section relative">
+      <section className="site-section site-section--reveal relative overflow-visible">
         <div className="absolute top-1/2 right-[10%] w-[500px] h-[500px] bg-brand-gold/5 blur-[120px] rounded-full pointer-events-none" />
         <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+          <SectionRevealRoot viewport="content" className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
             
             {/* Contact Info & Details */}
             <ScrollRevealCard direction="left" className="w-full">
@@ -242,7 +242,7 @@ export default function Contact() {
               </div>
             </ScrollRevealCard>
             
-          </div>
+          </SectionRevealRoot>
         </div>
       </section>
     </div>

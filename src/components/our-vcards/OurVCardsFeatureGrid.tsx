@@ -34,16 +34,16 @@ const CTA_BUTTONS = [
 
 export function OurVCardsFeatureGrid() {
   return (
-    <section className="site-section site-section--reveal bg-neutral-900/20 relative" id="features-section">
+    <section className="site-section site-section--reveal overflow-visible bg-neutral-900/20 relative" id="features-section">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.03)_0%,transparent_70%)] pointer-events-none" />
 
-      <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <SectionRevealRoot viewport="content" simultaneous={false}>
+      <div className="max-w-[1344px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10 overflow-visible">
+        <SectionRevealRoot viewport="grid" simultaneous={false} replayOnNavigate className="overflow-visible overflow-visible-mobile">
           {/* Header — eyebrow, title, description slide up from 600px */}
           <SectionRevealStaggerList
             stagger={OUR_VCARD_FEATURE_STAGGER.ITEM}
             delayChildren={OUR_VCARD_FEATURE_STAGGER.HEADER_DELAY}
-            className="text-center mb-16 flex flex-col items-center"
+            className="text-center mb-16 flex flex-col items-center overflow-visible"
           >
             <RevealGridItem direction="up" distance="XL" scaleOnUp={false} className="w-full flex justify-center mb-4">
               <SectionEyebrow label="Bespoke Intelligent Suite" />
@@ -66,13 +66,13 @@ export function OurVCardsFeatureGrid() {
           <SectionRevealStaggerList
             stagger={OUR_VCARD_FEATURE_STAGGER.ITEM}
             delayChildren={OUR_VCARD_FEATURE_STAGGER.ROW1_DELAY}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch overflow-visible"
           >
             <RevealGridItem
               direction="left"
               distance="XL"
               scaleOnUp={false}
-              className="lg:col-span-4 h-full"
+              className="lg:col-span-4 h-full overflow-visible"
             >
               <div className="bg-[#283630]/60 border border-white/5 py-6 px-4 md:py-8 md:px-6 rounded-[2rem] backdrop-blur-md relative overflow-hidden group hover:border-brand-gold/25 transition-all duration-300 flex flex-col justify-between h-full text-left">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(212,175,55,0.01),transparent)] pointer-events-none" />
@@ -137,7 +137,7 @@ export function OurVCardsFeatureGrid() {
               direction="up"
               distance="XL"
               scaleOnUp={false}
-              className="lg:col-span-4 lg:col-start-5 h-full"
+              className="lg:col-span-4 lg:col-start-5 h-full overflow-visible"
             >
               <div className="flex flex-col justify-between bg-[#2a3832]/90 border border-white/10 py-6 px-4 md:py-8 md:px-6 rounded-[2.5rem] relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] h-full">
                 <div className="absolute inset-0 bg-gradient-to-b from-brand-gold/[0.03] to-transparent pointer-events-none" />
@@ -186,7 +186,7 @@ export function OurVCardsFeatureGrid() {
               direction="right"
               distance="XL"
               scaleOnUp={false}
-              className="lg:col-span-4 lg:col-start-9 h-full"
+              className="lg:col-span-4 lg:col-start-9 h-full overflow-visible"
             >
               <div className="bg-[#283630]/60 border border-white/5 py-6 px-4 md:py-8 md:px-6 rounded-[2rem] backdrop-blur-md relative overflow-hidden group hover:border-brand-gold/15 transition-all duration-300 flex flex-col justify-between text-left h-full">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(212,175,55,0.01),transparent)] pointer-events-none" />
@@ -251,9 +251,9 @@ export function OurVCardsFeatureGrid() {
           <SectionRevealStaggerList
             stagger={OUR_VCARD_FEATURE_STAGGER.ITEM}
             delayChildren={OUR_VCARD_FEATURE_STAGGER.ROW2_DELAY}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch mt-6 lg:mt-8"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch mt-6 lg:mt-8 overflow-visible"
           >
-            <RevealGridItem direction="up" distance="XL" scaleOnUp={false} className="lg:col-span-4 h-full">
+            <RevealGridItem direction="up" distance="XL" scaleOnUp={false} className="lg:col-span-4 h-full overflow-visible">
               <div className="bg-[#2a3020] border border-brand-gold/10 py-6 px-4 md:py-8 md:px-6 rounded-[2rem] relative overflow-hidden group hover:border-brand-gold/30 transition-all duration-300 text-left h-full">
                 <div className="absolute top-0 right-0 h-12 w-12 bg-gradient-to-bl from-brand-gold/10 to-transparent pointer-events-none" />
                 <div className="flex items-center gap-2.5 mb-3 text-brand-gold">
@@ -270,7 +270,7 @@ export function OurVCardsFeatureGrid() {
               direction="up"
               distance="XL"
               scaleOnUp={false}
-              className="lg:col-span-4 lg:col-start-9 h-full"
+              className="lg:col-span-4 lg:col-start-9 h-full overflow-visible"
             >
               <div className="bg-gradient-to-br from-[#2a3528] to-[#222e28] border border-brand-gold/30 py-6 px-4 md:py-8 md:px-6 rounded-[2rem] relative overflow-hidden group shadow-[0_0_30px_rgba(212,175,55,0.03)] text-left h-full">
                 <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-gold/15 border border-brand-gold/25 backdrop-blur-sm">
