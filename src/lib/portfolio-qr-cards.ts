@@ -11,7 +11,9 @@ export type PortfolioQrCard = {
   demoUrl: string;
 };
 
-const vCard = (slug: string) => `https://app.vbizme.com/vCard/${slug}#home`;
+import { vcardProfileUrl } from '@/lib/vcard-profile-url';
+
+const vCard = vcardProfileUrl;
 
 /** WebP QR assets in `/public/portfolio/{slug}.webp` */
 export const portfolioQrImage = (slug: string) => `/portfolio/${slug}.webp`;

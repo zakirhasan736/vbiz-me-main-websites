@@ -4,15 +4,17 @@ import {
   ArrowRight, 
   ChevronLeft, ChevronRight, Sparkles, 
   Car, Award, Utensils, Briefcase, X, Zap, Landmark,
-  QrCode, TrendingUp, ExternalLink
+  QrCode, TrendingUp, ExternalLink, Truck, Home as HomeIcon, Dumbbell, Scale,
+  MousePointerClick, Smartphone, ScrollText, Lightbulb, Loader2,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
 import { scrollElementIntoView } from '@/lib/scroll-utils';
 import { DeferredPhoneMockupFrame } from '@/components/DeferredPhoneMockupFrame';
 import { PortfolioVCardModal } from '@/components/PortfolioVCardModal';
 import { IndustryVCardMobilePreview } from '@/components/IndustryVCardMobilePreview';
+import { VCARD_MOBILE_FRAME_LOADER } from '@/lib/vcard-mobile-loader';
 import {
   PORTFOLIO_QR_CARDS,
   getPortfolioQrImageSrc,
@@ -39,6 +41,7 @@ import type { CapabilityIconName } from '@/lib/capability-icons';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 import { HOME_INDUSTRIES } from '@/lib/home-industries';
+import { vcardProfileUrl } from '@/lib/vcard-profile-url';
 
 const qrSliderItems = PORTFOLIO_QR_CARDS;
 
@@ -49,7 +52,41 @@ const HOME_INDUSTRY_ICONS: Record<string, ReactNode> = {
   'auto-sales': <Car className="w-4 h-4" />,
   'financial-coach': <Award className="w-4 h-4" />,
   restaurant: <Utensils className="w-4 h-4" />,
+  'moving-services': <Truck className="w-4 h-4" />,
+  'real-estate': <HomeIcon className="w-4 h-4" />,
+  fitness: <Dumbbell className="w-4 h-4" />,
+  legal: <Scale className="w-4 h-4" />,
 };
+
+const INDUSTRY_DEMO_STEPS = [
+  {
+    icon: MousePointerClick,
+    title: 'Pick a profile',
+    hint: 'Tap any industry tile — each is a verified live vCard.',
+  },
+  {
+    icon: Smartphone,
+    title: 'Preview live',
+    hint: 'Desktop switches instantly; mobile opens the live phone frame.',
+  },
+  {
+    icon: ScrollText,
+    title: 'Scroll & explore',
+    hint: 'Swipe inside — video, services, and save-contact all work.',
+  },
+] as const;
+
+const INDUSTRY_SWITCH_LOADER_MS = 200;
+const INDUSTRY_SWITCH_LOADER_CACHED_MS = 90;
+
+function slugFromDemoUrl(url: string): string {
+  try {
+    const path = new URL(url).pathname.replace(/^\//, '');
+    return path || url;
+  } catch {
+    return url;
+  }
+}
 
 // Interactive Demo Component ("See It In Action")
 const InteractiveDemoSection = () => {
@@ -62,9 +99,80 @@ const InteractiveDemoSection = () => {
   const [mobileDemoOpen, setMobileDemoOpen] = useState(false);
   const [previewHighlighted, setPreviewHighlighted] = useState(false);
   const [demoIframeReady, setDemoIframeReady] = useState(false);
+  const [activeIframeLoading, setActiveIframeLoading] = useState(true);
   const sectionRef = useRef<HTMLElement>(null);
   const mobilePreviewRef = useRef<HTMLDivElement>(null);
+  const activeIndIdRef = useRef(activeIndId);
+  const iframeLoadingRef = useRef<Record<string, boolean>>({});
+  const loadedDemoUrlsRef = useRef<Set<string>>(new Set());
+  const switchTimeRef = useRef(Date.now());
+  const loaderHideTimerRef = useRef<number | null>(null);
   const activeObj = industries.find((ind) => ind.id === activeIndId) || industries[0];
+
+  activeIndIdRef.current = activeIndId;
+
+  const clearLoaderHideTimer = useCallback(() => {
+    if (loaderHideTimerRef.current !== null) {
+      window.clearTimeout(loaderHideTimerRef.current);
+      loaderHideTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleHideActiveLoader = useCallback(
+    (industryId: string, cached = false) => {
+      clearLoaderHideTimer();
+      const elapsed = Date.now() - switchTimeRef.current;
+      const minMs = cached ? INDUSTRY_SWITCH_LOADER_CACHED_MS : INDUSTRY_SWITCH_LOADER_MS;
+      const delay = Math.max(0, minMs - elapsed);
+      loaderHideTimerRef.current = window.setTimeout(() => {
+        if (activeIndIdRef.current === industryId) {
+          setActiveIframeLoading(false);
+        }
+        loaderHideTimerRef.current = null;
+      }, delay);
+    },
+    [clearLoaderHideTimer],
+  );
+
+  const handleActiveIframeLoading = useCallback(
+    (loading: boolean) => {
+      const industryId = activeIndIdRef.current;
+      const demoUrl = HOME_INDUSTRIES.find((ind) => ind.id === industryId)?.demoUrl;
+
+      iframeLoadingRef.current[industryId] = loading;
+
+      if (loading) {
+        setActiveIframeLoading(true);
+        return;
+      }
+
+      if (demoUrl) {
+        loadedDemoUrlsRef.current.add(demoUrl);
+      }
+      scheduleHideActiveLoader(industryId);
+    },
+    [scheduleHideActiveLoader],
+  );
+
+  useEffect(() => () => clearLoaderHideTimer(), [clearLoaderHideTimer]);
+
+  useEffect(() => {
+    const preconnect = document.createElement('link');
+    preconnect.rel = 'preconnect';
+    preconnect.href = 'https://vcard.vbizme.com';
+    preconnect.crossOrigin = 'anonymous';
+    document.head.appendChild(preconnect);
+
+    const dnsPrefetch = document.createElement('link');
+    dnsPrefetch.rel = 'dns-prefetch';
+    dnsPrefetch.href = 'https://vcard.vbizme.com';
+    document.head.appendChild(dnsPrefetch);
+
+    return () => {
+      preconnect.remove();
+      dnsPrefetch.remove();
+    };
+  }, []);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -78,15 +186,44 @@ const InteractiveDemoSection = () => {
           setMobileDemoOpen(false);
         }
       },
-      { rootMargin: '0px', threshold: 0.1 },
+      { rootMargin: '700px 0px', threshold: 0.01 },
     );
 
     observer.observe(section);
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!demoIframeReady) return;
+
+    const prefetchLinks = HOME_INDUSTRIES.map((ind) => {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.href = ind.demoUrl;
+      link.as = 'document';
+      document.head.appendChild(link);
+      return link;
+    });
+
+    return () => {
+      prefetchLinks.forEach((link) => link.remove());
+    };
+  }, [demoIframeReady]);
+
   const selectIndustry = (id: string) => {
+    if (id === activeIndIdRef.current) return;
+
+    const targetUrl = HOME_INDUSTRIES.find((ind) => ind.id === id)?.demoUrl;
+    const cached = targetUrl ? loadedDemoUrlsRef.current.has(targetUrl) : false;
+
+    switchTimeRef.current = Date.now();
+    clearLoaderHideTimer();
     setActiveIndId(id);
+    setActiveIframeLoading(true);
+
+    if (cached) {
+      scheduleHideActiveLoader(id, true);
+    }
 
     if (typeof window === 'undefined' || !window.matchMedia('(max-width: 1279px)').matches) {
       return;
@@ -126,7 +263,7 @@ const InteractiveDemoSection = () => {
               delay={0.05}
             />
             <RevealParagraph
-              text="Pick your industry of interest below, then watch how a live, conversion-focused vBiz Me card operates right from the smartphone mockup."
+              text="Browse ten real member profiles from our public network. Each tile loads an actual vBiz Me vCard — the same experience your clients get after they scan your QR code."
               className="text-neutral-400 font-light text-base sm:text-lg leading-relaxed"
               delay={0.1}
             />
@@ -135,56 +272,186 @@ const InteractiveDemoSection = () => {
 
         <SectionRevealRoot>
           <SectionRevealContent>
+            <ScrollRevealCard
+              direction="up"
+              distance="MD"
+              className="mb-8 lg:mb-10"
+            >
+              <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-r from-white/[0.04] via-transparent to-brand-gold/[0.03]">
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-gold/50 to-transparent" />
+
+                <div className="relative flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-stretch lg:gap-5">
+                  <div className="lg:w-[34%] xl:w-[32%] shrink-0 flex flex-col justify-center border-b border-white/[0.06] pb-4 lg:border-b-0 lg:border-r lg:pb-0 lg:pr-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Lightbulb className="w-3.5 h-3.5 text-brand-gold shrink-0" />
+                      <span className="text-[10px] font-mono uppercase tracking-[0.14em] text-brand-gold font-bold">
+                        Interactive demo guide
+                      </span>
+                    </div>
+                    <p className="text-sm sm:text-[15px] font-semibold text-white leading-snug">
+                      Try real member vCards in three quick steps
+                    </p>
+                    <p className="text-xs sm:text-sm text-neutral-400 font-light mt-1.5 leading-relaxed">
+                      Live profiles from our public network — the same link clients open after scanning your QR code.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 mt-3">
+                      <span className="inline-flex items-center rounded-full border border-brand-gold/25 bg-brand-gold/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-brand-gold">
+                        {industries.length} live demos
+                      </span>
+                      <span className="inline-flex items-center rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[10px] font-mono text-neutral-400">
+                        vcard.vbizme.com
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+                    {INDUSTRY_DEMO_STEPS.map((step, idx) => (
+                      <div
+                        key={step.title}
+                        className="flex items-start gap-2.5 rounded-xl border border-white/[0.06] bg-black/20 px-3 py-2.5 sm:py-3"
+                      >
+                        <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-brand-gold/25 bg-brand-gold/10 text-brand-gold">
+                          <step.icon className="w-3.5 h-3.5" strokeWidth={1.75} />
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-gold text-[9px] font-black text-black">
+                            {idx + 1}
+                          </span>
+                        </span>
+                        <div className="min-w-0 pt-0.5">
+                          <p className="text-xs sm:text-[13px] font-semibold text-white leading-tight">{step.title}</p>
+                          <p className="text-[11px] sm:text-xs text-neutral-400 font-light leading-snug mt-0.5">
+                            {step.hint}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </ScrollRevealCard>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
           {/* Controls column — below phone on mobile, left on xl */}
           <ScrollRevealCard
             direction="left"
             distance="XL"
-            className="order-2 xl:order-1 lg:col-span-12 xl:col-span-5 flex flex-col gap-3"
+            className="order-2 xl:order-1 lg:col-span-12 xl:col-span-5 flex flex-col gap-5"
           >
-            <span className="text-base uppercase tracking-widest text-neutral-500 font-semibold mb-2 block">
-              1. Toggle Industries
-            </span>
-            <div className="home-industry-toggle-grid grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-2.5">
-              {industries.map((ind) => {
-                const isActive = activeIndId === ind.id;
-                return (
-                  <button
-                    key={ind.id}
-                    type="button"
-                    onClick={() => selectIndustry(ind.id)}
-                    className={`relative flex items-center gap-3 p-4 rounded-xl border text-left text-base uppercase font-bold tracking-wider transition-colors duration-300 overflow-hidden active:scale-[0.98] ${
-                      isActive
-                        ? 'border-brand-gold/50 text-brand-text shadow-[0_4px_20px_rgba(212,175,55,0.12)]'
-                        : 'bg-brand-card border-white/10 text-brand-text-muted hover:border-brand-gold/25 hover:bg-brand-gold/5'
-                    }`}
-                  >
-                    {isActive && (
-                      <div className="absolute inset-0 bg-brand-gold/15 border border-brand-gold/30 rounded-xl" />
-                    )}
-                    <span className={`relative z-10 shrink-0 ${isActive ? 'text-brand-gold' : 'text-brand-text-muted'}`}>
-                      {ind.icon}
-                    </span>
-                    <div className="relative z-10 min-w-0">
-                      <span className={isActive ? 'text-brand-text' : ''}>{ind.name}</span>
-                      <span className="text-sm text-brand-text-muted font-light block normal-case mt-0.5 truncate">
-                        {ind.company}
+            <div className="relative overflow-hidden rounded-[1.35rem] border border-white/[0.07] bg-[#0a0a0c]/70 backdrop-blur-md shadow-[0_16px_48px_rgba(0,0,0,0.35)]">
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-gold/45 to-transparent" />
+              <div className="absolute -left-20 -top-20 h-36 w-36 rounded-full bg-brand-gold/[0.05] blur-3xl pointer-events-none" />
+
+              <div className="relative flex items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-4 sm:px-5">
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-brand-gold font-bold block mb-1">
+                    Live profile picker
+                  </span>
+                  <span className="text-base sm:text-lg font-semibold text-white tracking-tight">
+                    Select an industry
+                  </span>
+                </div>
+                <span className="shrink-0 inline-flex flex-col items-end rounded-xl border border-brand-gold/20 bg-brand-gold/[0.06] px-3 py-2">
+                  <span className="text-lg font-bold tabular-nums leading-none text-brand-gold">{industries.length}</span>
+                  <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500 mt-0.5">Profiles</span>
+                </span>
+              </div>
+
+              <div className="home-industry-toggle-grid relative p-2 sm:p-2.5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
+                {industries.map((ind, index) => {
+                  const isActive = activeIndId === ind.id;
+                  const isSwitching = isActive && activeIframeLoading;
+                  return (
+                    <button
+                      key={ind.id}
+                      type="button"
+                      onClick={() => selectIndustry(ind.id)}
+                      aria-current={isActive ? 'true' : undefined}
+                      className={`group relative flex items-center gap-3 rounded-[0.9rem] px-3 py-2.5 text-left transition-all duration-200 overflow-hidden ${
+                        isActive
+                          ? 'bg-gradient-to-r from-brand-gold/[0.16] via-brand-gold/[0.07] to-transparent ring-1 ring-brand-gold/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                          : 'hover:bg-white/[0.04] ring-1 ring-transparent hover:ring-white/[0.08]'
+                      }`}
+                    >
+                      {isActive ? (
+                        <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-brand-gold shadow-[0_0_12px_rgba(212,175,55,0.65)]" aria-hidden />
+                      ) : null}
+
+                      <span className="relative shrink-0">
+                        <span
+                          className={`block h-11 w-11 overflow-hidden rounded-full ring-2 transition-all ${
+                            isActive
+                              ? 'ring-brand-gold/50 shadow-[0_0_16px_rgba(212,175,55,0.25)]'
+                              : 'ring-white/10 group-hover:ring-brand-gold/25'
+                          }`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={ind.avatar}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                            decoding="async"
+                            draggable={false}
+                          />
+                        </span>
+                        <span
+                          className={`absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border text-brand-gold ${
+                            isActive
+                              ? 'border-brand-gold/40 bg-[#14110a]'
+                              : 'border-white/15 bg-[#111] group-hover:border-brand-gold/30'
+                          }`}
+                        >
+                          {ind.icon}
+                        </span>
                       </span>
-                    </div>
-                  </button>
-                );
-              })}
+
+                      <div className="relative min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-sm font-semibold tracking-tight truncate ${
+                              isActive ? 'text-white' : 'text-neutral-200 group-hover:text-white'
+                            }`}
+                          >
+                            {ind.name}
+                          </span>
+                          {isActive ? (
+                            <span className="shrink-0 rounded-full bg-brand-gold/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-brand-gold">
+                              Live
+                            </span>
+                          ) : null}
+                        </div>
+                        <span className="text-[11px] text-neutral-500 font-light block truncate mt-0.5">
+                          {ind.company}
+                        </span>
+                        <span className="text-[10px] font-mono text-neutral-600 block truncate mt-0.5">
+                          /{slugFromDemoUrl(ind.demoUrl)}
+                        </span>
+                      </div>
+
+                      <span className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center">
+                        {isSwitching ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-brand-gold" aria-label={`Loading ${ind.name}`} />
+                        ) : isActive ? (
+                          <ChevronRight className="h-4 w-4 text-brand-gold" aria-hidden />
+                        ) : (
+                          <span className="text-[10px] font-mono tabular-nums text-neutral-700 group-hover:text-neutral-500">
+                            {String(index + 1).padStart(2, '0')}
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="mt-6">
-              <a 
-                href="/examples"
-                className="text-white hover:text-brand-gold text-base font-semibold flex items-center gap-1.5 transition-colors"
-              >
-                Browse Full Industry Mockup Library <ChevronRight size={14} />
-              </a>
-            </div>
+            <a
+              href="/community"
+              className="group inline-flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-white transition-all hover:border-brand-gold/30 hover:bg-brand-gold/[0.05]"
+            >
+              <span className="text-sm font-semibold">Browse full industry library</span>
+              <ChevronRight size={16} className="text-brand-gold transition-transform group-hover:translate-x-0.5" />
+            </a>
           </ScrollRevealCard>
 
           {/* Interactive Screen Mockup — popup on mobile, inline on xl+ */}
@@ -193,41 +460,95 @@ const InteractiveDemoSection = () => {
             distance="XL"
             className="order-1 xl:order-2 lg:col-span-12 xl:col-span-7 flex flex-col items-center justify-center relative gap-5 pointer-events-auto z-10 home-industry-mockup"
           >
-            <div
-              key={activeObj.id}
-              className="flex flex-col items-center gap-3 w-full max-w-[407px] mx-auto relative z-10"
-            >
-              <div className="w-full px-4 py-2.5 rounded-xl border border-brand-gold/25 bg-brand-card text-center hero-industry-demo-url">
-                <span className="text-sm uppercase tracking-widest text-brand-text-muted font-semibold block mb-1">
-                  Live Demo URL
-                </span>
+            <div className="flex flex-col items-center gap-3 w-full max-w-[407px] mx-auto relative z-10">
+              <div
+                className={`w-full px-4 py-3 rounded-2xl border text-center hero-industry-demo-url transition-colors duration-300 ${
+                  activeIframeLoading
+                    ? 'border-brand-gold/20 bg-gradient-to-r from-brand-gold/[0.04] to-brand-card shadow-none'
+                    : 'border-brand-gold/30 bg-gradient-to-r from-brand-gold/[0.08] to-brand-card shadow-[0_4px_24px_rgba(212,175,55,0.08)]'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2 mb-1.5">
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-brand-gold font-bold">
+                    Live vCard URL
+                  </span>
+                  {activeIframeLoading ? (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-brand-gold/25 bg-brand-gold/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-brand-gold">
+                      <Loader2 className="h-2.5 w-2.5 animate-spin" aria-hidden />
+                      Loading
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-emerald-300">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" aria-hidden />
+                      Ready
+                    </span>
+                  )}
+                </div>
                 <a
                   href={activeObj.demoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[11px] font-mono text-brand-gold hover:underline break-all leading-snug hero-industry-demo-url__link"
+                  className={`text-[11px] font-mono text-brand-gold hover:underline break-all leading-snug hero-industry-demo-url__link transition-opacity ${
+                    activeIframeLoading ? 'opacity-60 pointer-events-none' : 'opacity-100'
+                  }`}
                 >
                   {activeObj.demoUrl}
                 </a>
+                <p className="text-[10px] text-brand-text-muted font-light mt-2 leading-relaxed">
+                  {activeIframeLoading
+                    ? `Fetching vcard.vbizme.com/${slugFromDemoUrl(activeObj.demoUrl)}…`
+                    : 'Opens the same production link your clients receive — hosted on vcard.vbizme.com'}
+                </p>
               </div>
 
               <div className="hidden xl:block w-full">
                 <VCardInteractiveLane className="w-full" id="industries-vcard-lane">
-                  <DeferredPhoneMockupFrame
-                    key={activeObj.demoUrl}
-                    enabled={demoIframeReady}
-                    src={activeObj.demoUrl}
-                    title={`${activeObj.name} Demo`}
-                    size="hero"
-                    requireInView={false}
-                    skipSiteLoadDefer
-                    iframeLoading="lazy"
-                    showUrlInLoader
-                  />
+                  <div className="relative w-full">
+                    {demoIframeReady ? (
+                      <div
+                        className="pointer-events-none fixed -left-[9999px] top-0 h-px w-px overflow-hidden opacity-0"
+                        aria-hidden
+                      >
+                        {industries
+                          .filter((ind) => ind.id !== activeIndId)
+                          .map((ind) => (
+                            <iframe
+                              key={ind.id}
+                              src={ind.demoUrl}
+                              title=""
+                              loading="eager"
+                              tabIndex={-1}
+                              onLoad={() => {
+                                loadedDemoUrlsRef.current.add(ind.demoUrl);
+                              }}
+                            />
+                          ))}
+                      </div>
+                    ) : null}
+
+                    <DeferredPhoneMockupFrame
+                      enabled={demoIframeReady}
+                      src={activeObj.demoUrl}
+                      title={`${activeObj.name} Demo`}
+                      size="hero"
+                      requireInView={false}
+                      skipSiteLoadDefer
+                      iframeLoading="eager"
+                      fetchPriority="high"
+                      {...VCARD_MOBILE_FRAME_LOADER}
+                      showUrlInLoader
+                      onLoadingChange={handleActiveIframeLoading}
+                    />
+                  </div>
                 </VCardInteractiveLane>
-                <p className="text-[11px] text-brand-text-muted text-center font-light mt-3">
-                  Scroll inside the phone to explore the live vCard.
-                </p>
+                <div className="mt-4 w-full rounded-2xl border border-brand-gold/20 bg-gradient-to-r from-brand-gold/[0.06] via-white/[0.03] to-transparent px-4 py-4 sm:px-5 sm:py-4">
+                  <p className="text-sm sm:text-base text-neutral-200 font-medium text-center leading-relaxed flex items-center justify-center gap-2.5 flex-wrap">
+                    <ScrollText className="w-5 h-5 sm:w-[1.35rem] sm:h-[1.35rem] text-brand-gold shrink-0" />
+                    <span>
+                      Scroll inside the phone — loader clears when the vCard is ready
+                    </span>
+                  </p>
+                </div>
               </div>
 
               <div
@@ -802,10 +1123,11 @@ const PortfolioSection = () => {
                 </p>
                 
                 <DeferredPhoneMockupFrame
-                  src={selectedCard.demoUrl || 'https://app.vbizme.com/vCard/michaelangelo-casanova-2#home'}
+                  src={selectedCard.demoUrl || vcardProfileUrl('michaelangelo-casanova-2')}
                   title={`${selectedCard.name} Live Card Interface`}
                   size="modal"
                   requireInView={false}
+                  {...VCARD_MOBILE_FRAME_LOADER}
                 />
               </div>
 

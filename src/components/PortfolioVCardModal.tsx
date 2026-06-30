@@ -7,6 +7,8 @@ import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
 import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
 import { LazyQRCodeImage } from '@/components/LazyQRCodeImage';
 import { getPortfolioQrImageSrc, type PortfolioQrCard } from '@/lib/portfolio-qr-cards';
+import { VCARD_MOBILE_FRAME_LOADER, VCARD_SILENT_PRELOAD } from '@/lib/vcard-mobile-loader';
+import { VCardShortPhoneLoader } from '@/components/VCardShortPhoneLoader';
 import { lockDocumentScroll, unlockDocumentScroll } from '@/lib/scroll-utils';
 import { useMobileViewport } from '@/lib/use-mobile-viewport';
 
@@ -19,17 +21,6 @@ interface PortfolioVCardModalProps {
   modalId?: string;
 }
 
-function formatLoaderUrl(url: string): string {
-  try {
-    const parsed = new URL(url);
-    const path =
-      parsed.pathname.length > 28 ? `${parsed.pathname.slice(0, 26)}…` : parsed.pathname;
-    return `${parsed.host}${path}`;
-  } catch {
-    return url;
-  }
-}
-
 export function PortfolioVCardModal({
   card,
   isOpen,
@@ -38,7 +29,7 @@ export function PortfolioVCardModal({
 }: PortfolioVCardModalProps) {
   const [view, setView] = useState<ModalView>('qr');
   const [mounted, setMounted] = useState(false);
-  const [phoneLoading, setPhoneLoading] = useState(true);
+  const [iframeReady, setIframeReady] = useState(false);
   const isMobileSheet = useMobileViewport();
 
   useEffect(() => {
@@ -51,13 +42,8 @@ export function PortfolioVCardModal({
 
   useEffect(() => {
     setView('qr');
+    setIframeReady(false);
   }, [card?.id]);
-
-  useEffect(() => {
-    if (isOpen && view === 'live') {
-      setPhoneLoading(true);
-    }
-  }, [isOpen, view, card?.id, card?.demoUrl]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -85,41 +71,62 @@ export function PortfolioVCardModal({
   if (!card || !mounted) return null;
 
   const qrBgColor = 'ffffff';
-  const loaderUrlLabel = formatLoaderUrl(card.demoUrl);
 
   const livePhone = (
     <VCardInteractiveLane className="w-full flex flex-col items-center">
       <div className="relative w-full max-w-[407px] mx-auto">
-        {phoneLoading && (
-          <div
-            className="vcard-phone-loader absolute inset-0 z-[80] flex flex-col items-center justify-center rounded-[44px] border border-brand-gold/30 bg-[#080808] px-5 text-center shadow-[inset_0_0_40px_rgba(212,175,55,0.06)]"
-            role="status"
-            aria-live="polite"
-            aria-label={`Loading ${card.displayName} live demo`}
-          >
-            <div className="mb-4 h-12 w-12 animate-spin rounded-full border-2 border-brand-gold/25 border-t-brand-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]" />
-            <span className="text-base font-semibold uppercase tracking-widest text-white">
-              Loading live demo
-            </span>
-            <span className="mt-2 max-w-[260px] break-all font-mono text-[10px] leading-snug text-brand-gold">
-              {loaderUrlLabel}
-            </span>
-            <span className="mt-3 text-[10px] font-light text-neutral-400">Connecting to vCard…</span>
-          </div>
-        )}
+        {view === 'live' && !iframeReady ? <VCardShortPhoneLoader /> : null}
         <PhoneMockupFrame
-          key={`${card.demoUrl}-${isOpen}-${view}`}
           src={card.demoUrl}
           title={`${card.displayName} Live View`}
           size="modal"
-          compactLoader
           iframeLoading="eager"
-          showUrlInLoader
-          minLoaderMs={900}
-          onLoadingChange={setPhoneLoading}
+          {...(view === 'live' ? VCARD_MOBILE_FRAME_LOADER : VCARD_SILENT_PRELOAD)}
+          onLoadingChange={(loading) => {
+            if (!loading) setIframeReady(true);
+          }}
         />
       </div>
     </VCardInteractiveLane>
+  );
+
+  const liveDemoPanel = (
+    <div
+      className={
+        view === 'live'
+          ? `flex flex-col items-center w-full ${isMobileSheet ? 'items-stretch pt-1' : 'pt-2'}`
+          : 'fixed left-[-9999px] top-0 h-[640px] w-[407px] overflow-hidden opacity-0 pointer-events-none'
+      }
+      aria-hidden={view !== 'live'}
+    >
+      {view === 'live' && isMobileSheet ? (
+        <button
+          type="button"
+          onClick={() => setView('qr')}
+          className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-neutral-400 transition-colors hover:text-white"
+          id={`${modalId}-back-btn`}
+        >
+          <ArrowLeft size={16} />
+          Back to QR
+        </button>
+      ) : null}
+
+      {view === 'live' ? (
+        <>
+          <h3
+            id={view === 'live' ? `${modalId}-title` : undefined}
+            className={`text-white font-bold tracking-tight ${isMobileSheet ? 'text-lg mb-1' : 'text-xl mb-2 mt-6'}`}
+          >
+            {card.displayName} Live View
+          </h3>
+          <p className="text-neutral-400 font-light text-base leading-relaxed px-2 max-w-sm mb-5">
+            Scroll inside the phone to explore the live vCard.
+          </p>
+        </>
+      ) : null}
+
+      {livePhone}
+    </div>
   );
 
   const qrContent = (
@@ -138,7 +145,7 @@ export function PortfolioVCardModal({
         </div>
       </div>
 
-      <h3 id={`${modalId}-title`} className="text-white font-bold text-xl mb-2 tracking-tight">
+      <h3 id={view === 'qr' ? `${modalId}-title` : undefined} className="text-white font-bold text-xl mb-2 tracking-tight">
         {card.displayName}
       </h3>
       <p className="text-neutral-400 font-light text-base leading-relaxed px-4 mb-6">
@@ -154,36 +161,6 @@ export function PortfolioVCardModal({
         <ExternalLink size={16} />
         View Demo Card
       </button>
-    </>
-  );
-
-  const liveContent = (
-    <>
-      {isMobileSheet ? (
-        <button
-          type="button"
-          onClick={() => setView('qr')}
-          className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-neutral-400 transition-colors hover:text-white"
-          id={`${modalId}-back-btn`}
-        >
-          <ArrowLeft size={16} />
-          Back to QR
-        </button>
-      ) : null}
-
-      <h3
-        id={view === 'live' ? `${modalId}-title` : undefined}
-        className={`text-white font-bold tracking-tight ${isMobileSheet ? 'text-lg mb-1' : 'text-xl mb-2 mt-6'}`}
-      >
-        {card.displayName} Live View
-      </h3>
-      <p
-        className="text-neutral-400 font-light text-base leading-relaxed px-2 max-w-sm mb-5"
-      >
-        Scroll inside the phone to explore the live vCard.
-      </p>
-
-      {livePhone}
     </>
   );
 
@@ -228,60 +205,50 @@ export function PortfolioVCardModal({
         data-lenis-prevent
         data-lenis-prevent-touch
       >
-            {!isMobileSheet && (
-              <>
-                <div className="pointer-events-none absolute top-0 right-0 h-32 w-32 bg-brand-gold/5 blur-[50px]" />
-                {view === 'live' && (
-                  <button
-                    type="button"
-                    onClick={() => setView('qr')}
-                    className="absolute top-5 left-5 z-50 inline-flex items-center gap-1.5 text-sm font-medium text-neutral-400 transition-colors hover:text-white"
-                    id={`${modalId}-back-btn`}
-                  >
-                    <ArrowLeft size={16} />
-                    Back
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label="Close modal"
-                  className="absolute top-5 right-5 z-50 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/60 text-neutral-400 transition-transform hover:text-white active:scale-90"
-                  id={`${modalId}-close-btn`}
-                >
-                  <X size={14} />
-                </button>
-              </>
+        {!isMobileSheet && (
+          <>
+            <div className="pointer-events-none absolute top-0 right-0 h-32 w-32 bg-brand-gold/5 blur-[50px]" />
+            {view === 'live' && (
+              <button
+                type="button"
+                onClick={() => setView('qr')}
+                className="absolute top-5 left-5 z-50 inline-flex items-center gap-1.5 text-sm font-medium text-neutral-400 transition-colors hover:text-white"
+                id={`${modalId}-back-btn`}
+              >
+                <ArrowLeft size={16} />
+                Back
+              </button>
             )}
-
-            {isMobileSheet && (
-              <div className="flex shrink-0 justify-center pb-1 pt-3" aria-hidden="true">
-                <span className="h-1 w-10 rounded-full bg-white/20" />
-              </div>
-            )}
-
-            <div
-              className={
-                isMobileSheet
-                  ? `min-h-0 flex-1 overflow-y-auto px-4 pb-3 ${view === 'live' ? 'text-left' : 'text-center'}`
-                  : 'flex flex-col items-center'
-              }
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close modal"
+              className="absolute top-5 right-5 z-50 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/60 text-neutral-400 transition-transform hover:text-white active:scale-90"
+              id={`${modalId}-close-btn`}
             >
-              {view === 'qr' ? (
-                <div key="qr" className="flex flex-col items-center">
-                  {qrContent}
-                </div>
-              ) : (
-                <div
-                  key="live"
-                  className={`flex flex-col items-center ${isMobileSheet ? 'w-full items-stretch pt-1' : 'pt-2'}`}
-                >
-                  {liveContent}
-                </div>
-              )}
-            </div>
+              <X size={14} />
+            </button>
+          </>
+        )}
 
-            {isMobileSheet ? mobileBottomClose : null}
+        {isMobileSheet && (
+          <div className="flex shrink-0 justify-center pb-1 pt-3" aria-hidden="true">
+            <span className="h-1 w-10 rounded-full bg-white/20" />
+          </div>
+        )}
+
+        <div
+          className={
+            isMobileSheet
+              ? `min-h-0 flex-1 overflow-y-auto px-4 pb-3 ${view === 'live' ? 'text-left' : 'text-center'}`
+              : 'flex flex-col items-center'
+          }
+        >
+          {liveDemoPanel}
+          {view === 'qr' ? <div className="flex flex-col items-center">{qrContent}</div> : null}
+        </div>
+
+        {isMobileSheet ? mobileBottomClose : null}
       </div>
     </div>
   ) : null;

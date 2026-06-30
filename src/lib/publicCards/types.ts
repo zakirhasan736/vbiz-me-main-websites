@@ -53,6 +53,7 @@ export type PublicCardsPaginatedData = {
 
 export type PublicCardsSearchParams = {
   page?: number
+  per_page?: number
   state_id?: number
   city_id?: number
   profession_id?: number

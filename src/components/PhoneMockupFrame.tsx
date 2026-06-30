@@ -12,21 +12,25 @@ export interface PhoneMockupFrameProps {
   title: string;
   /** @deprecated Live iframe is preferred — static preview only when explicitly set */
   previewImage?: string;
-  /** hero = industries / examples; modal = portfolio & our-work popups */
+  /** hero = industries; modal = portfolio & our-work popups */
   size?: MobileFrameSize;
   className?: string;
   compactLoader?: boolean;
   previewPriority?: boolean;
   live?: boolean;
   iframeLoading?: 'lazy' | 'eager';
+  fetchPriority?: 'high' | 'low' | 'auto';
   showUrlInLoader?: boolean;
   minLoaderMs?: number;
+  maxLoaderMs?: number;
+  hideLoader?: boolean;
+  shortLoader?: boolean;
   onLoadingChange?: (loading: boolean) => void;
 }
 
 /**
  * Reusable live vCard phone frame — 375px logical viewport inside the shell.
- * Used on Home (industries, portfolio), Our Work, and Examples.
+ * Used on Home (industries, portfolio) and Our Work.
  * Notch is rendered via CSS ::before / ::after on .vcard-phone-mockup (no extra divs).
  */
 export const PhoneMockupFrame = forwardRef<HTMLDivElement, PhoneMockupFrameProps>(
@@ -40,8 +44,12 @@ export const PhoneMockupFrame = forwardRef<HTMLDivElement, PhoneMockupFrameProps
       compactLoader = false,
       live = true,
       iframeLoading = 'lazy',
+      fetchPriority = 'auto',
       showUrlInLoader = false,
       minLoaderMs = 0,
+      maxLoaderMs,
+      hideLoader = false,
+      shortLoader = false,
       onLoadingChange,
     },
     ref,
@@ -64,8 +72,12 @@ export const PhoneMockupFrame = forwardRef<HTMLDivElement, PhoneMockupFrameProps
               title={title}
               compact={compactLoader}
               iframeLoading={iframeLoading}
+              fetchPriority={fetchPriority}
               showUrlInLoader={showUrlInLoader}
               minLoaderMs={minLoaderMs}
+              maxLoaderMs={maxLoaderMs}
+              hideLoader={hideLoader}
+              shortLoader={shortLoader}
               onLoadingChange={onLoadingChange}
             />
           ) : (

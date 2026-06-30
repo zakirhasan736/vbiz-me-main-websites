@@ -12,12 +12,58 @@ import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
 import { useTheme } from '@/components/providers/theme-provider';
 import { usePublicCardsDirectory } from '@/hooks/usePublicCardsDirectory';
 import { getPublicCardProfileUrl } from '@/lib/publicCards/fetchPublicCards';
-import type { PublicCard } from '@/lib/publicCards/types';
+import type { PublicCardListItem } from '@/lib/publicCards/mapPublicCards';
+import {
+  PUBLIC_CARDS_SEARCH_DEBOUNCE_MS,
+  PUBLIC_CARDS_SEARCH_MIN_CHARS,
+} from '@/lib/publicCards/publicCardsSearch';
 
 const swipeConfidenceThreshold = 10000;
 const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
+
+function PublicCardPhoto({
+  card,
+  className = '',
+}: {
+  card: PublicCardListItem;
+  className?: string;
+}) {
+  if (card.img && card.isVideo) {
+    return (
+      <video
+        src={card.img}
+        autoPlay
+        loop
+        muted
+        playsInline
+        className={`w-full h-full object-cover object-top ${className}`}
+        aria-label={card.name}
+      />
+    );
+  }
+
+  if (card.img) {
+    return (
+      <img
+        src={card.img}
+        alt={card.name}
+        className={`w-full h-full object-cover object-top ${className}`}
+        referrerPolicy="no-referrer"
+      />
+    );
+  }
+
+  return (
+    <div
+      className={`flex h-full w-full items-center justify-center bg-gradient-to-br from-neutral-800 via-neutral-900 to-neutral-950 ${className}`}
+      aria-hidden
+    >
+      <span className="text-3xl font-black tracking-tight text-brand-gold">{card.initials}</span>
+    </div>
+  );
+}
 
 export default function Community() {
   const {
@@ -27,9 +73,14 @@ export default function Community() {
     isLoading,
     isSearching,
     isLoadingMore,
+    isPrefetchingAll,
+    isSearchActive,
     error,
     hasMore,
     total,
+    serverTotal,
+    loadedCount,
+    remainingCount,
     setDraftFilter,
     updateAndApplyFilter,
     clearFilters,
@@ -83,9 +134,11 @@ export default function Community() {
       setDraftFilter('service', value);
       if (serviceDebounceRef.current) clearTimeout(serviceDebounceRef.current);
       serviceDebounceRef.current = setTimeout(() => {
+        const trimmed = value.trim();
+        if (trimmed.length > 0 && trimmed.length < PUBLIC_CARDS_SEARCH_MIN_CHARS) return;
         updateAndApplyFilter('service', value);
         setActiveIndex(0);
-      }, 400);
+      }, PUBLIC_CARDS_SEARCH_DEBOUNCE_MS);
     },
     [setDraftFilter, updateAndApplyFilter]
   );
@@ -119,12 +172,21 @@ export default function Community() {
     setActiveIndex(0);
   }, [clearFilters]);
 
-  const openLiveCard = useCallback((card: PublicCard) => {
+  const openLiveCard = useCallback((card: PublicCardListItem) => {
     window.open(getPublicCardProfileUrl(card), '_blank', 'noopener,noreferrer');
   }, []);
 
+  const sliderActiveIndex = cards.length === 0 ? 0 : Math.min(activeIndex, cards.length - 1);
+
+  useEffect(() => {
+    if (viewMode !== 'slider' || !hasMore || isLoadingMore || isPrefetchingAll) return;
+    if (sliderActiveIndex >= cards.length - 2) {
+      void loadMore();
+    }
+  }, [cards.length, hasMore, isLoadingMore, isPrefetchingAll, loadMore, sliderActiveIndex, viewMode]);
+
   const showInitialLoader = isLoading && cards.length === 0;
-  const showEmptyState = !isLoading && !error && cards.length === 0;
+  const showEmptyState = !isLoading && !isPrefetchingAll && !error && cards.length === 0;
   const showError = !!error && cards.length === 0;
 
   return (
@@ -197,7 +259,7 @@ export default function Community() {
             isDarkMode ? 'border-white/5' : 'border-neutral-200/60'
           }`}>
             <div className="flex items-center gap-2.5">
-              <span className="text-lg font-bold tracking-tight text-brand-gold">{total > 0 ? `${total}+` : '128+'}</span>
+              <span className="text-lg font-bold tracking-tight text-brand-gold">{serverTotal > 0 ? `${serverTotal}+` : '—'}</span>
               <span className={`text-[8.5px] font-mono tracking-widest uppercase ${isDarkMode ? 'text-neutral-500' : 'text-neutral-400'}`}>Verified Leaders</span>
             </div>
             <div className="flex items-center gap-2.5">
@@ -224,7 +286,7 @@ export default function Community() {
                 type="text"
                 value={draftFilters.service}
                 onChange={(e) => handleServiceChange(e.target.value)}
-                placeholder="Search name, profession, or service..."
+                placeholder={`Search name, profession, city, state (${PUBLIC_CARDS_SEARCH_MIN_CHARS}+ letters)…`}
                 className={`w-full border rounded-xl py-2.5 md:py-3 pl-10 md:pl-12 pr-10 text-xs font-semibold focus:outline-none focus:border-brand-gold/40 focus:ring-1 focus:ring-brand-gold/40 transition-all ${
                   isDarkMode
                     ? 'bg-neutral-950 border-white/10 text-neutral-200 placeholder-neutral-500'
@@ -257,7 +319,7 @@ export default function Community() {
                       : 'bg-neutral-50 border-neutral-200/80 text-neutral-700'
                   }`}
                 >
-                  <option value="">All Pro</option>
+                  <option value="">All Professions</option>
                   {professions.map((prof) => (
                     <option key={prof.id} value={prof.id}>{prof.name}</option>
                   ))}
@@ -307,19 +369,39 @@ export default function Community() {
 
           </div>
 
-          {/* Bottom Row: Catalogue Info & View Mode Toggle */}
-          <div className="flex flex-row items-center justify-between gap-3 pt-0.5">
-            <div className="flex flex-col items-start text-left min-w-0">
+          {/* Bottom Row: Catalogue Info, Load More & View Mode Toggle */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-0.5">
+            <div className="flex flex-col items-start text-left min-w-0 gap-1.5">
               <span className={`hidden sm:block text-[9px] font-mono uppercase tracking-widest font-bold ${isDarkMode ? 'text-neutral-500' : 'text-neutral-400'}`}>
                 Executive Catalogue
               </span>
-              <h3 className="text-[10px] sm:text-xs font-semibold tracking-tight truncate">
-                {total} verified member{total !== 1 ? 's' : ''}
+              <h3 className="text-[10px] sm:text-xs font-semibold tracking-tight">
+                {isSearchActive
+                  ? `${total} match${total === 1 ? '' : 'es'} across ${loadedCount} loaded profile${loadedCount === 1 ? '' : 's'}`
+                  : `Showing ${loadedCount} of ${serverTotal} verified member${serverTotal !== 1 ? 's' : ''}`}
+                {isPrefetchingAll ? ' · loading directory…' : ''}
               </h3>
+              {hasMore && (
+                <button
+                  type="button"
+                  onClick={() => void loadMore()}
+                  disabled={isLoadingMore || isPrefetchingAll}
+                  className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
+                    isDarkMode
+                      ? 'border-brand-gold/30 bg-brand-gold/10 text-brand-gold hover:border-brand-gold/50'
+                      : 'border-brand-gold/40 bg-brand-gold/10 text-amber-900 hover:border-brand-gold/60'
+                  }`}
+                >
+                  {isLoadingMore || isPrefetchingAll ? (
+                    <Loader2 size={12} className="animate-spin" />
+                  ) : null}
+                  Load {remainingCount} more
+                </button>
+              )}
             </div>
 
             {/* Toggle Slider vs Grid View */}
-            <div className={`flex items-center p-0.5 rounded-xl border shrink-0 ${
+            <div className={`flex items-center p-0.5 rounded-xl border shrink-0 self-end sm:self-auto ${
               isDarkMode ? 'bg-neutral-950 border-white/5' : 'bg-neutral-50 border-neutral-200'
             }`}>
               <button
@@ -452,12 +534,10 @@ export default function Community() {
                       </div>
 
                       {/* Image Frame */}
-                      <div className="relative w-full h-[200px] rounded-2xl overflow-hidden mb-4 shadow-sm">
-                        <img
-                          src={card.image}
-                          alt={card.name}
-                          className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-700"
-                          referrerPolicy="no-referrer"
+                      <div className="relative w-full h-[200px] rounded-2xl overflow-hidden mb-4 shadow-sm bg-neutral-900">
+                        <PublicCardPhoto
+                          card={card}
+                          className="opacity-90 group-hover:scale-105 transition-transform duration-700"
                         />
                         <div className={`absolute inset-0 bg-gradient-to-t ${
                           isDarkMode ? 'from-[#08080C] via-[#08080C]/20 to-transparent' : 'from-black/60 via-black/15 to-transparent'
@@ -513,31 +593,6 @@ export default function Community() {
                     </motion.div>
                   ))}
                 </div>
-
-                {/* Load More (pagination) */}
-                {hasMore && (
-                  <div className="flex justify-center">
-                    <button
-                      type="button"
-                      onClick={() => void loadMore()}
-                      disabled={isLoadingMore}
-                      className={`flex items-center gap-2 py-3 px-8 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border cursor-pointer disabled:opacity-50 ${
-                        isDarkMode
-                          ? 'bg-neutral-950 border-white/10 text-neutral-200 hover:border-brand-gold/40'
-                          : 'bg-white border-neutral-200 text-neutral-700 hover:border-brand-gold/40'
-                      }`}
-                    >
-                      {isLoadingMore ? (
-                        <>
-                          <Loader2 size={14} className="animate-spin" />
-                          <span>Loading...</span>
-                        </>
-                      ) : (
-                        <span>Load More Members</span>
-                      )}
-                    </button>
-                  </div>
-                )}
               </motion.div>
             ) : (
               <motion.div
@@ -582,7 +637,7 @@ export default function Community() {
                   style={{ perspective: '1500px', transformStyle: 'preserve-3d' }}
                 >
                   {cards.map((card, idx) => {
-                    const offset = idx - activeIndex;
+                    const offset = idx - sliderActiveIndex;
                     const absOffset = Math.abs(offset);
 
                     if (absOffset > 2) return null;
@@ -626,7 +681,7 @@ export default function Community() {
                           setIsAutoPlaying(true);
                         }}
                         onClick={() => {
-                          if (idx === activeIndex) {
+                          if (idx === sliderActiveIndex) {
                             openLiveCard(card);
                           } else {
                             setActiveIndex(idx);
@@ -652,16 +707,11 @@ export default function Community() {
                           <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/80 backdrop-blur-md">
                             <Briefcase size={10} className="text-[#FFD700]" />
                             <span className="text-[9px] font-mono text-neutral-300 font-extrabold uppercase tracking-wider truncate max-w-[150px]">
-                              {(card.profession ?? 'Professional').toUpperCase()}
+                              {card.profession.toUpperCase()}
                             </span>
                           </div>
 
-                          <img
-                            src={card.image}
-                            alt={card.name}
-                            className="w-full h-full object-cover object-top select-none pointer-events-none"
-                            referrerPolicy="no-referrer"
-                          />
+                          <PublicCardPhoto card={card} />
 
                           <div className={`absolute inset-0 bg-gradient-to-t ${
                             isDarkMode
@@ -680,7 +730,7 @@ export default function Community() {
                             </h4>
 
                             <span className="text-[10px] font-mono uppercase tracking-[0.15em] font-bold text-[#FFD700]">
-                              {(card.profession ?? 'Professional').toUpperCase()}
+                              {card.profession.toUpperCase()}
                             </span>
                           </div>
 
@@ -717,7 +767,7 @@ export default function Community() {
                         key={idx}
                         onClick={() => setActiveIndex(idx)}
                         className={`h-2 rounded-full transition-all duration-300 ${
-                          idx === activeIndex
+                          idx === sliderActiveIndex
                             ? 'bg-brand-gold w-4'
                             : `w-2 ${isDarkMode ? 'bg-white/20 hover:bg-white/40' : 'bg-neutral-300 hover:bg-neutral-400'}`
                         }`}

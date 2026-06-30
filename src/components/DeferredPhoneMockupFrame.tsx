@@ -10,6 +10,7 @@ type DeferredPhoneMockupFrameProps = PhoneMockupFrameProps & {
   enabled?: boolean;
   /** Wait until frame enters viewport (after site load). Default true. */
   requireInView?: boolean;
+  hideLoader?: boolean;
   /** Skip waiting for window load — use when parent already gates visibility (e.g. industries section). */
   skipSiteLoadDefer?: boolean;
 };
@@ -42,6 +43,7 @@ export function DeferredPhoneMockupFrame({
   skipSiteLoadDefer = false,
   size = 'hero',
   src,
+  hideLoader = false,
   ...props
 }: DeferredPhoneMockupFrameProps) {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -85,6 +87,7 @@ export function DeferredPhoneMockupFrame({
       key={src}
       size={size}
       src={src}
+      hideLoader={hideLoader}
       {...props}
     />
   );

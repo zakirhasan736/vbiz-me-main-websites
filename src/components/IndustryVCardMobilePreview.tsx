@@ -6,6 +6,7 @@ import { Hand, Smartphone, X } from 'lucide-react';
 import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
 import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
 import { lockDocumentScroll, unlockDocumentScroll } from '@/lib/scroll-utils';
+import { VCARD_MOBILE_FRAME_LOADER } from '@/lib/vcard-mobile-loader';
 
 type IndustryVCardMobilePreviewProps = {
   isOpen: boolean;
@@ -17,7 +18,6 @@ type IndustryVCardMobilePreviewProps = {
   company: string;
   previewImage: string;
   highlighted?: boolean;
-  /** When false, live iframe is not mounted (section not yet in view). */
   iframeEnabled?: boolean;
 };
 
@@ -34,28 +34,10 @@ export function IndustryVCardMobilePreview({
   iframeEnabled = true,
 }: IndustryVCardMobilePreviewProps) {
   const [mounted, setMounted] = useState(false);
-  const [phoneLoading, setPhoneLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      setPhoneLoading(true);
-    }
-  }, [isOpen, src]);
-
-  const loaderUrlLabel = (() => {
-    try {
-      const url = new URL(src);
-      const path =
-        url.pathname.length > 28 ? `${url.pathname.slice(0, 26)}…` : url.pathname;
-      return `${url.host}${path}`;
-    } catch {
-      return src;
-    }
-  })();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -90,69 +72,45 @@ export function IndustryVCardMobilePreview({
         onClick={(e) => e.stopPropagation()}
         className="site-modal-panel site-modal-panel--sheet relative flex w-full max-w-[460px] max-h-[min(95dvh,820px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto"
       >
-            <div className="shrink-0 flex justify-center pt-3 pb-1" aria-hidden="true">
-              <span className="h-1 w-10 rounded-full bg-white/20" />
-            </div>
+        <div className="shrink-0 flex justify-center pt-3 pb-1" aria-hidden="true">
+          <span className="h-1 w-10 rounded-full bg-white/20" />
+        </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3">
-              <div className="text-center px-1 mb-4">
-               
-                <h3
-                  id="industry-vcard-mobile-title"
-                  className="text-lg font-semibold text-white tracking-tight"
-                >
-                  {industryName}
-                </h3>
-                <p className="text-base text-brand-text-muted font-light mt-1">{company}</p>
-               
-              </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3">
+          <div className="text-center px-1 mb-4">
+            <h3 id="industry-vcard-mobile-title" className="text-lg font-semibold text-white tracking-tight">
+              {industryName}
+            </h3>
+            <p className="text-base text-brand-text-muted font-light mt-1">{company}</p>
+            <p className="text-[11px] text-brand-gold/90 font-light mt-2 leading-relaxed">
+              Loading live vCard — spinner clears when the link is ready
+            </p>
+          </div>
 
-              <VCardInteractiveLane className="w-full flex flex-col items-center">
-                <div className="relative w-full max-w-[407px] mx-auto">
-                  {phoneLoading && (
-                    <div
-                      className="vcard-phone-loader absolute inset-0 z-[80] flex flex-col items-center justify-center rounded-[44px] border border-brand-gold/30 bg-[#080808] px-5 text-center shadow-[inset_0_0_40px_rgba(212,175,55,0.06)]"
-                      role="status"
-                      aria-live="polite"
-                      aria-label={`Loading ${industryName} live demo`}
-                    >
-                      <div className="mb-4 h-12 w-12 animate-spin rounded-full border-2 border-brand-gold/25 border-t-brand-gold shadow-[0_0_20px_rgba(212,175,55,0.4)]" />
-                      <span className="text-base font-semibold uppercase tracking-widest text-white">
-                        Loading live demo
-                      </span>
-                      <span className="mt-2 max-w-[260px] break-all font-mono text-[10px] leading-snug text-brand-gold">
-                        {loaderUrlLabel}
-                      </span>
-                      <span className="mt-3 text-[10px] font-light text-neutral-400">
-                        Connecting to vCard…
-                      </span>
-                    </div>
-                  )}
-                  <PhoneMockupFrame
-                    key={`${src}-${isOpen}`}
-                    src={src}
-                    title={title}
-                    size="modal"
-                    compactLoader
-                    iframeLoading="eager"
-                    showUrlInLoader
-                    minLoaderMs={900}
-                    onLoadingChange={setPhoneLoading}
-                  />
-                </div>
-              </VCardInteractiveLane>
+          <VCardInteractiveLane className="w-full flex flex-col items-center">
+            <div className="relative w-full max-w-[407px] mx-auto">
+              <PhoneMockupFrame
+                key={src}
+                src={src}
+                title={title}
+                size="modal"
+                iframeLoading="eager"
+                {...VCARD_MOBILE_FRAME_LOADER}
+              />
             </div>
+          </VCardInteractiveLane>
+        </div>
 
-            <div className="shrink-0 border-t border-white/10 bg-brand-surface px-4 pt-1.5 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-gold py-2.5 text-sm font-semibold text-black shadow-[0_4px_20px_rgba(212,175,55,0.25)] transition-transform active:scale-[0.98]"
-              >
-                <X size={16} aria-hidden="true" />
-                Close preview
-              </button>
-            </div>
+        <div className="shrink-0 border-t border-white/10 bg-brand-surface px-4 pt-1.5 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-gold py-2.5 text-sm font-semibold text-black shadow-[0_4px_20px_rgba(212,175,55,0.25)] transition-transform active:scale-[0.98]"
+          >
+            <X size={16} aria-hidden="true" />
+            Close preview
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -187,7 +145,7 @@ export function IndustryVCardMobilePreview({
           </span>
           <span className="text-sm font-semibold text-white tracking-wide">Tap to open live preview</span>
           <span className="text-[11px] text-brand-text-muted font-light px-6 text-center leading-snug">
-            Opens in a bottom panel — scroll inside the phone
+            Brief loader while your selected vCard connects
           </span>
         </div>
 
@@ -199,7 +157,8 @@ export function IndustryVCardMobilePreview({
       <div className="mt-4 flex items-start gap-2.5 max-w-[407px] mx-auto rounded-xl border border-brand-gold/20 bg-brand-gold/[0.04] px-3.5 py-3 text-left">
         <Hand size={16} className="text-brand-gold shrink-0 mt-0.5" aria-hidden="true" />
         <p className="text-[11px] text-brand-text-muted font-light leading-relaxed">
-          <span className="text-brand-text font-medium">How to preview:</span> tap an industry below — we&apos;ll bring you back here. Then tap the phone to open the live vCard popup.
+          <span className="text-brand-text font-medium">Tip:</span> choose an industry tile first, then tap the phone
+          to open the live frame with a short preloader.
         </p>
       </div>
 
