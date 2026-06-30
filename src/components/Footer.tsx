@@ -36,6 +36,7 @@ const PLATFORM_LINKS = [
   ['/compare', 'Paper vs vBiz'],
   ['/navigation-bar', 'Nav Bar'],
   ['/advantage', 'Advantage'],
+  ['/community', 'Community'],
   ['/pricing', 'Pricing'],
 ] as const;
 

@@ -64,6 +64,7 @@ export const Navbar: React.FC = () => {
     { name: 'Navigation Bar', path: '/navigation-bar' },
     { name: 'Advantage', path: '/advantage' },
     { name: 'vBiz vs Paper', path: '/compare' },
+    { name: 'Community', path: '/community' },
     { name: 'Pricing', path: '/pricing' },
   ];
 
