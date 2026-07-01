@@ -15,7 +15,7 @@ export function VCardInteractiveLane({ children, className = '', id }: VCardInte
   return (
     <div
       id={id}
-      className={`vcard-interactive-lane vcard-iframe-zone pointer-events-auto relative z-20 touch-pan-y ${className}`}
+      className={`vcard-interactive-lane vcard-iframe-zone pointer-events-auto relative z-20 ${className}`}
     >
       {children}
     </div>

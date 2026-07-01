@@ -455,9 +455,7 @@ const InteractiveDemoSection = () => {
           </ScrollRevealCard>
 
           {/* Interactive Screen Mockup — popup on mobile, inline on xl+ */}
-          <ScrollRevealCard
-            direction="right"
-            distance="XL"
+          <div
             className="order-1 xl:order-2 lg:col-span-12 xl:col-span-7 flex flex-col items-center justify-center relative gap-5 pointer-events-auto z-10 home-industry-mockup"
           >
             <div className="flex flex-col items-center gap-3 w-full max-w-[407px] mx-auto relative z-10">
@@ -504,28 +502,6 @@ const InteractiveDemoSection = () => {
               <div className="hidden xl:block w-full">
                 <VCardInteractiveLane className="w-full" id="industries-vcard-lane">
                   <div className="relative w-full">
-                    {demoIframeReady ? (
-                      <div
-                        className="pointer-events-none fixed -left-[9999px] top-0 h-px w-px overflow-hidden opacity-0"
-                        aria-hidden
-                      >
-                        {industries
-                          .filter((ind) => ind.id !== activeIndId)
-                          .map((ind) => (
-                            <iframe
-                              key={ind.id}
-                              src={ind.demoUrl}
-                              title=""
-                              loading="eager"
-                              tabIndex={-1}
-                              onLoad={() => {
-                                loadedDemoUrlsRef.current.add(ind.demoUrl);
-                              }}
-                            />
-                          ))}
-                      </div>
-                    ) : null}
-
                     <DeferredPhoneMockupFrame
                       enabled={demoIframeReady}
                       src={activeObj.demoUrl}
@@ -570,7 +546,7 @@ const InteractiveDemoSection = () => {
                 />
               </div>
             </div>
-          </ScrollRevealCard>
+          </div>
 
         </div>
           </SectionRevealContent>

@@ -12,43 +12,78 @@ import {
 } from '@/lib/live-agent-audio';
 import {
   buildAgentSilenceRecoveryNudge,
+  buildIdleWakeNudge,
   buildUserSilenceNudge,
   detectUserSpeechLevel,
   LIVE_AGENT_AGENT_SILENCE_MS,
+  LIVE_AGENT_IDLE_WAKE_MS,
   LIVE_AGENT_NUDGE_COOLDOWN_MS,
+  LIVE_AGENT_RECOVERY_NUDGE_COOLDOWN_MS,
+  LIVE_AGENT_RESPONSE_TIMEOUT_MS,
   LIVE_AGENT_USER_SILENCE_MS,
   LIVE_AGENT_USER_SPEECH_THRESHOLD,
 } from '@/lib/live-agent-conversation';
 import {
   buildLiveAgentSystemPrompt,
   DEFAULT_CARD_DATA,
-  LIVE_AGENT_GREETING_TEXT,
-  LIVE_AGENT_GREETING_TRIGGER,
+  buildLiveAgentGreetingIntroPrompt,
 } from '@/lib/live-agent-prompt';
 import { scheduleAfterSiteLoad } from '@/lib/deferred-load';
 import { isWebKitBrowser } from '@/lib/scroll-config';
-import { LIVE_AGENT_AVATAR, LIVE_AGENT_VOICE } from '@/lib/site-assets';
+import { LIVE_AGENT_AVATAR } from '@/lib/site-assets';
+import { LIVE_AGENT_DEFAULT_VOICE, resolveLiveAgentVoice } from '@/lib/live-agent-voices';
+import {
+  buildAffirmativeProceedNudge,
+  buildUnclearSpeechNudge,
+  isFillerOnlyTranscript,
+  isLikelyAffirmativeReply,
+  isLikelyUnclearReply,
+} from '@/lib/live-agent-affirmatives';
+import {
+  buildMultiQuestionNudge,
+  buildMustAnswerQuestionNudge,
+  looksLikeMultipleQuestions,
+  looksLikeVisitorQuestion,
+} from '@/lib/live-agent-questions';
+import { LIVE_AGENT_POST_TURN_DELAY_MS } from '@/lib/live-agent-audio';
 
 const SYSTEM_PROMPT = buildLiveAgentSystemPrompt(DEFAULT_CARD_DATA, undefined, {
   voice: true,
 });
 
-async function resolveLiveAgentApiKey(): Promise<string> {
+type LiveAgentConfig = {
+  apiKey: string;
+  voice: string;
+};
+
+async function resolveLiveAgentConfig(): Promise<LiveAgentConfig> {
   const bakedKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim() || '';
+  const bakedVoice = resolveLiveAgentVoice();
   const isLocalhost =
     typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-  if (isLocalhost && bakedKey) return bakedKey;
+  if (isLocalhost && bakedKey) {
+    return { apiKey: bakedKey, voice: bakedVoice };
+  }
 
   try {
     const response = await fetch('/api/live-agent/config', { cache: 'no-store' });
-    const data = (await response.json()) as { apiKey?: string; message?: string };
-    if (response.ok && data.apiKey) return data.apiKey;
-    if (bakedKey) return bakedKey;
+    const data = (await response.json()) as {
+      apiKey?: string;
+      voice?: string;
+      message?: string;
+    };
+    if (response.ok && data.apiKey) {
+      return {
+        apiKey: data.apiKey,
+        voice: data.voice?.trim() || bakedVoice,
+      };
+    }
+    if (bakedKey) return { apiKey: bakedKey, voice: bakedVoice };
     throw new Error(data.message || 'Set GEMINI_API_KEY in .env and restart the app.');
   } catch (err) {
-    if (bakedKey) return bakedKey;
+    if (bakedKey) return { apiKey: bakedKey, voice: bakedVoice };
     throw err instanceof Error ? err : new Error('Could not load Live Agent config.');
   }
 }
@@ -82,13 +117,28 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   const isSpeakingRef = useRef(false);
   const aiRef = useRef<any>(null);
   const apiKeyRef = useRef<string | null>(null);
+  const voiceRef = useRef<string>(LIVE_AGENT_DEFAULT_VOICE);
+  const micPausedUntilRef = useRef(0);
   const isConnectedRef = useRef(false);
   const isConnectingRef = useRef(false);
   const lastUserActivityRef = useRef(0);
   const lastNudgeSentRef = useRef(0);
+  const lastRecoveryNudgeSentRef = useRef(0);
   const userSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const agentSilenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const responseWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const responseWatchdogRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const keepaliveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastServerActivityRef = useRef(0);
+  const lastAgentResponseAtRef = useRef(0);
+  const userTurnStartedAtRef = useRef(0);
+  const needsReconnectRef = useRef(false);
+  const skipGreetingOnConnectRef = useRef(false);
+  const lastInputTranscriptRef = useRef('');
+  const pendingTurnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const turnSeqRef = useRef(0);
   const nudgeCountRef = useRef(0);
+  const softReconnectRef = useRef<(() => Promise<void>) | null>(null);
 
   useEffect(() => {
     isMutedRef.current = isMuted;
@@ -109,14 +159,58 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     }
   };
 
-  const sendConversationNudge = (text: string) => {
+  const clearResponseWatchdog = () => {
+    if (responseWatchdogRef.current) {
+      clearTimeout(responseWatchdogRef.current);
+      responseWatchdogRef.current = null;
+    }
+    if (responseWatchdogRetryRef.current) {
+      clearTimeout(responseWatchdogRetryRef.current);
+      responseWatchdogRetryRef.current = null;
+    }
+  };
+
+  const clearKeepalive = () => {
+    if (keepaliveIntervalRef.current) {
+      clearInterval(keepaliveIntervalRef.current);
+      keepaliveIntervalRef.current = null;
+    }
+  };
+
+  const syncSpeakingState = () => {
+    if (Date.now() >= _lastAudioTime.current && isSpeakingRef.current) {
+      isSpeakingRef.current = false;
+      setIsSpeaking(false);
+      micPausedUntilRef.current = 0;
+    }
+  };
+
+  const ensureAudioContextsActive = () => {
+    void audioContextRef.current?.resume();
+    void pcmContextRef.current?.resume();
+  };
+
+  const sendConversationNudge = (
+    text: string,
+    options?: { recovery?: boolean; bypassCooldown?: boolean },
+  ) => {
     if (!sessionRef.current || !isConnectedRef.current) return;
 
     const now = Date.now();
-    if (now - lastNudgeSentRef.current < LIVE_AGENT_NUDGE_COOLDOWN_MS) return;
+    const isRecovery = options?.recovery ?? false;
+    const cooldownMs = isRecovery
+      ? LIVE_AGENT_RECOVERY_NUDGE_COOLDOWN_MS
+      : LIVE_AGENT_NUDGE_COOLDOWN_MS;
+    const lastSent = isRecovery ? lastRecoveryNudgeSentRef.current : lastNudgeSentRef.current;
+
+    if (!options?.bypassCooldown && now - lastSent < cooldownMs) return;
     if (isSpeakingRef.current) return;
 
-    lastNudgeSentRef.current = now;
+    if (isRecovery) {
+      lastRecoveryNudgeSentRef.current = now;
+    } else {
+      lastNudgeSentRef.current = now;
+    }
     nudgeCountRef.current += 1;
 
     try {
@@ -128,6 +222,117 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     } catch (e) {
       console.warn('Could not send conversation nudge:', e);
     }
+  };
+
+  const startResponseWatchdog = (turnStartedAt: number) => {
+    clearResponseWatchdog();
+    const staleSession = needsReconnectRef.current;
+    const firstDelay = staleSession ? 2_000 : LIVE_AGENT_RESPONSE_TIMEOUT_MS;
+
+    responseWatchdogRef.current = setTimeout(() => {
+      responseWatchdogRef.current = null;
+      if (userTurnStartedAtRef.current !== turnStartedAt) return;
+      if (lastAgentResponseAtRef.current >= turnStartedAt) return;
+      syncSpeakingState();
+      if (isSpeakingRef.current) return;
+
+      if (staleSession || needsReconnectRef.current) {
+        needsReconnectRef.current = false;
+        void softReconnectRef.current?.();
+        return;
+      }
+
+      sendConversationNudge(buildAgentSilenceRecoveryNudge(), {
+        recovery: true,
+        bypassCooldown: true,
+      });
+
+      responseWatchdogRetryRef.current = setTimeout(() => {
+        responseWatchdogRetryRef.current = null;
+        if (userTurnStartedAtRef.current !== turnStartedAt) return;
+        if (lastAgentResponseAtRef.current >= turnStartedAt) return;
+        syncSpeakingState();
+        if (isSpeakingRef.current) return;
+
+        needsReconnectRef.current = false;
+        void softReconnectRef.current?.();
+      }, LIVE_AGENT_RESPONSE_TIMEOUT_MS);
+    }, firstDelay);
+  };
+
+  const clearPendingTurnHandling = () => {
+    if (pendingTurnTimerRef.current) {
+      clearTimeout(pendingTurnTimerRef.current);
+      pendingTurnTimerRef.current = null;
+    }
+    turnSeqRef.current += 1;
+  };
+
+  const handleTurnEndNudges = (transcript: string) => {
+    if (!transcript || !isConnectedRef.current) return;
+
+    if (isFillerOnlyTranscript(transcript)) {
+      sendConversationNudge(buildUnclearSpeechNudge(transcript), {
+        recovery: true,
+        bypassCooldown: true,
+      });
+      return;
+    }
+
+    if (isLikelyAffirmativeReply(transcript)) {
+      sendConversationNudge(buildAffirmativeProceedNudge(transcript), {
+        recovery: true,
+        bypassCooldown: true,
+      });
+      return;
+    }
+
+    if (looksLikeMultipleQuestions(transcript)) {
+      sendConversationNudge(buildMultiQuestionNudge(transcript), {
+        recovery: true,
+        bypassCooldown: true,
+      });
+      return;
+    }
+
+    if (looksLikeVisitorQuestion(transcript)) {
+      sendConversationNudge(buildMustAnswerQuestionNudge(transcript), {
+        recovery: true,
+        bypassCooldown: true,
+      });
+      return;
+    }
+
+    if (isLikelyUnclearReply(transcript)) {
+      sendConversationNudge(buildUnclearSpeechNudge(transcript), {
+        recovery: true,
+        bypassCooldown: true,
+      });
+    }
+  };
+
+  const scheduleTurnEndHandling = (transcript: string) => {
+    clearPendingTurnHandling();
+    const seq = turnSeqRef.current;
+
+    pendingTurnTimerRef.current = setTimeout(() => {
+      pendingTurnTimerRef.current = null;
+      if (seq !== turnSeqRef.current || !isConnectedRef.current) return;
+      handleTurnEndNudges(transcript);
+    }, LIVE_AGENT_POST_TURN_DELAY_MS);
+  };
+
+  const startSessionKeepalive = () => {
+    clearKeepalive();
+    keepaliveIntervalRef.current = setInterval(() => {
+      if (!isConnectedRef.current) return;
+      ensureAudioContextsActive();
+
+      const staleFor = Date.now() - lastServerActivityRef.current;
+      if (lastServerActivityRef.current > 0 && staleFor > 90_000) {
+        needsReconnectRef.current = true;
+      }
+    }, 15_000);
   };
 
   const scheduleUserSilenceNudge = () => {
@@ -151,50 +356,80 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
 
     agentSilenceTimerRef.current = setTimeout(() => {
       agentSilenceTimerRef.current = null;
+      syncSpeakingState();
       if (isSpeakingRef.current) return;
       const sinceUser = Date.now() - lastUserActivityRef.current;
-      if (sinceUser > LIVE_AGENT_AGENT_SILENCE_MS + 3000) return;
-      sendConversationNudge(buildAgentSilenceRecoveryNudge());
+      if (sinceUser > LIVE_AGENT_AGENT_SILENCE_MS + 12_000) return;
+      sendConversationNudge(buildAgentSilenceRecoveryNudge(), {
+        recovery: true,
+        bypassCooldown: true,
+      });
     }, LIVE_AGENT_AGENT_SILENCE_MS);
   };
 
   const noteUserSpeech = () => {
-    const wasIdle = Date.now() - lastUserActivityRef.current > 900;
-    lastUserActivityRef.current = Date.now();
+    clearPendingTurnHandling();
+    const now = Date.now();
+    const idleFor = now - lastUserActivityRef.current;
+    const wokeFromIdle = idleFor >= LIVE_AGENT_IDLE_WAKE_MS;
+    const turnStartedAt = now;
+
+    ensureAudioContextsActive();
+    syncSpeakingState();
+    micPausedUntilRef.current = 0;
+    lastUserActivityRef.current = now;
+    userTurnStartedAtRef.current = turnStartedAt;
 
     if (userSilenceTimerRef.current) {
       clearTimeout(userSilenceTimerRef.current);
       userSilenceTimerRef.current = null;
     }
 
-    if (wasIdle && !isSpeakingRef.current && !isMutedRef.current) {
+    if (wokeFromIdle && !isSpeakingRef.current && !isMutedRef.current) {
+      sendConversationNudge(buildIdleWakeNudge(), {
+        recovery: true,
+        bypassCooldown: true,
+      });
+    }
+
+    if (!isSpeakingRef.current && !isMutedRef.current) {
       scheduleAgentSilenceRecovery();
     }
+
+    startResponseWatchdog(turnStartedAt);
   };
 
   useEffect(() => {
     const unlockAudio = () => {
-      void pcmContextRef.current?.resume();
-      void audioContextRef.current?.resume();
+      ensureAudioContextsActive();
+    };
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible' && isConnectedRef.current) {
+        ensureAudioContextsActive();
+      }
     };
 
     document.addEventListener('click', unlockAudio, { once: true, passive: true });
     document.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
     document.addEventListener('keydown', unlockAudio, { once: true, passive: true });
+    document.addEventListener('visibilitychange', onVisible);
 
     return () => {
       document.removeEventListener('click', unlockAudio);
       document.removeEventListener('touchstart', unlockAudio);
       document.removeEventListener('keydown', unlockAudio);
+      document.removeEventListener('visibilitychange', onVisible);
     };
   }, []);
 
   useEffect(() => {
     let cancelled = false;
-    void resolveLiveAgentApiKey()
-      .then((key) => {
+    void resolveLiveAgentConfig()
+      .then((config) => {
         if (cancelled) return;
-        apiKeyRef.current = key;
+        apiKeyRef.current = config.apiKey;
+        voiceRef.current = config.voice;
       })
       .catch((err) => {
         if (cancelled) return;
@@ -293,7 +528,11 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     }
     source.start(nextStartTimeRef.current);
     nextStartTimeRef.current += audioBuffer.duration;
-    _lastAudioTime.current = Date.now() + Math.ceil(audioBuffer.duration * 1000);
+    const endMs = Date.now() + Math.ceil(audioBuffer.duration * 1000) + 280;
+    _lastAudioTime.current = endMs;
+    micPausedUntilRef.current = endMs;
+    lastAgentResponseAtRef.current = Date.now();
+    clearResponseWatchdog();
   };
 
   const monitorSpeaking = () => {
@@ -312,6 +551,9 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
 
   const disconnect = () => {
     clearSilenceTimers();
+    clearResponseWatchdog();
+    clearPendingTurnHandling();
+    clearKeepalive();
     try {
       if (sessionRef.current) {
         sessionRef.current.close();
@@ -351,13 +593,16 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   const ensureAiClient = async () => {
     if (aiRef.current) return aiRef.current;
 
-    const [runtime, apiKey] = await Promise.all([
+    const [runtime, config] = await Promise.all([
       loadLiveAgentRuntime(),
-      apiKeyRef.current ? Promise.resolve(apiKeyRef.current) : resolveLiveAgentApiKey(),
+      apiKeyRef.current && voiceRef.current
+        ? Promise.resolve({ apiKey: apiKeyRef.current, voice: voiceRef.current })
+        : resolveLiveAgentConfig(),
     ]);
 
-    apiKeyRef.current = apiKey;
-    aiRef.current = new runtime.GoogleGenAI({ apiKey });
+    apiKeyRef.current = config.apiKey;
+    voiceRef.current = config.voice;
+    aiRef.current = new runtime.GoogleGenAI({ apiKey: config.apiKey });
     return aiRef.current;
   };
 
@@ -388,13 +633,13 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
         config: {
           responseModalities: [runtime.Modality.AUDIO],
           speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: LIVE_AGENT_VOICE } },
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: voiceRef.current } },
           },
           realtimeInputConfig: {
             automaticActivityDetection: {
               disabled: false,
-              startOfSpeechSensitivity: runtime.StartSensitivity.START_SENSITIVITY_HIGH,
-              endOfSpeechSensitivity: runtime.EndSensitivity.END_SENSITIVITY_LOW,
+              startOfSpeechSensitivity: runtime.StartSensitivity.START_SENSITIVITY_LOW,
+              endOfSpeechSensitivity: runtime.EndSensitivity.END_SENSITIVITY_HIGH,
               prefixPaddingMs: LIVE_AGENT_VAD.prefixPaddingMs,
               silenceDurationMs: LIVE_AGENT_VAD.silenceDurationMs,
             },
@@ -445,15 +690,20 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
             setIsConnected(true);
             setIsConnecting(false);
             lastUserActivityRef.current = Date.now();
+            lastServerActivityRef.current = Date.now();
             nudgeCountRef.current = 0;
 
             checkSpeakingRef.current = window.setTimeout(monitorSpeaking, 48);
+            startSessionKeepalive();
 
             sessionPromise
               .then((session: any) => {
                 sessionRef.current = session;
                 try {
-                  const introPrompt = `${LIVE_AGENT_GREETING_TRIGGER} Introduce yourself aloud as the live AI assistant and say exactly: "${LIVE_AGENT_GREETING_TEXT}"`;
+                  const introPrompt = skipGreetingOnConnectRef.current
+                    ? buildIdleWakeNudge()
+                    : buildLiveAgentGreetingIntroPrompt();
+                  skipGreetingOnConnectRef.current = false;
                   if (typeof session.sendRealtimeInput === 'function') {
                     session.sendRealtimeInput({ text: introPrompt });
                   } else if (typeof session.send === 'function') {
@@ -472,9 +722,17 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
               if (isMutedRef.current) return;
 
               const inputData = e.inputBuffer.getChannelData(0);
+              const speechLevel = detectUserSpeechLevel(inputData);
 
-              if (detectUserSpeechLevel(inputData) >= LIVE_AGENT_USER_SPEECH_THRESHOLD) {
+              if (speechLevel >= LIVE_AGENT_USER_SPEECH_THRESHOLD) {
+                micPausedUntilRef.current = 0;
                 noteUserSpeech();
+              } else if (Date.now() < micPausedUntilRef.current) {
+                return;
+              }
+
+              if (audioContext.state === 'suspended') {
+                void audioContext.resume();
               }
 
               const payload = { audio: encodeMicChunk(inputData, audioContext.sampleRate) };
@@ -498,6 +756,11 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
           },
           onmessage: (e: any) => {
             const message = e;
+            lastServerActivityRef.current = Date.now();
+
+            if (message.goAway) {
+              needsReconnectRef.current = true;
+            }
 
             if (message.toolCall) {
               const functionCalls = message.toolCall.functionCalls;
@@ -566,14 +829,21 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                 scheduledSourcesRef.current = [];
                 nextStartTimeRef.current = pcmContextRef.current.currentTime;
                 _lastAudioTime.current = 0;
+                micPausedUntilRef.current = 0;
               }
             }
 
             if (message.serverContent?.inputTranscription?.text) {
+              lastInputTranscriptRef.current = message.serverContent.inputTranscription.text;
               noteUserSpeech();
             }
 
             if (message.serverContent?.turnComplete) {
+              const transcript = lastInputTranscriptRef.current.trim();
+              if (transcript) {
+                scheduleTurnEndHandling(transcript);
+              }
+              lastInputTranscriptRef.current = '';
               scheduleUserSilenceNudge();
             }
           },
@@ -597,6 +867,13 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     } finally {
       isConnectingRef.current = false;
     }
+  };
+
+  softReconnectRef.current = async () => {
+    if (isConnectingRef.current) return;
+    skipGreetingOnConnectRef.current = true;
+    disconnect();
+    await startConnection();
   };
 
   const toggleConnection = () => {

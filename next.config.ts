@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { VCARD_EMBED_PERMISSIONS_POLICY } from './src/lib/vcard-mobile-loader';
 
 const nextConfig: NextConfig = {
   async redirects() {
@@ -33,7 +34,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Permissions-Policy',
-            value: 'microphone=(self)',
+            value: VCARD_EMBED_PERMISSIONS_POLICY,
           },
         ],
       },

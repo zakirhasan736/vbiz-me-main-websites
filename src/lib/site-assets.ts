@@ -80,7 +80,10 @@ export const LIVE_AGENT_AVATAR = {
   fab: { width: 56, height: 56, sizes: '56px' },
 } as const;
 
-export const LIVE_AGENT_VOICE = 'Charon';
+import { resolveLiveAgentVoice } from '@/lib/live-agent-voices';
+
+/** Active Gemini Live voice — override with LIVE_AGENT_VOICE / NEXT_PUBLIC_LIVE_AGENT_VOICE */
+export const LIVE_AGENT_VOICE = resolveLiveAgentVoice();
 
 /** @deprecated Use COMPETITIVE_ANALYSIS_CHART.src */
 export const COMPETITIVE_ANALYSIS_IMAGE = COMPETITIVE_ANALYSIS_CHART.src;

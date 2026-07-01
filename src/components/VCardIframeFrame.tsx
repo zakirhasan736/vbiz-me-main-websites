@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { VCARD_IFRAME_ALLOW } from '@/lib/vcard-mobile-loader';
 
 interface VCardIframeFrameProps {
   src: string;
@@ -147,7 +148,7 @@ export function VCardIframeFrame({
     >
       {showLoader && !hideLoader && src.trim().length > 0 && (
         <div
-          className="vcard-iframe-loader absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#080808] px-4"
+          className="vcard-iframe-loader pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#080808] px-4"
           role="status"
           aria-live="polite"
           aria-label={`Loading ${title}`}
@@ -179,13 +180,11 @@ export function VCardIframeFrame({
           key={src}
           ref={bindIframeRef}
           src={src}
-          className={`absolute inset-0 z-[1] h-full w-full border-0 pointer-events-auto touch-auto ${className} ${
-            showLoader && !hideLoader ? 'opacity-0' : 'opacity-100'
-          } transition-opacity duration-200`}
+          className={`absolute inset-0 z-[1] h-full w-full border-0 pointer-events-auto touch-auto ${className}`}
           title={title}
           onLoad={handleLoad}
           loading={iframeLoading}
-          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; fullscreen"
+          allow={VCARD_IFRAME_ALLOW}
         />
       ) : null}
     </div>

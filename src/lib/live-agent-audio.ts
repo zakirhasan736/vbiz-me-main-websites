@@ -8,7 +8,7 @@ const MAX_PEAK_GAIN = 160;
 const MIN_PEAK_GAIN = 3;
 
 /** Pre-encoder Web Audio gain (applied before compressor). */
-export const LIVE_AGENT_INPUT_GAIN = 9;
+export const LIVE_AGENT_INPUT_GAIN = 5;
 
 /** ScriptProcessor buffer — smaller = lower latency, larger = smoother quiet capture. */
 export const LIVE_AGENT_MIC_BUFFER_SIZE = 1024;
@@ -32,9 +32,13 @@ export const LIVE_AGENT_MIC_CONSTRAINTS: MediaStreamConstraints = {
 };
 
 export const LIVE_AGENT_VAD = {
-  prefixPaddingMs: 700,
-  silenceDurationMs: 1600,
+  prefixPaddingMs: 600,
+  /** Wait ~1.5s of silence before end-of-turn so "yes please do that" finishes as one phrase */
+  silenceDurationMs: 1800,
 } as const;
+
+/** After user turn ends, wait before coaching nudges — feels human, not instant robot reply */
+export const LIVE_AGENT_POST_TURN_DELAY_MS = 1_500;
 
 function resampleLinear(input: Float32Array, fromRate: number, toRate: number): Float32Array {
   if (Math.abs(fromRate - toRate) < 1) return input;

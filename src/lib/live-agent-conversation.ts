@@ -1,11 +1,22 @@
 /** How long to wait after the agent stops speaking before nudging a quiet visitor */
-export const LIVE_AGENT_USER_SILENCE_MS = 14_000;
+export const LIVE_AGENT_USER_SILENCE_MS = 12_000;
 
 /** How long to wait after the visitor speaks before recovering if the agent stays silent */
-export const LIVE_AGENT_AGENT_SILENCE_MS = 7_500;
+export const LIVE_AGENT_AGENT_SILENCE_MS = 3_000;
 
-/** Minimum gap between automatic nudges so the agent does not loop annoyingly */
+/** If the visitor was quiet longer than this, treat the next speech as a wake-up */
+export const LIVE_AGENT_IDLE_WAKE_MS = 10_000;
+
+/** Max wait for an agent reply after the visitor speaks before forcing recovery */
+export const LIVE_AGENT_RESPONSE_TIMEOUT_MS = 4_000;
+
+/** Minimum gap between automatic user-silence nudges */
 export const LIVE_AGENT_NUDGE_COOLDOWN_MS = 22_000;
+
+/** Minimum gap for agent-recovery / idle-wake nudges (must not block after user speaks) */
+export const LIVE_AGENT_RECOVERY_NUDGE_COOLDOWN_MS = 2_500;
+
+export { LIVE_AGENT_POST_TURN_DELAY_MS } from '@/lib/live-agent-audio';
 
 /** Mic RMS/peak threshold — visitor is likely speaking */
 export const LIVE_AGENT_USER_SPEECH_THRESHOLD = 0.014;
@@ -17,9 +28,9 @@ const USER_SILENCE_NUDGES = [
 ] as const;
 
 const AGENT_SILENCE_RECOVERY_NUDGES = [
-  'The visitor just spoke but you have not answered aloud yet. Respond now in one to three conversational sentences. Acknowledge what you heard or what they likely meant. If unclear, offer two simple paths tied to this card. Never stay silent after user speech.',
-  'The visitor spoke and is waiting. Speak aloud immediately. Reflect their intent in plain language, answer from approved card data when possible, or guide them to the best next step on this card. If you are unsure, say so warmly and offer the intro video or a quick tour.',
-  'User voice input was detected and you have not replied yet. Speak now. Start with a short acknowledgment (Got it, Sure, Great question), then give a helpful answer or a clear next step. Never leave them wondering if you understood.',
+  'The visitor just spoke but you have not answered aloud yet. Respond NOW. If they asked a question — any question — answer it. If they asked multiple questions, answer one by one in order. If off-topic, acknowledge and bridge to services, founder story, or the card. Never stay silent.',
+  'The visitor spoke and is waiting. Speak aloud immediately. They may have asked something unclear or off-topic — still respond warmly, infer intent, or offer tour vs services vs founder story. If they said yes/please/go ahead, proceed with your last offer. Never ignore them.',
+  'User voice detected — you have not replied. Speak now. Every visitor question requires a spoken answer. Start with Got it or Great question, then answer from approved data or redirect smartly to the card. If multiple questions, say you will take them one at a time and answer each. Never go silent.',
 ] as const;
 
 let nudgeIndex = 0;
@@ -36,6 +47,10 @@ export function buildUserSilenceNudge(): string {
 
 export function buildAgentSilenceRecoveryNudge(): string {
   return `[SYSTEM — ${nextRotating(AGENT_SILENCE_RECOVERY_NUDGES)}]`;
+}
+
+export function buildIdleWakeNudge(): string {
+  return '[SYSTEM — The visitor spoke. Respond aloud immediately. If they asked a question, answer it — or if multiple questions, answer one by one. If off-topic, bridge to services or the card. If they agreed (yes, please, go ahead), proceed with your last offer. Never stay silent.]';
 }
 
 /** Quick level check for mic activity without importing full audio utils */

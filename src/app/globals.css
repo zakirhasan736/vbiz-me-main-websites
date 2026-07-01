@@ -1159,6 +1159,19 @@ body.industry-demo-modal-open [data-site-navbar] {
   pointer-events: auto;
 }
 
+/* Let embedded vCard videos receive taps, scrubbing, and fullscreen controls */
+.vcard-iframe-shell iframe,
+#see-in-action .vcard-iframe-shell iframe,
+.portfolio-vcard-modal .vcard-iframe-shell iframe,
+.industry-vcard-mobile-modal .vcard-iframe-shell iframe {
+  touch-action: auto !important;
+}
+
+/* Framer Motion wrappers must not transform over live iframe embeds (breaks WebKit video) */
+#see-in-action .home-industry-mockup[data-reveal-card] {
+  transform: none !important;
+}
+
 /* Phone notch — rendered as pseudo-elements, no extra DOM nodes */
 .vcard-phone-mockup::before {
   content: '';
