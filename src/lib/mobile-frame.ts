@@ -18,15 +18,16 @@ export const MOBILE_FRAME_SIZES: Record<
 > = {
   hero: {
     maxWidth: 407,
+    /** Shell ≈ 860px — fits 812px logical viewport + padding/border (reduces inner iframe scroll) */
     shell:
-      'w-full max-w-[407px] h-[min(760px,80dvh)] min-h-[540px] rounded-[48px] p-3 border-[4px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_rgba(212,175,55,0.1)]',
+      'w-full max-w-[407px] h-[min(860px,84dvh)] min-h-[620px] rounded-[48px] p-3 border-[4px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9),0_0_30px_rgba(212,175,55,0.1)]',
     screen: 'rounded-[36px]',
   },
   modal: {
-    /** Outer shell — inner screen ≈ 375px (375 + padding + border) */
+    /** Fits industry mobile sheet (header + close bar) while keeping ~375×812 logical viewport */
     maxWidth: 407,
     shell:
-      'w-full max-w-[407px] h-[min(780px,75dvh)] min-h-[540px] rounded-[44px] p-3 border-[4px] shadow-[0_20px_45px_-15px_rgba(0,0,0,0.9),0_0_20px_rgba(212,175,55,0.05)]',
+      'w-full max-w-[407px] h-[clamp(440px,calc(96dvh-13rem),70dvh)] rounded-[44px] p-3 border-[4px] shadow-[0_20px_45px_-15px_rgba(0,0,0,0.9),0_0_20px_rgba(212,175,55,0.05)]',
     screen: 'rounded-[34px]',
   },
 };

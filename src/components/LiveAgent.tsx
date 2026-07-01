@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { Mic, Square, Loader2, Volume2, MicOff, AlertCircle } from 'lucide-react';
 import { loadLiveAgentRuntime } from '@/lib/live-agent-runtime';
@@ -95,6 +96,7 @@ type LiveAgentProps = {
 
 export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgentProps) {
   const [isOpen, setIsOpen] = useState(initialOpen);
+  const [portalMounted, setPortalMounted] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -497,6 +499,10 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     };
   }, []);
 
+  useEffect(() => {
+    setPortalMounted(true);
+  }, []);
+
   const initAudioOutput = () => {
     if (!pcmContextRef.current) {
       pcmContextRef.current = new AudioContext({ sampleRate: 24000, latencyHint: 'interactive' });
@@ -884,10 +890,11 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     }
   };
 
-  return (
-    <div className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[100] flex flex-col items-end gap-4 pointer-events-none">
-      {isOpen && (
-          <div className="pointer-events-auto bg-zinc-950 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 shadow-sm w-72 min-h-[194px] flex flex-col gap-4 relative overflow-hidden">
+  return portalMounted
+    ? createPortal(
+        <div className="live-ai-agent-root fixed bottom-6 right-6 lg:bottom-10 lg:right-10 flex flex-col items-end gap-4 pointer-events-none">
+          {isOpen && (
+            <div className="live-ai-agent-site-panel pointer-events-auto bg-zinc-950 border border-zinc-800 rounded-3xl p-5 shadow-2xl w-72 min-h-[194px] flex flex-col gap-4 relative overflow-hidden">
             {isSpeaking && (
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-800/30 via-transparent to-transparent opacity-50 animate-pulse pointer-events-none" />
             )}
@@ -973,13 +980,14 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
               )}
             </div>
           </div>
-      )}
-      {/* Minimized indicator: appears when agent is minimized due to nav open */}
-      <AnimateMinimized />
+          )}
+          {/* Minimized indicator: appears when agent is minimized due to nav open */}
+          <AnimateMinimized />
 
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`pointer-events-auto w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-transform duration-300 relative overflow-hidden shadow-sm ${
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className={`live-ai-agent-fab pointer-events-auto w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-transform duration-300 relative overflow-hidden shadow-lg ${
           isOpen
             ? 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
             : 'bg-zinc-100 text-zinc-950 hover:scale-105 active:scale-95'
@@ -1001,9 +1009,11 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
         {isConnected && !isOpen && (
           <span className="absolute top-0 right-0 w-3 h-3 bg-zinc-400 rounded-full border-2 border-zinc-900" />
         )}
-      </button>
-    </div>
-  );
+          </button>
+        </div>,
+        document.body,
+      )
+    : null;
 }
 
 function AnimateMinimized() {

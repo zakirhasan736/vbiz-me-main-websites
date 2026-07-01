@@ -2,9 +2,15 @@
 export const VCARD_SHORT_LOADER = {
   compact: true,
   showUrlInLoader: false,
-  minLoaderMs: 320,
-  maxLoaderMs: 5000,
+  minLoaderMs: 120,
+  maxLoaderMs: 2000,
   shortLoader: true,
+} as const;
+
+/** Revisit / cached industry — hide spinner as soon as iframe load fires. */
+export const VCARD_CACHED_LOADER = {
+  ...VCARD_SHORT_LOADER,
+  minLoaderMs: 0,
 } as const;
 
 /** Permissions delegated to embedded vcard.vbizme.com iframes (video autoplay, fullscreen, etc.). */

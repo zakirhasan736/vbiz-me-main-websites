@@ -14,7 +14,7 @@ import { scrollElementIntoView } from '@/lib/scroll-utils';
 import { DeferredPhoneMockupFrame } from '@/components/DeferredPhoneMockupFrame';
 import { PortfolioVCardModal } from '@/components/PortfolioVCardModal';
 import { IndustryVCardMobilePreview } from '@/components/IndustryVCardMobilePreview';
-import { VCARD_MOBILE_FRAME_LOADER } from '@/lib/vcard-mobile-loader';
+import { VCARD_CACHED_LOADER, VCARD_MOBILE_FRAME_LOADER } from '@/lib/vcard-mobile-loader';
 import {
   PORTFOLIO_QR_CARDS,
   getPortfolioQrImageSrc,
@@ -76,8 +76,8 @@ const INDUSTRY_DEMO_STEPS = [
   },
 ] as const;
 
-const INDUSTRY_SWITCH_LOADER_MS = 200;
-const INDUSTRY_SWITCH_LOADER_CACHED_MS = 90;
+const INDUSTRY_SWITCH_LOADER_MS = 50;
+const INDUSTRY_SWITCH_LOADER_CACHED_MS = 0;
 
 function slugFromDemoUrl(url: string): string {
   try {
@@ -100,6 +100,7 @@ const InteractiveDemoSection = () => {
   const [previewHighlighted, setPreviewHighlighted] = useState(false);
   const [demoIframeReady, setDemoIframeReady] = useState(false);
   const [activeIframeLoading, setActiveIframeLoading] = useState(true);
+  const [loadedDemoUrls, setLoadedDemoUrls] = useState<Set<string>>(() => new Set());
   const sectionRef = useRef<HTMLElement>(null);
   const mobilePreviewRef = useRef<HTMLDivElement>(null);
   const activeIndIdRef = useRef(activeIndId);
@@ -148,6 +149,12 @@ const InteractiveDemoSection = () => {
 
       if (demoUrl) {
         loadedDemoUrlsRef.current.add(demoUrl);
+        setLoadedDemoUrls((prev) => {
+          if (prev.has(demoUrl)) return prev;
+          const next = new Set(prev);
+          next.add(demoUrl);
+          return next;
+        });
       }
       scheduleHideActiveLoader(industryId);
     },
@@ -168,9 +175,22 @@ const InteractiveDemoSection = () => {
     dnsPrefetch.href = 'https://vcard.vbizme.com';
     document.head.appendChild(dnsPrefetch);
 
+    const defaultDemoUrl = HOME_INDUSTRIES.find((ind) => ind.id === 'executive')?.demoUrl;
+    const defaultPrefetch = defaultDemoUrl
+      ? (() => {
+          const link = document.createElement('link');
+          link.rel = 'prefetch';
+          link.href = defaultDemoUrl;
+          link.as = 'document';
+          document.head.appendChild(link);
+          return link;
+        })()
+      : null;
+
     return () => {
       preconnect.remove();
       dnsPrefetch.remove();
+      defaultPrefetch?.remove();
     };
   }, []);
 
@@ -213,17 +233,10 @@ const InteractiveDemoSection = () => {
   const selectIndustry = (id: string) => {
     if (id === activeIndIdRef.current) return;
 
-    const targetUrl = HOME_INDUSTRIES.find((ind) => ind.id === id)?.demoUrl;
-    const cached = targetUrl ? loadedDemoUrlsRef.current.has(targetUrl) : false;
-
     switchTimeRef.current = Date.now();
     clearLoaderHideTimer();
     setActiveIndId(id);
     setActiveIframeLoading(true);
-
-    if (cached) {
-      scheduleHideActiveLoader(id, true);
-    }
 
     if (typeof window === 'undefined' || !window.matchMedia('(max-width: 1279px)').matches) {
       return;
@@ -503,6 +516,7 @@ const InteractiveDemoSection = () => {
                 <VCardInteractiveLane className="w-full" id="industries-vcard-lane">
                   <div className="relative w-full">
                     <DeferredPhoneMockupFrame
+                      key={activeObj.demoUrl}
                       enabled={demoIframeReady}
                       src={activeObj.demoUrl}
                       title={`${activeObj.name} Demo`}
@@ -511,8 +525,9 @@ const InteractiveDemoSection = () => {
                       skipSiteLoadDefer
                       iframeLoading="eager"
                       fetchPriority="high"
-                      {...VCARD_MOBILE_FRAME_LOADER}
-                      showUrlInLoader
+                      {...(loadedDemoUrls.has(activeObj.demoUrl)
+                        ? VCARD_CACHED_LOADER
+                        : VCARD_MOBILE_FRAME_LOADER)}
                       onLoadingChange={handleActiveIframeLoading}
                     />
                   </div>

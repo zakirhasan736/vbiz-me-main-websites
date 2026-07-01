@@ -70,13 +70,15 @@ export function IndustryVCardMobilePreview({
         aria-modal="true"
         aria-labelledby="industry-vcard-mobile-title"
         onClick={(e) => e.stopPropagation()}
-        className="site-modal-panel site-modal-panel--sheet relative flex w-full max-w-[460px] max-h-[min(95dvh,820px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto"
+        className="site-modal-panel site-modal-panel--sheet relative flex w-full max-w-[460px] max-h-[min(96dvh,820px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto"
+        data-lenis-prevent
+        data-lenis-prevent-touch
       >
         <div className="shrink-0 flex justify-center pt-3 pb-1" aria-hidden="true">
           <span className="h-1 w-10 rounded-full bg-white/20" />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3">
+        <div className="industry-vcard-mobile-modal__scroll min-h-0 flex-1 overflow-y-auto px-4 pb-3">
           <div className="text-center px-1 mb-4">
             <h3 id="industry-vcard-mobile-title" className="text-lg font-semibold text-white tracking-tight">
               {industryName}
