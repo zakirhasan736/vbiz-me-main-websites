@@ -122,6 +122,14 @@ export function VCardIframeFrame({
     scheduleHideLoader();
   }, [hideLoader, onLoadingChange, scheduleHideLoader, src]);
 
+  const bindIframeRef = useCallback(
+    (node: HTMLIFrameElement | null) => {
+      if (!node || fetchPriority === 'auto') return;
+      node.setAttribute('fetchpriority', fetchPriority);
+    },
+    [fetchPriority],
+  );
+
   const loaderUrlLabel = (() => {
     try {
       const url = new URL(src);
@@ -169,6 +177,7 @@ export function VCardIframeFrame({
       {src.trim().length > 0 ? (
         <iframe
           key={src}
+          ref={bindIframeRef}
           src={src}
           className={`absolute inset-0 z-[1] h-full w-full border-0 pointer-events-auto touch-auto ${className} ${
             showLoader && !hideLoader ? 'opacity-0' : 'opacity-100'
@@ -176,7 +185,6 @@ export function VCardIframeFrame({
           title={title}
           onLoad={handleLoad}
           loading={iframeLoading}
-          fetchPriority={fetchPriority}
           allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; fullscreen"
         />
       ) : null}
