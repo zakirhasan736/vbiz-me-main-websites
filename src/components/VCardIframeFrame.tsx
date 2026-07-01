@@ -8,13 +8,13 @@ interface VCardIframeFrameProps {
   title: string;
   className?: string;
   maxLoaderMs?: number;
-  /** Keep loader visible at least this long after iframe load (0 = hide immediately). */
+  /** Keep loader visible at least this long so users notice it on fast/cached loads. */
   minLoaderMs?: number;
   compact?: boolean;
   iframeLoading?: 'lazy' | 'eager';
   fetchPriority?: 'high' | 'low' | 'auto';
   showUrlInLoader?: boolean;
-  /** When true, iframe loads without the spinner overlay (e.g. silent preload). */
+  /** When true, iframe loads without the spinner overlay (e.g. industry tab switcher). */
   hideLoader?: boolean;
   /** Compact loader — spinner + one line, no URL (mobile popups). */
   shortLoader?: boolean;
@@ -29,7 +29,7 @@ export function VCardIframeFrame({
   src,
   title,
   className = 'border-0 bg-brand-deep',
-  maxLoaderMs = 8000,
+  maxLoaderMs = 6000,
   minLoaderMs = 0,
   compact = false,
   iframeLoading = 'lazy',
@@ -39,12 +39,10 @@ export function VCardIframeFrame({
   shortLoader = false,
   onLoadingChange,
 }: VCardIframeFrameProps) {
-  const [showLoader, setShowLoader] = useState(() => !hideLoader && src.trim().length > 0);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const [showLoader, setShowLoader] = useState(!hideLoader);
   const activeSrcRef = useRef(src);
   const mountTimeRef = useRef(0);
   const hideTimerRef = useRef<number | null>(null);
-  const loadedSrcRef = useRef<string | null>(null);
 
   const clearHideTimer = () => {
     if (hideTimerRef.current !== null) {
@@ -53,64 +51,55 @@ export function VCardIframeFrame({
     }
   };
 
-  const finishLoading = useCallback(() => {
-    if (activeSrcRef.current !== src) return;
-
-    loadedSrcRef.current = src;
-
-    if (hideLoader) {
-      onLoadingChange?.(false);
-      return;
-    }
-
+  const scheduleHideLoader = useCallback(() => {
+    clearHideTimer();
     const elapsed = Date.now() - mountTimeRef.current;
     const delay = Math.max(0, minLoaderMs - elapsed);
 
-    clearHideTimer();
-
-    const hide = () => {
-      if (activeSrcRef.current !== src) return;
-      setShowLoader(false);
-      onLoadingChange?.(false);
-    };
-
-    if (delay === 0) {
-      hide();
-    } else {
-      hideTimerRef.current = window.setTimeout(hide, delay);
-    }
-  }, [hideLoader, minLoaderMs, onLoadingChange, src]);
+    hideTimerRef.current = window.setTimeout(() => {
+      if (activeSrcRef.current === src) {
+        setShowLoader(false);
+        onLoadingChange?.(false);
+      }
+    }, delay);
+  }, [minLoaderMs, onLoadingChange, src]);
 
   useLayoutEffect(() => {
     if (!src.trim()) {
       clearHideTimer();
       setShowLoader(false);
       onLoadingChange?.(false);
-      activeSrcRef.current = src;
       return;
     }
 
     activeSrcRef.current = src;
-    clearHideTimer();
-
-    const needsLoad = loadedSrcRef.current !== src;
 
     if (hideLoader) {
+      clearHideTimer();
       setShowLoader(false);
-      if (needsLoad) {
-        onLoadingChange?.(true);
-      }
-    } else {
-      mountTimeRef.current = Date.now();
-      setShowLoader(true);
       onLoadingChange?.(true);
+
+      const fallback = window.setTimeout(() => {
+        if (activeSrcRef.current === src) {
+          onLoadingChange?.(false);
+        }
+      }, maxLoaderMs);
+
+      return () => {
+        window.clearTimeout(fallback);
+        clearHideTimer();
+      };
     }
+
+    onLoadingChange?.(true);
+    mountTimeRef.current = Date.now();
+    clearHideTimer();
+    setShowLoader(true);
 
     const fallback = window.setTimeout(() => {
       if (activeSrcRef.current === src) {
         setShowLoader(false);
         onLoadingChange?.(false);
-        loadedSrcRef.current = src;
       }
     }, maxLoaderMs);
 
@@ -118,21 +107,24 @@ export function VCardIframeFrame({
       window.clearTimeout(fallback);
       clearHideTimer();
     };
-  }, [hideLoader, maxLoaderMs, onLoadingChange, src]);
+  }, [hideLoader, onLoadingChange, src, maxLoaderMs]);
 
   useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe || !src.trim()) return;
+    if (hideLoader) return;
+    onLoadingChange?.(showLoader);
+  }, [hideLoader, showLoader, onLoadingChange]);
 
-    const onLoad = () => finishLoading();
-    iframe.addEventListener('load', onLoad);
-
-    return () => iframe.removeEventListener('load', onLoad);
-  }, [finishLoading, src]);
+  const handleLoad = useCallback(() => {
+    if (activeSrcRef.current !== src) return;
+    if (hideLoader) {
+      onLoadingChange?.(false);
+      return;
+    }
+    scheduleHideLoader();
+  }, [hideLoader, onLoadingChange, scheduleHideLoader, src]);
 
   const bindIframeRef = useCallback(
     (node: HTMLIFrameElement | null) => {
-      iframeRef.current = node;
       if (!node || fetchPriority === 'auto') return;
       node.setAttribute('fetchpriority', fetchPriority);
     },
@@ -151,7 +143,9 @@ export function VCardIframeFrame({
   })();
 
   return (
-    <div className="vcard-iframe-shell absolute inset-0 h-full w-full min-h-0 touch-auto pointer-events-auto overflow-hidden">
+    <div
+      className="vcard-iframe-shell absolute inset-0 h-full w-full min-h-0 touch-auto pointer-events-auto overflow-hidden"
+    >
       {showLoader && !hideLoader && src.trim().length > 0 && (
         <div
           className="vcard-iframe-loader pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#080808] px-4"
@@ -188,7 +182,7 @@ export function VCardIframeFrame({
           src={src}
           className={`absolute inset-0 z-[1] h-full w-full border-0 pointer-events-auto touch-auto ${className}`}
           title={title}
-          onLoad={() => finishLoading()}
+          onLoad={handleLoad}
           loading={iframeLoading}
           allow={VCARD_IFRAME_ALLOW}
         />

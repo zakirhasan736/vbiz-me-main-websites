@@ -31,7 +31,7 @@ function PhoneMockupPlaceholder({
       style={{ maxWidth: styles.maxWidth }}
       aria-hidden="true"
     >
-      <div className={`vcard-phone-screen w-full flex-1 min-h-[560px] bg-[#080808] ${styles.screen}`} />
+      <div className={`vcard-phone-screen w-full flex-1 min-h-[420px] bg-[#080808] ${styles.screen}`} />
     </div>
   );
 }
