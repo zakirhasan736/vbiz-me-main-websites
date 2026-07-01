@@ -16,7 +16,7 @@ export type HomeIndustry = {
   demoUrl: string;
 };
 
-/** Homepage “Toggle Industries” list — order is intentional. */
+/** Homepage industry demo list — order is intentional. */
 export const HOME_INDUSTRIES: HomeIndustry[] = [
   {
     id: 'executive',

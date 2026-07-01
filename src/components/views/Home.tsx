@@ -62,7 +62,7 @@ const INDUSTRY_DEMO_STEPS = [
   {
     icon: MousePointerClick,
     title: 'Pick a profile',
-    hint: 'Tap any industry tile — each is a verified live vCard.',
+    hint: 'Tap any profile below — each opens a verified live vCard.',
   },
   {
     icon: Smartphone,
@@ -344,10 +344,10 @@ const InteractiveDemoSection = () => {
               <div className="relative flex items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-4 sm:px-5">
                 <div>
                   <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-brand-gold font-bold block mb-1">
-                    Live profile picker
+                    Explore live demos
                   </span>
                   <span className="text-base sm:text-lg font-semibold text-white tracking-tight">
-                    Select an industry
+                    Choose a business to preview
                   </span>
                 </div>
                 <span className="shrink-0 inline-flex flex-col items-end rounded-xl border border-brand-gold/20 bg-brand-gold/[0.06] px-3 py-2">
