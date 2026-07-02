@@ -42,5 +42,5 @@ export async function fetchPublicCards(
 
 export function getPublicCardProfileUrl(card: { slug: string; profile_url?: string }): string {
   if (card.profile_url) return card.profile_url
-  return `https://vbiz.me/${card.slug}`
+  return `https://vcard.vbizme.com/${card.slug}`
 }
