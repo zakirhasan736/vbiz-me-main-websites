@@ -12,6 +12,7 @@ export interface PhoneMockupFrameProps {
   title: string;
   /** @deprecated Live iframe is preferred — static preview only when explicitly set */
   previewImage?: string;
+  previewIsVideo?: boolean;
   /** hero = industries; modal = portfolio & our-work popups */
   size?: MobileFrameSize;
   className?: string;
@@ -39,6 +40,7 @@ export const PhoneMockupFrame = forwardRef<HTMLDivElement, PhoneMockupFrameProps
       src,
       title,
       previewImage,
+      previewIsVideo = false,
       size = 'hero',
       className = '',
       compactLoader = false,
@@ -79,6 +81,16 @@ export const PhoneMockupFrame = forwardRef<HTMLDivElement, PhoneMockupFrameProps
               hideLoader={hideLoader}
               shortLoader={shortLoader}
               onLoadingChange={onLoadingChange}
+            />
+          ) : previewIsVideo && previewImage ? (
+            <video
+              src={previewImage}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover object-top"
+              aria-label={title}
             />
           ) : (
             /* eslint-disable-next-line @next/next/no-img-element */

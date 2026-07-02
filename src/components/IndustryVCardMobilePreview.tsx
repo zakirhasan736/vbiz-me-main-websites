@@ -17,6 +17,7 @@ type IndustryVCardMobilePreviewProps = {
   industryName: string;
   company: string;
   previewImage: string;
+  previewIsVideo?: boolean;
   highlighted?: boolean;
   iframeEnabled?: boolean;
 };
@@ -30,6 +31,7 @@ export function IndustryVCardMobilePreview({
   industryName,
   company,
   previewImage,
+  previewIsVideo = false,
   highlighted = false,
   iframeEnabled = true,
 }: IndustryVCardMobilePreviewProps) {
@@ -130,6 +132,7 @@ export function IndustryVCardMobilePreview({
           src=""
           title={title}
           previewImage={previewImage}
+          previewIsVideo={previewIsVideo}
           live={false}
           size="hero"
           className="pointer-events-none select-none"

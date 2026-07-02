@@ -386,14 +386,26 @@ const InteractiveDemoSection = () => {
                           }`}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={ind.avatar}
-                            alt=""
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                            decoding="async"
-                            draggable={false}
-                          />
+                          {ind.mediaIsVideo ? (
+                            <video
+                              src={ind.avatar}
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              className="h-full w-full object-cover"
+                              aria-hidden
+                            />
+                          ) : (
+                            <img
+                              src={ind.avatar}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                              decoding="async"
+                              draggable={false}
+                            />
+                          )}
                         </span>
                         <span
                           className={`absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full border text-brand-gold ${
@@ -542,6 +554,7 @@ const InteractiveDemoSection = () => {
                   industryName={activeObj.name}
                   company={activeObj.company}
                   previewImage={activeObj.videoPlaceholder}
+                  previewIsVideo={activeObj.mediaIsVideo}
                   highlighted={previewHighlighted}
                   iframeEnabled={demoIframeReady}
                 />
