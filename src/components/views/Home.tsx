@@ -1,7 +1,7 @@
 'use client';
 
 import { 
-  ArrowRight, 
+  ArrowRight, ArrowLeft,
   ChevronLeft, ChevronRight, Sparkles, 
   Car, Award, Utensils, Briefcase, X, Zap, Landmark,
   QrCode, TrendingUp, ExternalLink, Truck, Home as HomeIcon, Dumbbell, Scale,
@@ -42,6 +42,7 @@ import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 import { HOME_INDUSTRIES } from '@/lib/home-industries';
 import { vcardProfileUrl } from '@/lib/vcard-profile-url';
+import { useMobileViewport } from '@/lib/use-mobile-viewport';
 
 const qrSliderItems = PORTFOLIO_QR_CARDS;
 
@@ -566,6 +567,7 @@ const PortfolioSection = () => {
   const [scanStep, setScanStep] = useState(0); // 0: loading, 1: video pitch, 2: full card
   const [selectedQrCard, setSelectedQrCard] = useState<PortfolioQrCard | null>(null);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
+  const isMobileSheet = useMobileViewport();
 
   const sliderRef = useRef<HTMLDivElement>(null);
   const [activeSliderIdx, setActiveSliderIdx] = useState(0);
@@ -1068,58 +1070,99 @@ const PortfolioSection = () => {
 
       {/* IMMERSIVE LIVE CARD SCAN SIMULATOR POPUP HANDLER */}
       {isScanning && selectedCard && (
-        <div className="site-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md overflow-y-auto">
+        <div
+          className={
+            isMobileSheet
+              ? 'vcard-mobile-bottom-modal site-modal-backdrop fixed inset-0 z-50 flex items-end justify-center bg-black/92 backdrop-blur-xl'
+              : 'site-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md overflow-y-auto'
+          }
+          onClick={() => {
+            setIsScanning(false);
+            setSelectedCard(null);
+          }}
+        >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="site-modal-panel relative w-full max-w-sm bg-neutral-950 border border-white/10 rounded-[44px] shadow-2xl p-4 overflow-hidden my-8"
+            className={
+              isMobileSheet
+                ? 'site-modal-panel site-modal-panel--sheet relative flex w-full max-w-[460px] max-h-[min(98dvh,900px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto'
+                : 'site-modal-panel relative w-full max-w-sm bg-neutral-950 border border-white/10 rounded-[44px] shadow-2xl p-4 overflow-hidden my-8'
+            }
           >
-              
-              {/* Floating top closing X button */}
-              <button 
-                onClick={() => {
-                  setIsScanning(false);
-                  setSelectedCard(null);
-                }}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 border border-white/10 text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer active:scale-90 transition-transform z-50"
-                title="Close Simulation"
-              >
-                <X size={14} />
-              </button>
-
-              {/* LIVE CARDS IFRAME SIMULATION WITH ELEGANT LOADING SCREEN OVERLAY */}
-              <div className="flex flex-col items-center justify-center pt-2">
-                <span className="text-[10px] uppercase font-mono tracking-widest text-[#777] font-bold block mb-1">
-                  NFC Connection Active
-                </span>
-                <h3 className="text-white font-bold text-center text-base mb-1 tracking-tight font-sans">
-                  {selectedCard.name}
-                </h3>
-                <p className="text-neutral-500 font-light text-[10px] mb-4 text-center max-w-[240px]">
-                  {selectedCard.role} • {selectedCard.company}
-                </p>
-                
-                <DeferredPhoneMockupFrame
-                  src={selectedCard.demoUrl || vcardProfileUrl('michaelangelo-casanova-2')}
-                  title={`${selectedCard.name} Live Card Interface`}
-                  size="modal"
-                  requireInView={false}
-                  {...VCARD_MOBILE_FRAME_LOADER}
-                />
-              </div>
-
-              {/* Close helper bottom footer button */}
-              <div className="mt-4 text-center">
-                <button 
+            {isMobileSheet ? (
+              <>
+                <div className="shrink-0 flex justify-center pt-3 pb-1" aria-hidden="true">
+                  <span className="h-1 w-10 rounded-full bg-white/20" />
+                </div>
+                <div className="shrink-0 flex items-center px-4 pb-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsScanning(false);
+                      setSelectedCard(null);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 text-sm font-medium text-neutral-300 transition-colors hover:text-white"
+                  >
+                    <ArrowLeft size={16} aria-hidden="true" />
+                    Back
+                  </button>
+                </div>
+                <div className="min-h-0 flex-1 overflow-hidden px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+                  <DeferredPhoneMockupFrame
+                    src={selectedCard.demoUrl || vcardProfileUrl('michaelangelo-casanova-2')}
+                    title={`${selectedCard.name} Live Card Interface`}
+                    size="modal"
+                    requireInView={false}
+                    {...VCARD_MOBILE_FRAME_LOADER}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <button
                   onClick={() => {
                     setIsScanning(false);
                     setSelectedCard(null);
                   }}
-                  className="text-[10px] font-semibold text-neutral-400 hover:text-brand-gold transition-colors underline cursor-pointer"
+                  className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 border border-white/10 text-neutral-400 hover:text-white flex items-center justify-center cursor-pointer active:scale-90 transition-transform z-50"
+                  title="Close Simulation"
                 >
-                  Exit Scanned Portal
+                  <X size={14} />
                 </button>
-              </div>
 
+                <div className="flex flex-col items-center justify-center pt-2">
+                  <span className="text-[10px] uppercase font-mono tracking-widest text-[#777] font-bold block mb-1">
+                    NFC Connection Active
+                  </span>
+                  <h3 className="text-white font-bold text-center text-base mb-1 tracking-tight font-sans">
+                    {selectedCard.name}
+                  </h3>
+                  <p className="text-neutral-500 font-light text-[10px] mb-4 text-center max-w-[240px]">
+                    {selectedCard.role} • {selectedCard.company}
+                  </p>
+
+                  <DeferredPhoneMockupFrame
+                    src={selectedCard.demoUrl || vcardProfileUrl('michaelangelo-casanova-2')}
+                    title={`${selectedCard.name} Live Card Interface`}
+                    size="modal"
+                    requireInView={false}
+                    {...VCARD_MOBILE_FRAME_LOADER}
+                  />
+                </div>
+
+                <div className="mt-4 text-center">
+                  <button
+                    onClick={() => {
+                      setIsScanning(false);
+                      setSelectedCard(null);
+                    }}
+                    className="text-[10px] font-semibold text-neutral-400 hover:text-brand-gold transition-colors underline cursor-pointer"
+                  >
+                    Exit Scanned Portal
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

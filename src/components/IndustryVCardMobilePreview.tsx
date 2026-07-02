@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Hand, Smartphone, X } from 'lucide-react';
+import { ArrowLeft, Hand, Smartphone, X } from 'lucide-react';
 import { PhoneMockupFrame } from '@/components/PhoneMockupFrame';
 import { VCardInteractiveLane } from '@/components/VCardInteractiveLane';
 import { lockDocumentScroll, unlockDocumentScroll } from '@/lib/scroll-utils';
@@ -68,27 +68,37 @@ export function IndustryVCardMobilePreview({
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="industry-vcard-mobile-title"
+        aria-label={`${industryName} live vCard preview`}
         onClick={(e) => e.stopPropagation()}
-        className="site-modal-panel site-modal-panel--sheet relative flex w-full max-w-[460px] max-h-[min(95dvh,820px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto"
+        className="site-modal-panel site-modal-panel--sheet relative flex w-full max-w-[460px] max-h-[min(98dvh,900px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto"
       >
         <div className="shrink-0 flex justify-center pt-3 pb-1" aria-hidden="true">
           <span className="h-1 w-10 rounded-full bg-white/20" />
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-3">
-          <div className="text-center px-1 mb-4">
-            <h3 id="industry-vcard-mobile-title" className="text-lg font-semibold text-white tracking-tight">
-              {industryName}
-            </h3>
-            <p className="text-base text-brand-text-muted font-light mt-1">{company}</p>
-            <p className="text-[11px] text-brand-gold/90 font-light mt-2 leading-relaxed">
-              Loading live vCard — spinner clears when the link is ready
-            </p>
-          </div>
+        <div className="shrink-0 flex items-center justify-between gap-3 px-4 pb-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 text-sm font-medium text-neutral-300 transition-colors hover:text-white"
+          >
+            <ArrowLeft size={16} aria-hidden="true" />
+            Back
+          </button>
 
-          <VCardInteractiveLane className="w-full flex flex-col items-center">
-            <div className="relative w-full max-w-[407px] mx-auto">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close preview"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/40 text-neutral-300 transition-colors hover:text-white active:scale-95"
+          >
+            <X size={16} aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-hidden px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+          <VCardInteractiveLane className="w-full h-full flex flex-col items-center">
+            <div className="relative w-full max-w-[407px] mx-auto h-full">
               <PhoneMockupFrame
                 key={src}
                 src={src}
@@ -99,17 +109,6 @@ export function IndustryVCardMobilePreview({
               />
             </div>
           </VCardInteractiveLane>
-        </div>
-
-        <div className="shrink-0 border-t border-white/10 bg-brand-surface px-4 pt-1.5 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-brand-gold py-2.5 text-sm font-semibold text-black shadow-[0_4px_20px_rgba(212,175,55,0.25)] transition-transform active:scale-[0.98]"
-          >
-            <X size={16} aria-hidden="true" />
-            Close preview
-          </button>
         </div>
       </div>
     </div>

@@ -73,8 +73,8 @@ export function PortfolioVCardModal({
   const qrBgColor = 'ffffff';
 
   const livePhone = (
-    <VCardInteractiveLane className="w-full flex flex-col items-center">
-      <div className="relative w-full max-w-[407px] mx-auto">
+    <VCardInteractiveLane className={`w-full flex flex-col items-center ${isMobileSheet && view === 'live' ? 'flex-1 min-h-0' : ''}`}>
+      <div className={`relative w-full max-w-[407px] mx-auto ${isMobileSheet && view === 'live' ? 'h-full' : ''}`}>
         {view === 'live' && !iframeReady ? <VCardShortPhoneLoader /> : null}
         <PhoneMockupFrame
           src={card.demoUrl}
@@ -94,35 +94,43 @@ export function PortfolioVCardModal({
     <div
       className={
         view === 'live'
-          ? `flex flex-col items-center w-full ${isMobileSheet ? 'items-stretch pt-1' : 'pt-2'}`
+          ? `flex flex-col w-full h-full min-h-0 ${isMobileSheet ? 'items-stretch' : 'items-center pt-2'}`
           : 'fixed left-[-9999px] top-0 h-[640px] w-[407px] overflow-hidden opacity-0 pointer-events-none'
       }
       aria-hidden={view !== 'live'}
     >
       {view === 'live' && isMobileSheet ? (
-        <button
-          type="button"
-          onClick={() => setView('qr')}
-          className="mb-3 inline-flex items-center gap-1.5 text-sm font-medium text-neutral-400 transition-colors hover:text-white"
-          id={`${modalId}-back-btn`}
-        >
-          <ArrowLeft size={16} />
-          Back to QR
-        </button>
+        <div className="shrink-0 mb-2 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => setView('qr')}
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 text-sm font-medium text-neutral-300 transition-colors hover:text-white"
+            id={`${modalId}-back-btn`}
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close preview"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/40 text-neutral-300 transition-colors hover:text-white active:scale-95"
+            id={`${modalId}-close-btn`}
+          >
+            <X size={16} aria-hidden="true" />
+          </button>
+        </div>
       ) : null}
 
       {view === 'live' ? (
-        <>
-          <h3
-            id={view === 'live' ? `${modalId}-title` : undefined}
-            className={`text-white font-bold tracking-tight ${isMobileSheet ? 'text-lg mb-1' : 'text-xl mb-2 mt-6'}`}
-          >
-            {card.displayName} Live View
-          </h3>
-          <p className="text-neutral-400 font-light text-base leading-relaxed px-2 max-w-sm mb-5">
-            Scroll inside the phone to explore the live vCard.
-          </p>
-        </>
+        <p
+          className={`font-light leading-relaxed text-brand-gold/95 ${
+            isMobileSheet ? 'text-[11px] mb-2 px-1' : 'text-sm mb-5 px-2 max-w-sm text-center'
+          }`}
+        >
+          Scroll inside the phone to explore the live vCard.
+        </p>
       ) : null}
 
       {livePhone}
@@ -164,7 +172,7 @@ export function PortfolioVCardModal({
     </>
   );
 
-  const mobileBottomClose = (
+  const mobileBottomClose = view === 'qr' ? (
     <div className="shrink-0 border-t border-white/10 bg-brand-surface px-4 pt-1.5 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <button
         type="button"
@@ -175,7 +183,7 @@ export function PortfolioVCardModal({
         Close preview
       </button>
     </div>
-  );
+  ) : null;
 
   const modal = isOpen ? (
     <div
@@ -194,10 +202,12 @@ export function PortfolioVCardModal({
         onClick={(e) => e.stopPropagation()}
         className={
           isMobileSheet
-            ? `portfolio-vcard-modal site-modal-panel site-modal-panel--sheet relative flex w-full max-w-[460px] max-h-[min(95dvh,820px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto ${
+            ? `portfolio-vcard-modal site-modal-panel site-modal-panel--sheet relative flex w-full max-w-[460px] max-h-[min(98dvh,900px)] flex-col overflow-hidden rounded-t-[1.75rem] border border-white/10 border-b-0 bg-brand-surface shadow-[0_-12px_40px_rgba(0,0,0,0.65)] pointer-events-auto ${
                 view === 'live' ? '' : 'text-center'
               }`
-            : `portfolio-vcard-modal site-modal-panel relative w-full max-h-[95vh] overflow-y-auto rounded-[2.5rem] border border-white/10 bg-brand-surface px-4 py-6 text-center shadow-[0_20px_50px_rgba(0,0,0,0.9)] pointer-events-auto md:px-6 md:py-8 ${
+            : `portfolio-vcard-modal site-modal-panel relative w-full max-h-[95vh] ${
+                view === 'live' ? 'overflow-hidden' : 'overflow-y-auto'
+              } rounded-[2.5rem] border border-white/10 bg-brand-surface px-4 py-6 text-center shadow-[0_20px_50px_rgba(0,0,0,0.9)] pointer-events-auto md:px-6 md:py-8 ${
                 view === 'live' ? 'max-w-[460px]' : 'max-w-[400px]'
               }`
         }
@@ -240,7 +250,11 @@ export function PortfolioVCardModal({
         <div
           className={
             isMobileSheet
-              ? `min-h-0 flex-1 overflow-y-auto px-4 pb-3 ${view === 'live' ? 'text-left' : 'text-center'}`
+              ? `min-h-0 flex-1 overflow-hidden px-4 ${
+                  view === 'live'
+                    ? 'pb-[max(0.75rem,env(safe-area-inset-bottom))]'
+                    : 'overflow-y-auto pb-3'
+                } ${view === 'live' ? 'text-left' : 'text-center'}`
               : 'flex flex-col items-center'
           }
         >
