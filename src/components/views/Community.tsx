@@ -74,13 +74,9 @@ export default function Community() {
     isSearching,
     isLoadingMore,
     isPrefetchingAll,
-    isSearchActive,
     error,
     hasMore,
-    total,
     serverTotal,
-    loadedCount,
-    remainingCount,
     setDraftFilter,
     updateAndApplyFilter,
     clearFilters,
@@ -369,19 +365,10 @@ export default function Community() {
 
           </div>
 
-          {/* Bottom Row: Catalogue Info, Load More & View Mode Toggle */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-0.5">
-            <div className="flex flex-col items-start text-left min-w-0 gap-1.5">
-              <span className={`hidden sm:block text-[9px] font-mono uppercase tracking-widest font-bold ${isDarkMode ? 'text-neutral-500' : 'text-neutral-400'}`}>
-                Executive Catalogue
-              </span>
-              <h3 className="text-[10px] sm:text-xs font-semibold tracking-tight">
-                {isSearchActive
-                  ? `${total} match${total === 1 ? '' : 'es'} across ${loadedCount} loaded profile${loadedCount === 1 ? '' : 's'}`
-                  : `Showing ${loadedCount} of ${serverTotal} verified member${serverTotal !== 1 ? 's' : ''}`}
-                {isPrefetchingAll ? ' · loading directory…' : ''}
-              </h3>
-              {hasMore && (
+          {/* Bottom Row: Load More & View Mode Toggle */}
+          <div className="flex items-center justify-between gap-3 pt-0.5">
+            <div className="min-w-0">
+              {hasMore ? (
                 <button
                   type="button"
                   onClick={() => void loadMore()}
@@ -395,13 +382,13 @@ export default function Community() {
                   {isLoadingMore || isPrefetchingAll ? (
                     <Loader2 size={12} className="animate-spin" />
                   ) : null}
-                  Load {remainingCount} more
+                  Load more
                 </button>
-              )}
+              ) : null}
             </div>
 
             {/* Toggle Slider vs Grid View */}
-            <div className={`flex items-center p-0.5 rounded-xl border shrink-0 self-end sm:self-auto ${
+            <div className={`flex items-center p-0.5 rounded-xl border shrink-0 ${
               isDarkMode ? 'bg-neutral-950 border-white/5' : 'bg-neutral-50 border-neutral-200'
             }`}>
               <button
