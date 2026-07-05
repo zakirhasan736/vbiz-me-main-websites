@@ -1,20 +1,29 @@
 /** How long to wait after the agent stops speaking before nudging a quiet visitor */
 export const LIVE_AGENT_USER_SILENCE_MS = 12_000;
 
-/** How long to wait after the visitor speaks before recovering if the agent stays silent */
-export const LIVE_AGENT_AGENT_SILENCE_MS = 3_000;
+/** How long to wait after the visitor's turn ends before recovering if the agent stays silent */
+export const LIVE_AGENT_AGENT_SILENCE_MS = 1_800;
 
 /** If the visitor was quiet longer than this, treat the next speech as a wake-up */
-export const LIVE_AGENT_IDLE_WAKE_MS = 10_000;
+export const LIVE_AGENT_IDLE_WAKE_MS = 8_000;
 
-/** Max wait for an agent reply after the visitor speaks before forcing recovery */
-export const LIVE_AGENT_RESPONSE_TIMEOUT_MS = 4_000;
+/** First check for an agent reply after the visitor finishes speaking */
+export const LIVE_AGENT_RESPONSE_TIMEOUT_MS = 2_000;
+
+/** Repeat recovery nudges while the visitor is still waiting */
+export const LIVE_AGENT_PERSISTENT_RECOVERY_INTERVAL_MS = 2_000;
+
+/** Recovery nudges before soft reconnect */
+export const LIVE_AGENT_MAX_RECOVERY_ATTEMPTS = 5;
+
+/** Keep long-idle sessions responsive */
+export const LIVE_AGENT_SESSION_WAKE_MS = 22_000;
 
 /** Minimum gap between automatic user-silence nudges */
 export const LIVE_AGENT_NUDGE_COOLDOWN_MS = 22_000;
 
 /** Minimum gap for agent-recovery / idle-wake nudges (must not block after user speaks) */
-export const LIVE_AGENT_RECOVERY_NUDGE_COOLDOWN_MS = 2_500;
+export const LIVE_AGENT_RECOVERY_NUDGE_COOLDOWN_MS = 1_200;
 
 export { LIVE_AGENT_POST_TURN_DELAY_MS } from '@/lib/live-agent-audio';
 
