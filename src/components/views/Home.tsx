@@ -72,8 +72,8 @@ const INDUSTRY_DEMO_STEPS = [
   },
   {
     icon: ScrollText,
-    title: 'Scroll & explore',
-    hint: 'Swipe inside — video, services, and save-contact all work.',
+    title: 'Click & explore',
+    hint: 'Click any button or icon to experience what your client will see.',
   },
 ] as const;
 

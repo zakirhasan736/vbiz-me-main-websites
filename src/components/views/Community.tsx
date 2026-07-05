@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Briefcase, Search, Grid,
-  Sparkles, Check, ExternalLink,
+  Sparkles, Check,
   X, Compass, Sun, Moon, ArrowRight,
   LayoutList, ChevronLeft, ChevronRight, Loader2,
 } from 'lucide-react';
@@ -18,18 +18,43 @@ import {
   PUBLIC_CARDS_SEARCH_MIN_CHARS,
 } from '@/lib/publicCards/publicCardsSearch';
 
-const swipeConfidenceThreshold = 10000;
-const swipePower = (offset: number, velocity: number) => {
-  return Math.abs(offset) * velocity;
-};
+/** Portrait crop — slider uses centered framing; grid keeps top anchor for headshots. */
+const CONNECTION_CARD_MEDIA_FIT = 'object-cover object-top origin-top';
+const CONNECTION_CARD_MEDIA_FIT_CENTER = 'object-cover object-center origin-center';
+
+/** Shared card proportions — ~72% of height is photo/video for face visibility. */
+const COMMUNITY_CARD = {
+  gridHeight: 'h-[480px] sm:h-[520px]',
+  slider: {
+    stageH: { mobile: 390, desktop: 520 },
+    card: { w: { mobile: 228, desktop: 308 }, h: { mobile: 368, desktop: 488 } },
+    mediaH: { mobile: 268, desktop: 352 },
+    footerH: { mobile: 100, desktop: 136 },
+  },
+} as const;
+
+const CARD_MEDIA_HOVER = 'grayscale-[10%] transition-all duration-700 group-hover/card:scale-[1.02] group-hover/card:grayscale-0';
+
+/** Snappy 3D slide — cinematic but responsive. */
+const SLIDER_SPRING = { type: 'spring' as const, damping: 30, stiffness: 420, mass: 0.72 };
 
 function PublicCardPhoto({
   card,
   className = '',
+  imageClassName = '',
+  onMediaReady,
+  mediaFit = CONNECTION_CARD_MEDIA_FIT,
 }: {
   card: PublicCardListItem;
   className?: string;
+  imageClassName?: string;
+  onMediaReady?: () => void;
+  mediaFit?: string;
 }) {
+  useEffect(() => {
+    if (!card.img) onMediaReady?.();
+  }, [card.img, onMediaReady]);
+
   if (card.img && card.isVideo) {
     return (
       <video
@@ -38,7 +63,9 @@ function PublicCardPhoto({
         loop
         muted
         playsInline
-        className={`w-full h-full object-cover object-top ${className}`}
+        onLoadedData={onMediaReady}
+        onCanPlay={onMediaReady}
+        className={`h-full w-full ${mediaFit} ${imageClassName} ${className}`}
         aria-label={card.name}
       />
     );
@@ -49,7 +76,8 @@ function PublicCardPhoto({
       <img
         src={card.img}
         alt={card.name}
-        className={`w-full h-full object-cover object-top ${className}`}
+        onLoad={onMediaReady}
+        className={`h-full w-full ${mediaFit} ${imageClassName} ${className}`}
         referrerPolicy="no-referrer"
       />
     );
@@ -60,8 +88,68 @@ function PublicCardPhoto({
       className={`flex h-full w-full items-center justify-center bg-gradient-to-br from-neutral-800 via-neutral-900 to-neutral-950 ${className}`}
       aria-hidden
     >
-      <span className="text-3xl font-black tracking-tight text-brand-gold">{card.initials}</span>
+      <span className="text-3xl font-black tracking-tight text-brand-gold md:text-4xl">{card.initials}</span>
     </div>
+  );
+}
+
+function connectionCardShell(isDarkMode: boolean) {
+  return isDarkMode
+    ? 'group/card relative flex flex-col overflow-hidden rounded-xl border border-white/10 bg-[#08080C] shadow-xl transition-colors duration-300 md:rounded-3xl hover:border-brand-gold/30'
+    : 'group/card relative flex flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xl transition-colors duration-300 md:rounded-3xl hover:border-brand-gold/45';
+}
+
+function ConnectionCardInner({
+  card,
+  isDarkMode,
+  onViewProfile,
+}: {
+  card: PublicCardListItem;
+  isDarkMode: boolean;
+  onViewProfile: () => void;
+}) {
+  return (
+    <>
+      <div className="relative min-h-[68%] flex-1 overflow-hidden bg-neutral-950">
+        <div
+          className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[38%] bg-gradient-to-t ${
+            isDarkMode ? 'from-[#08080C] via-[#08080C]/50' : 'from-white via-white/40'
+          } to-transparent`}
+        />
+        <PublicCardPhoto card={card} imageClassName={CARD_MEDIA_HOVER} />
+      </div>
+
+      <div className={`relative z-20 flex shrink-0 flex-col items-center gap-2 px-4 pt-2.5 pb-4 text-center md:gap-2.5 md:px-5 md:pb-4 ${
+        isDarkMode ? 'bg-[#08080C]' : 'bg-white'
+      }`}>
+        <div className="w-full">
+          <h3 className={`w-full truncate text-base font-bold md:text-lg ${isDarkMode ? 'text-white' : 'text-neutral-900'}`} title={card.name}>
+            {card.name}
+          </h3>
+          <div className={`mt-1.5 inline-flex max-w-full items-center gap-1.5 truncate rounded-md border px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase ${
+            isDarkMode
+              ? 'border-white/10 bg-black/40 text-brand-gold'
+              : 'border-brand-gold/25 bg-brand-gold/[0.06] text-amber-900'
+          }`}>
+            <Briefcase size={10} /> {card.profession ?? 'Professional'}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewProfile();
+          }}
+          className={`flex w-full items-center justify-center rounded-xl border py-2.5 text-xs font-bold shadow-sm transition-all group-hover/card:bg-brand-gold group-hover/card:text-black active:scale-95 ${
+            isDarkMode
+              ? 'border-white/15 bg-neutral-800 text-white hover:bg-neutral-700'
+              : 'border-neutral-200 bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
+          }`}
+        >
+          View Profile
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -95,7 +183,9 @@ export default function Community() {
   // View mode state (grid vs slider)
   const [viewMode, setViewMode] = useState<'grid' | 'slider'>('slider');
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const loadedMediaRef = useRef<Set<string>>(new Set());
+  const [, bumpMediaLoaded] = useState(0);
 
   const professions = dropdowns.professions ?? [];
   const states = dropdowns.states ?? [];
@@ -107,6 +197,13 @@ export default function Community() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Keep the slider index in range whenever the result set changes.
   useEffect(() => {
     if (activeIndex >= cards.length) {
@@ -114,16 +211,25 @@ export default function Community() {
     }
   }, [cards, activeIndex]);
 
-  // Auto-slide effect for slider mode
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (viewMode === 'slider' && isAutoPlaying && cards.length > 1) {
-      interval = setInterval(() => {
-        setActiveIndex((prev) => (prev < cards.length - 1 ? prev + 1 : 0));
-      }, 3500);
-    }
-    return () => clearInterval(interval);
-  }, [viewMode, isAutoPlaying, cards.length, activeIndex]);
+  const nextCard = useCallback(() => {
+    if (cards.length <= 1) return;
+    setActiveIndex((prev) => (prev + 1) % cards.length);
+  }, [cards.length]);
+
+  const prevCard = useCallback(() => {
+    if (cards.length <= 1) return;
+    setActiveIndex((prev) => (prev - 1 + cards.length) % cards.length);
+  }, [cards.length]);
+
+  const markMediaLoaded = useCallback((url: string) => {
+    if (loadedMediaRef.current.has(url)) return;
+    loadedMediaRef.current.add(url);
+    bumpMediaLoaded((n) => n + 1);
+  }, []);
+
+  const isMediaReady = useCallback((url: string | null | undefined) => {
+    return !url || loadedMediaRef.current.has(url);
+  }, []);
 
   const handleServiceChange = useCallback(
     (value: string) => {
@@ -173,6 +279,23 @@ export default function Community() {
   }, []);
 
   const sliderActiveIndex = cards.length === 0 ? 0 : Math.min(activeIndex, cards.length - 1);
+
+  // Prefetch neighbor card photos so slides feel instant after the first view.
+  useEffect(() => {
+    if (viewMode !== 'slider' || cards.length === 0) return;
+
+    [-1, 0, 1, 2].forEach((offset) => {
+      const card = cards[sliderActiveIndex + offset];
+      const url = card?.img;
+      if (!url || card.isVideo || loadedMediaRef.current.has(url)) return;
+
+      const img = new window.Image();
+      img.referrerPolicy = 'no-referrer';
+      img.onload = () => markMediaLoaded(url);
+      img.onerror = () => markMediaLoaded(url);
+      img.src = url;
+    });
+  }, [cards, markMediaLoaded, sliderActiveIndex, viewMode]);
 
   useEffect(() => {
     if (viewMode !== 'slider' || !hasMore || isLoadingMore || isPrefetchingAll) return;
@@ -483,103 +606,33 @@ export default function Community() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex flex-col gap-10"
+                className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10">
-                  {cards.map((card, idx) => (
-                    <motion.div
-                      key={card.id}
-                      initial={{ opacity: 0, y: 25 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: Math.min(idx * 0.05, 0.25), ease: 'easeOut' }}
-                      onClick={() => openLiveCard(card)}
-                      role="link"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          openLiveCard(card);
-                        }
-                      }}
-                      className={`rounded-[2.25rem] border p-5 flex flex-col justify-between relative transition-all duration-500 group overflow-hidden h-[460px] cursor-pointer ${
-                        isDarkMode
-                          ? 'bg-[#08080C] border-white/5 hover:border-brand-gold/30 shadow-[0_15px_30px_rgba(0,0,0,0.5)]'
-                          : 'bg-white border-neutral-200 hover:border-brand-gold/45 shadow-md hover:shadow-lg'
-                      }`}
-                    >
-                      {/* ID & Profession Badges */}
-                      <div className="absolute top-5 left-5 z-10 flex flex-col gap-1.5 items-start">
-                        <span className="text-[7.5px] font-mono font-bold tracking-widest text-neutral-300 bg-black/80 px-2.5 py-1 rounded border border-white/5 uppercase">
-                          Sphere #{idx + 101}
-                        </span>
-                        <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-black/75 border border-white/5 backdrop-blur-md">
-                          <Briefcase size={9} className="text-brand-gold" />
-                          <span className="text-[8.5px] font-mono text-neutral-200 font-bold uppercase tracking-wider truncate max-w-[120px]">
-                            {card.profession ?? 'Professional'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Image Frame */}
-                      <div className="relative w-full h-[200px] rounded-2xl overflow-hidden mb-4 shadow-sm bg-neutral-900">
-                        <PublicCardPhoto
-                          card={card}
-                          className="opacity-90 group-hover:scale-105 transition-transform duration-700"
-                        />
-                        <div className={`absolute inset-0 bg-gradient-to-t ${
-                          isDarkMode ? 'from-[#08080C] via-[#08080C]/20 to-transparent' : 'from-black/60 via-black/15 to-transparent'
-                        }`} />
-
-                        <div className="absolute bottom-4 inset-x-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <span className="text-[8px] font-mono uppercase tracking-widest text-white bg-black/95 px-2 py-1 rounded border border-white/10">
-                            Active Now
-                          </span>
-                          <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
-                        </div>
-                      </div>
-
-                      {/* Meta Info */}
-                      <div className="text-center flex-1 flex flex-col justify-between mb-4">
-                        <div>
-                          <div className={`inline-flex items-center px-3 py-1 rounded-md border text-[8px] font-mono font-bold tracking-widest uppercase mb-2 ${
-                            isDarkMode
-                              ? 'border-brand-gold/20 bg-brand-gold/[0.04] text-brand-gold'
-                              : 'border-brand-gold/30 bg-brand-gold/[0.06] text-amber-900'
-                          }`}>
-                            <Briefcase size={11} className="inline mr-1" />
-                            <span className="ml-1.5">{card.profession ?? 'Professional'}</span>
-                          </div>
-
-                          <h4 className={`text-base font-bold tracking-tight mb-1 ${
-                            isDarkMode ? 'text-white' : 'text-neutral-900'
-                          }`}>
-                            {card.name}
-                          </h4>
-
-                          <p className={`text-[9px] font-mono tracking-wider font-semibold block mb-2 ${
-                            isDarkMode ? 'text-neutral-500' : 'text-brand-gold'
-                          }`}>
-                            vBiz Me Verified Member
-                          </p>
-                        </div>
-
-                        <p className={`font-light text-[11px] leading-relaxed line-clamp-2 px-1 ${
-                          isDarkMode ? 'text-neutral-400' : 'text-neutral-600'
-                        }`}>
-                          Explore their interactive digital vCard — services, gallery, and contact details in one link.
-                        </p>
-                      </div>
-
-                      {/* Action button */}
-                      <div className="pt-3 border-t border-neutral-200/10 flex items-center">
-                        <span className="w-full bg-brand-gold text-black group-hover:bg-yellow-500 font-extrabold py-3.5 px-4 rounded-xl text-[10px] uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 shadow-sm pointer-events-none">
-                          <ExternalLink size={12} />
-                          <span>Launch Card</span>
-                        </span>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                {cards.map((card, idx) => (
+                  <motion.div
+                    key={card.id}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-50px' }}
+                    transition={{ duration: 0.6, delay: (idx % 8) * 0.08, ease: 'easeOut' }}
+                    onClick={() => openLiveCard(card)}
+                    role="link"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openLiveCard(card);
+                      }
+                    }}
+                    className={`${connectionCardShell(isDarkMode)} ${COMMUNITY_CARD.gridHeight} cursor-pointer`}
+                  >
+                    <ConnectionCardInner
+                      card={card}
+                      isDarkMode={isDarkMode}
+                      onViewProfile={() => openLiveCard(card)}
+                    />
+                  </motion.div>
+                ))}
               </motion.div>
             ) : (
               <motion.div
@@ -587,180 +640,250 @@ export default function Community() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="relative w-full h-[510px] md:h-[600px] flex flex-col items-center justify-center overflow-visible px-2 sm:px-4 py-4 md:py-8"
+                className="community-slider-3d relative flex min-h-[400px] flex-1 flex-col items-center justify-center perspective-[1600px] md:min-h-[540px]"
               >
-                {/* Always-visible Prev / Next arrows (overlay — essential on mobile) */}
+                {/* Desktop floating arrows */}
+                <div className="pointer-events-none absolute top-1/2 z-40 hidden w-full max-w-[1080px] -translate-y-1/2 justify-between px-2 md:flex">
+                  <button
+                    type="button"
+                    onClick={prevCard}
+                    disabled={cards.length <= 1}
+                    className={`group pointer-events-auto flex h-12 w-12 items-center justify-center rounded-xl border shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${
+                      isDarkMode
+                        ? 'border-white/10 bg-black/80 text-white hover:bg-brand-gold hover:text-black'
+                        : 'border-neutral-200 bg-white/95 text-neutral-800 hover:bg-brand-gold hover:text-black'
+                    }`}
+                    aria-label="Previous profile"
+                  >
+                    <ChevronLeft size={20} className="transition-transform group-hover:-translate-x-0.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextCard}
+                    disabled={cards.length <= 1}
+                    className={`group pointer-events-auto flex h-12 w-12 items-center justify-center rounded-xl border shadow-lg backdrop-blur-md transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${
+                      isDarkMode
+                        ? 'border-white/10 bg-black/80 text-white hover:bg-brand-gold hover:text-black'
+                        : 'border-neutral-200 bg-white/95 text-neutral-800 hover:bg-brand-gold hover:text-black'
+                    }`}
+                    aria-label="Next profile"
+                  >
+                    <ChevronRight size={20} className="transition-transform group-hover:translate-x-0.5" />
+                  </button>
+                </div>
+
+                {/* Swipeable draggable 3D card stack */}
+                <motion.div
+                  drag={cards.length > 1 ? 'x' : false}
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={0.4}
+                  onDragEnd={(_, info) => {
+                    const threshold = 55;
+                    if (info.offset.x < -threshold) nextCard();
+                    else if (info.offset.x > threshold) prevCard();
+                  }}
+                  className="transform-style-3d relative flex w-full max-w-[1000px] cursor-grab items-center justify-center select-none active:cursor-grabbing"
+                  style={{ height: isMobile ? COMMUNITY_CARD.slider.stageH.mobile : COMMUNITY_CARD.slider.stageH.desktop }}
+                >
+                  <AnimatePresence initial={false}>
+                    {cards.map((card, idx) => {
+                      const offset = idx - sliderActiveIndex;
+                      const absOffset = Math.abs(offset);
+                      const direction = Math.sign(offset);
+
+                      if (absOffset > 2) return null;
+
+                      const cardWidth = isMobile ? COMMUNITY_CARD.slider.card.w.mobile : COMMUNITY_CARD.slider.card.w.desktop;
+                      const cardHeight = isMobile ? COMMUNITY_CARD.slider.card.h.mobile : COMMUNITY_CARD.slider.card.h.desktop;
+                      const mediaHeight = isMobile ? COMMUNITY_CARD.slider.mediaH.mobile : COMMUNITY_CARD.slider.mediaH.desktop;
+                      const footerHeight = isMobile ? COMMUNITY_CARD.slider.footerH.mobile : COMMUNITY_CARD.slider.footerH.desktop;
+                      const xTranslate =
+                        offset === 0 ? 0 : direction * (absOffset * (isMobile ? 55 : 130) + (isMobile ? 30 : 80));
+                      const zTranslate = offset === 0 ? (isMobile ? 40 : 80) : -absOffset * (isMobile ? 55 : 110);
+                      const yRotate = offset === 0 ? 0 : direction * (isMobile ? -14 : -22);
+                      const scale =
+                        absOffset === 0 ? 1 : Math.max(isMobile ? 0.8 : 0.75, 1 - absOffset * (isMobile ? 0.08 : 0.12));
+                      const zIndex = 50 - absOffset;
+                      const opacity = absOffset === 2 ? 0.6 : 1;
+
+                      return (
+                        <motion.div
+                          key={card.id}
+                          onMouseMove={(e) => {
+                            if (isMobile) return;
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                            e.currentTarget.style.setProperty('--mouse-x', `${(x / rect.width - 0.5) * -6}px`);
+                            e.currentTarget.style.setProperty('--mouse-y', `${(y / rect.height - 0.5) * -4}px`);
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.setProperty('--mouse-x', '0px');
+                            e.currentTarget.style.setProperty('--mouse-y', '0px');
+                          }}
+                          initial={false}
+                          animate={{
+                            x: xTranslate,
+                            z: zTranslate,
+                            rotateY: yRotate,
+                            scale,
+                            zIndex,
+                            opacity,
+                          }}
+                          transition={SLIDER_SPRING}
+                          onClick={() => {
+                            if (absOffset !== 0) setActiveIndex(idx);
+                          }}
+                          className={`transform-style-3d group/card absolute cursor-pointer overflow-hidden rounded-[2rem] border shadow-2xl transition-colors duration-300 ${
+                            isDarkMode
+                              ? 'border-white/10 bg-[#18181A]'
+                              : 'border-neutral-200 bg-white'
+                          }`}
+                          style={{
+                            width: `${cardWidth}px`,
+                            height: `${cardHeight}px`,
+                          }}
+                        >
+                          <AnimatePresence>
+                            {absOffset === 0 && card.img && !isMediaReady(card.img) && (
+                              <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.12 }}
+                                className="pointer-events-none absolute inset-x-0 top-0 z-30 flex items-center justify-center bg-neutral-950/50 backdrop-blur-[1px]"
+                                style={{ height: `${mediaHeight}px` }}
+                              >
+                                <Loader2 size={isMobile ? 22 : 28} className="animate-spin text-brand-gold" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          <motion.div
+                            animate={{ backgroundColor: absOffset === 0 ? 'rgba(0,0,0,0)' : isDarkMode ? 'rgba(24,24,27,0.72)' : 'rgba(255,255,255,0.72)' }}
+                            className="pointer-events-none absolute inset-0 z-20 transition-colors duration-200"
+                          />
+
+                          <div
+                            className="relative w-full overflow-hidden bg-neutral-950"
+                            style={{ height: `${mediaHeight}px` }}
+                          >
+                            <div
+                              className={`pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[38%] bg-gradient-to-t ${
+                                isDarkMode ? 'from-[#18181A] via-[#18181A]/45' : 'from-white via-white/40'
+                              } to-transparent`}
+                            />
+                            <motion.div
+                              className="absolute inset-0 h-full w-full overflow-hidden origin-center"
+                              style={{
+                                translate: 'var(--mouse-x, 0px) var(--mouse-y, 0px)',
+                              }}
+                              animate={{ scale: absOffset === 0 ? 1 : 1.02 }}
+                              transition={{ duration: 0.22 }}
+                            >
+                              <PublicCardPhoto
+                                card={card}
+                                imageClassName={CARD_MEDIA_HOVER}
+                                mediaFit={CONNECTION_CARD_MEDIA_FIT_CENTER}
+                                onMediaReady={card.img ? () => markMediaLoaded(card.img!) : undefined}
+                              />
+                            </motion.div>
+                          </div>
+
+                          <div
+                            className={`relative z-20 -mt-1 flex flex-col items-center justify-between border-t p-3.5 md:p-5 ${
+                              isDarkMode ? 'border-white/10 bg-[#18181A]' : 'border-neutral-200 bg-white'
+                            }`}
+                            style={{ height: `${footerHeight}px` }}
+                          >
+                            <div className="w-full text-center">
+                              <h4
+                                className={`w-full truncate px-1 text-sm font-extrabold md:text-xl ${isDarkMode ? 'text-white' : 'text-neutral-900'}`}
+                                title={card.name}
+                              >
+                                {card.name}
+                              </h4>
+                              <p
+                                className="mt-1 w-full truncate px-1 text-[9px] font-black tracking-wider text-brand-gold uppercase md:text-xs"
+                                title={card.profession ?? undefined}
+                              >
+                                {card.profession ?? 'Professional'}
+                              </p>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (absOffset !== 0) {
+                                  setActiveIndex(idx);
+                                  return;
+                                }
+                                openLiveCard(card);
+                              }}
+                              className={`mt-2 flex w-full items-center justify-center rounded-xl border py-2 text-[10px] font-black shadow-sm transition-all group-hover/card:bg-brand-gold group-hover/card:text-black active:scale-95 md:py-3.5 md:text-xs ${
+                                isDarkMode
+                                  ? 'border-white/15 bg-neutral-800 text-white hover:bg-neutral-700'
+                                  : 'border-neutral-200 bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
+                              }`}
+                            >
+                              View Profile
+                            </button>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </AnimatePresence>
+                </motion.div>
+
+                {/* Dots + mobile prev/next */}
                 {cards.length > 1 && (
-                  <>
+                  <div className="order-first mb-4 flex w-full max-w-[420px] shrink-0 items-center justify-between px-4 select-none md:order-none md:mt-6 md:mb-0">
                     <button
                       type="button"
-                      onClick={() => setActiveIndex((prev) => (prev > 0 ? prev - 1 : cards.length - 1))}
-                      className={`absolute left-1 sm:left-3 top-1/2 -translate-y-1/2 z-50 w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 backdrop-blur-md ${
+                      onClick={prevCard}
+                      disabled={cards.length <= 1}
+                      className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all active:scale-90 disabled:cursor-not-allowed disabled:opacity-20 ${
                         isDarkMode
-                          ? 'bg-black/70 text-white hover:bg-black/90 border border-white/10'
-                          : 'bg-white/90 text-neutral-800 hover:bg-white shadow-md border border-neutral-200'
+                          ? 'border-white/10 bg-white/5 text-white hover:bg-white/10'
+                          : 'border-neutral-200 bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                       }`}
                       aria-label="Previous profile"
                     >
                       <ChevronLeft size={18} />
                     </button>
+
+                    <div className="community-slider-dots no-scrollbar flex max-w-[60%] items-center gap-1.5 overflow-x-auto scroll-smooth py-1.5">
+                      {cards.map((_, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setActiveIndex(idx)}
+                          className={`h-1.5 shrink-0 rounded-full transition-all duration-300 ${
+                            idx === sliderActiveIndex
+                              ? 'w-5 bg-brand-gold'
+                              : isDarkMode
+                                ? 'w-1.5 bg-neutral-700 hover:bg-neutral-600'
+                                : 'w-1.5 bg-neutral-300 hover:bg-neutral-400'
+                          }`}
+                          aria-label={`Go to slide ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+
                     <button
                       type="button"
-                      onClick={() => setActiveIndex((prev) => (prev < cards.length - 1 ? prev + 1 : 0))}
-                      className={`absolute right-1 sm:right-3 top-1/2 -translate-y-1/2 z-50 w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 backdrop-blur-md ${
+                      onClick={nextCard}
+                      disabled={cards.length <= 1}
+                      className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all active:scale-90 disabled:cursor-not-allowed disabled:opacity-20 ${
                         isDarkMode
-                          ? 'bg-black/70 text-white hover:bg-black/90 border border-white/10'
-                          : 'bg-white/90 text-neutral-800 hover:bg-white shadow-md border border-neutral-200'
+                          ? 'border-white/10 bg-white/5 text-white hover:bg-white/10'
+                          : 'border-neutral-200 bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                       }`}
                       aria-label="Next profile"
                     >
                       <ChevronRight size={18} />
                     </button>
-                  </>
-                )}
-                {/* 3D Stack Container */}
-                <div
-                  className="relative w-full max-w-[320px] h-[460px] flex items-center justify-center my-2 md:my-0 md:mb-8 order-last md:order-first"
-                  style={{ perspective: '1500px', transformStyle: 'preserve-3d' }}
-                >
-                  {cards.map((card, idx) => {
-                    const offset = idx - sliderActiveIndex;
-                    const absOffset = Math.abs(offset);
-
-                    if (absOffset > 2) return null;
-
-                    let xTranslation = 0;
-                    let scale = 1;
-                    let rotateY = 0;
-                    let zIndex = 10 - absOffset;
-                    let zTranslation = 0;
-
-                    if (offset < 0) {
-                      xTranslation = offset * 160;
-                      zTranslation = -absOffset * 100;
-                      rotateY = 30;
-                    } else if (offset > 0) {
-                      xTranslation = offset * 160;
-                      zTranslation = -absOffset * 100;
-                      rotateY = -30;
-                    } else {
-                      xTranslation = 0;
-                      scale = 1;
-                      rotateY = 0;
-                      zIndex = 20;
-                      zTranslation = 0;
-                    }
-
-                    return (
-                      <motion.div
-                        key={card.id}
-                        drag="x"
-                        dragConstraints={{ left: 0, right: 0 }}
-                        dragElastic={0.2}
-                        onDragStart={() => setIsAutoPlaying(false)}
-                        onDragEnd={(e, { offset: dragOffset, velocity }) => {
-                          const swipe = swipePower(dragOffset.x, velocity.x);
-                          if (swipe < -swipeConfidenceThreshold) {
-                            setActiveIndex((prev) => (prev < cards.length - 1 ? prev + 1 : 0));
-                          } else if (swipe > swipeConfidenceThreshold) {
-                            setActiveIndex((prev) => (prev > 0 ? prev - 1 : cards.length - 1));
-                          }
-                          setIsAutoPlaying(true);
-                        }}
-                        onClick={() => {
-                          if (idx === sliderActiveIndex) {
-                            openLiveCard(card);
-                          } else {
-                            setActiveIndex(idx);
-                          }
-                        }}
-                        style={{ transformStyle: 'preserve-3d' }}
-                        animate={{
-                          x: xTranslation,
-                          z: zTranslation,
-                          scale: scale,
-                          rotateY: rotateY,
-                          zIndex: zIndex,
-                        }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        className={`absolute w-[320px] h-[460px] rounded-[1.75rem] flex flex-col justify-between transition-all duration-500 overflow-hidden select-none cursor-grab active:cursor-grabbing ${
-                          isDarkMode
-                            ? 'bg-[#18181A] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)]'
-                            : 'bg-white shadow-[0_20px_45px_-10px_rgba(0,0,0,0.12)] border border-neutral-200'
-                        }`}
-                      >
-                        {/* Upper image block */}
-                        <div className="relative w-full h-[55%] overflow-hidden bg-neutral-800">
-                          <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/80 backdrop-blur-md">
-                            <Briefcase size={10} className="text-[#FFD700]" />
-                            <span className="text-[9px] font-mono text-neutral-300 font-extrabold uppercase tracking-wider truncate max-w-[150px]">
-                              {card.profession.toUpperCase()}
-                            </span>
-                          </div>
-
-                          <PublicCardPhoto card={card} />
-
-                          <div className={`absolute inset-0 bg-gradient-to-t ${
-                            isDarkMode
-                              ? 'from-[#18181A] via-[#18181A]/40 to-transparent'
-                              : 'from-white via-white/50 to-transparent'
-                          }`} />
-                        </div>
-
-                        {/* Card Info Details */}
-                        <div className="px-6 pb-6 pt-0 text-center flex-1 flex flex-col justify-between items-center relative z-10 bg-transparent">
-                          <div className="flex-1 flex flex-col justify-center gap-1.5 mt-2">
-                            <h4 className={`text-2xl font-bold tracking-tight ${
-                              isDarkMode ? 'text-white' : 'text-neutral-900'
-                            }`}>
-                              {card.name}
-                            </h4>
-
-                            <span className="text-[10px] font-mono uppercase tracking-[0.15em] font-bold text-[#FFD700]">
-                              {card.profession.toUpperCase()}
-                            </span>
-                          </div>
-
-                          {/* Profile action button */}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (offset !== 0) {
-                                setActiveIndex(idx);
-                                return;
-                              }
-                              openLiveCard(card);
-                            }}
-                            className={`w-full font-bold py-3.5 px-4 rounded-xl text-[12px] transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer ${
-                              isDarkMode
-                                ? 'bg-[#2A2A2D] text-white hover:bg-[#323235]'
-                                : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200 border border-neutral-200'
-                            }`}
-                          >
-                            <span>View Profile</span>
-                          </button>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-
-                {/* Slider Pagination Dots */}
-                {cards.length > 1 && (
-                  <div className="flex items-center justify-center gap-2 z-40 mt-4 md:mt-2 w-full order-first md:order-last pb-8  md:pb-0 md:mb-0">
-                    {cards.map((_, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setActiveIndex(idx)}
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          idx === sliderActiveIndex
-                            ? 'bg-brand-gold w-4'
-                            : `w-2 ${isDarkMode ? 'bg-white/20 hover:bg-white/40' : 'bg-neutral-300 hover:bg-neutral-400'}`
-                        }`}
-                        aria-label={`Go to slide ${idx + 1}`}
-                      />
-                    ))}
                   </div>
                 )}
               </motion.div>
@@ -831,6 +954,26 @@ export default function Community() {
 
       </div>
 
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            .community-slider-3d.perspective-\\[1600px\\] {
+              perspective: 1600px;
+              transform-style: preserve-3d;
+            }
+            .community-slider-3d .transform-style-3d {
+              transform-style: preserve-3d;
+            }
+            .community-slider-dots.no-scrollbar::-webkit-scrollbar {
+              display: none;
+            }
+            .community-slider-dots.no-scrollbar {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+          `,
+        }}
+      />
     </div>
   );
 }

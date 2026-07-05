@@ -151,15 +151,28 @@ export function PartnerLogoSwiper() {
           <SwiperSlide key={logo.src} className="partner-logo-swiper__slide">
             <article className="partner-logo-card">
               <div className="partner-logo-card__well">
-                <img
-                  src={logo.src}
-                  alt={logo.alt}
-                  width={PARTNER_LOGO_MOBILE_WIDTH}
-                  height={PARTNER_LOGO_MOBILE_HEIGHT}
-                  className="partner-logo-card__logo"
-                  decoding="async"
-                  draggable={false}
-                />
+                {logo.kind === 'video' ? (
+                  <video
+                    src={logo.src}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="partner-logo-card__logo"
+                    aria-label={logo.alt}
+                    draggable={false}
+                  />
+                ) : (
+                  <img
+                    src={logo.src}
+                    alt={logo.alt}
+                    width={PARTNER_LOGO_MOBILE_WIDTH}
+                    height={PARTNER_LOGO_MOBILE_HEIGHT}
+                    className="partner-logo-card__logo"
+                    decoding="async"
+                    draggable={false}
+                  />
+                )}
               </div>
             </article>
           </SwiperSlide>

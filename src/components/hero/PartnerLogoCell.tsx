@@ -1,11 +1,6 @@
 'use client';
 
-import { PARTNER_LOGO_MOBILE_HEIGHT, PARTNER_LOGO_MOBILE_WIDTH } from '@/lib/partner-logos';
-
-type PartnerLogo = {
-  src: string;
-  alt: string;
-};
+import { PARTNER_LOGO_MOBILE_HEIGHT, PARTNER_LOGO_MOBILE_WIDTH, type PartnerLogo } from '@/lib/partner-logos';
 
 type PartnerLogoCellProps = {
   logo: PartnerLogo;
@@ -21,17 +16,34 @@ export function PartnerLogoCell({
   cellClassName = 'partner-logo-marquee__cell',
   logoClassName = 'partner-logo-marquee__logo',
 }: PartnerLogoCellProps) {
+  const mediaProps = {
+    className: logoClassName,
+    draggable: false as const,
+    'aria-hidden': duplicate ? true : undefined,
+  };
+
   return (
     <div className={cellClassName} aria-hidden={duplicate || undefined}>
-      <img
-        src={logo.src}
-        alt={duplicate ? '' : logo.alt}
-        width={PARTNER_LOGO_MOBILE_WIDTH}
-        height={PARTNER_LOGO_MOBILE_HEIGHT}
-        className={logoClassName}
-        decoding="async"
-        draggable={false}
-      />
+      {logo.kind === 'video' ? (
+        <video
+          src={logo.src}
+          autoPlay
+          loop
+          muted
+          playsInline
+          aria-label={duplicate ? undefined : logo.alt}
+          {...mediaProps}
+        />
+      ) : (
+        <img
+          src={logo.src}
+          alt={duplicate ? '' : logo.alt}
+          width={PARTNER_LOGO_MOBILE_WIDTH}
+          height={PARTNER_LOGO_MOBILE_HEIGHT}
+          decoding="async"
+          {...mediaProps}
+        />
+      )}
     </div>
   );
 }
