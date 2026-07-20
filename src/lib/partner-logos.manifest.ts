@@ -15,8 +15,11 @@ export const PARTNER_LOGOS_MANIFEST = [
   { src: '/partner-logo-optimized/partner-logo-13.webp', alt: 'Partner company logo 13' },
   { src: '/partner-logo-optimized/adams-logo.webp', alt: 'Adams Logo' },
   { src: '/partner-logo-optimized/alicia-logo.webp', alt: 'Alicia Logo' },
+  { src: '/partner-logo-optimized/cecil-logo.webp', alt: 'Cecil Logo' },
+  { src: '/partner-logo-optimized/cv-logo.webp', alt: 'Cv Logo' },
   { src: '/partner-logo-optimized/deb-logo.webp', alt: 'Deb Logo' },
   { src: '/partner-logo-optimized/lewis-logo-animated.mp4', alt: 'Lewis Logo Animated logo', kind: 'video' },
+  { src: '/partner-logo-optimized/om-logo.webp', alt: 'Om Logo' },
   { src: '/partner-logo-optimized/rango-logo-white.webp', alt: 'Rango Logo White logo' },
   { src: '/partner-logo-optimized/weston-logo-white.webp', alt: 'Weston Logo White logo' },
 ] as const;
