@@ -56,6 +56,29 @@ type LiveAgentConfig = {
   voice: string;
 };
 
+function formatLiveAgentError(err: unknown): string {
+  const raw =
+    err instanceof Error
+      ? err.message
+      : typeof err === 'string'
+        ? err
+        : err && typeof err === 'object' && 'message' in err
+          ? String((err as { message?: unknown }).message || '')
+          : '';
+  const text = raw || JSON.stringify(err ?? '');
+
+  if (/reported as leaked|leaked/i.test(text)) {
+    return 'Gemini API key was revoked as leaked. Create a new key in Google AI Studio, update GEMINI_API_KEY on the server, and redeploy.';
+  }
+  if (/PERMISSION_DENIED|API_KEY_INVALID|API key not valid|403/i.test(text)) {
+    return 'Gemini API key is invalid or blocked. Create a new key in Google AI Studio and update GEMINI_API_KEY.';
+  }
+  if (/quota|resource.?exhausted|429/i.test(text)) {
+    return 'Gemini API quota exceeded. Check billing/limits in Google AI Studio.';
+  }
+  return raw || 'Could not start voice session.';
+}
+
 async function resolveLiveAgentConfig(): Promise<LiveAgentConfig> {
   const bakedKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim() || '';
   const bakedVoice = resolveLiveAgentVoice();
@@ -80,9 +103,15 @@ async function resolveLiveAgentConfig(): Promise<LiveAgentConfig> {
         voice: data.voice?.trim() || bakedVoice,
       };
     }
+    if (data.message && /leaked|invalid|blocked|not set|PERMISSION/i.test(data.message)) {
+      throw new Error(data.message);
+    }
     if (bakedKey) return { apiKey: bakedKey, voice: bakedVoice };
     throw new Error(data.message || 'Set GEMINI_API_KEY in .env and restart the app.');
   } catch (err) {
+    if (err instanceof Error && /leaked|invalid|blocked|PERMISSION/i.test(err.message)) {
+      throw err;
+    }
     if (bakedKey) return { apiKey: bakedKey, voice: bakedVoice };
     throw err instanceof Error ? err : new Error('Could not load Live Agent config.');
   }
@@ -139,6 +168,9 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   const turnSeqRef = useRef(0);
   const nudgeCountRef = useRef(0);
   const softReconnectRef = useRef<(() => Promise<void>) | null>(null);
+  /** Bumps on each disconnect so late mic/session callbacks never send on a closed socket. */
+  const connectionGenRef = useRef(0);
+  const isDisconnectingRef = useRef(false);
 
   useEffect(() => {
     isMutedRef.current = isMuted;
@@ -190,6 +222,33 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     void pcmContextRef.current?.resume();
   };
 
+  const safeSendRealtimeInput = (payload: Record<string, unknown>) => {
+    if (!isConnectedRef.current || isDisconnectingRef.current) return false;
+    const session = sessionRef.current;
+    if (!session) return false;
+
+    try {
+      if (typeof session.sendRealtimeInput === 'function') {
+        session.sendRealtimeInput(payload);
+        return true;
+      }
+      if (typeof session.send === 'function' && 'text' in payload) {
+        session.send({ text: payload.text });
+        return true;
+      }
+    } catch (e) {
+      // SDK logs "WebSocket is already in CLOSING or CLOSED state" when the
+      // socket drops mid-stream — treat as a soft disconnect, don't spam.
+      const message = e instanceof Error ? e.message : String(e);
+      if (/CLOSING|CLOSED|WebSocket/i.test(message)) {
+        needsReconnectRef.current = true;
+        return false;
+      }
+      console.warn('Could not send realtime input:', e);
+    }
+    return false;
+  };
+
   const sendConversationNudge = (
     text: string,
     options?: { recovery?: boolean; bypassCooldown?: boolean },
@@ -213,15 +272,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     }
     nudgeCountRef.current += 1;
 
-    try {
-      if (typeof sessionRef.current.sendRealtimeInput === 'function') {
-        sessionRef.current.sendRealtimeInput({ text });
-      } else if (typeof sessionRef.current.send === 'function') {
-        sessionRef.current.send({ text });
-      }
-    } catch (e) {
-      console.warn('Could not send conversation nudge:', e);
-    }
+    safeSendRealtimeInput({ text });
   };
 
   const startResponseWatchdog = (turnStartedAt: number) => {
@@ -550,34 +601,53 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   };
 
   const disconnect = () => {
+    if (isDisconnectingRef.current && !isConnectedRef.current && !sessionRef.current) {
+      return;
+    }
+    isDisconnectingRef.current = true;
+    isConnectedRef.current = false;
+    isConnectingRef.current = false;
+    connectionGenRef.current += 1;
+
     clearSilenceTimers();
     clearResponseWatchdog();
     clearPendingTurnHandling();
     clearKeepalive();
+
+    // Stop mic capture BEFORE closing the session so ScriptProcessor cannot
+    // keep calling sendRealtimeInput on a CLOSING/CLOSED WebSocket.
     try {
-      if (sessionRef.current) {
-        sessionRef.current.close();
-        sessionRef.current = null;
-      }
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-        mediaStreamRef.current = null;
-      }
       if (processorRef.current) {
         processorRef.current.onaudioprocess = null;
         processorRef.current.disconnect();
         processorRef.current = null;
       }
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
       if (audioContextRef.current) {
-        audioContextRef.current.close();
+        void audioContextRef.current.close();
         audioContextRef.current = null;
       }
+
+      const session = sessionRef.current;
+      sessionRef.current = null;
+      if (session) {
+        try {
+          session.close();
+        } catch {
+          // already closed by the server / SDK
+        }
+      }
+
       if (pcmContextRef.current) {
-        pcmContextRef.current.close();
+        void pcmContextRef.current.close();
         pcmContextRef.current = null;
       }
       if (checkSpeakingRef.current) {
         clearTimeout(checkSpeakingRef.current);
+        checkSpeakingRef.current = 0;
       }
     } catch (e) {
       console.warn('Disconnect error', e);
@@ -586,8 +656,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     setIsConnected(false);
     setIsConnecting(false);
     setIsSpeaking(false);
-    isConnectedRef.current = false;
-    isConnectingRef.current = false;
+    isDisconnectingRef.current = false;
   };
 
   const ensureAiClient = async () => {
@@ -627,6 +696,9 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
       await audioContext.resume();
 
       await pcmContextRef.current?.resume();
+
+      const connectionGen = connectionGenRef.current;
+      isDisconnectingRef.current = false;
 
       const sessionPromise = ai.live.connect({
         model: 'gemini-3.1-flash-live-preview',
@@ -685,6 +757,8 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
         },
         callbacks: {
           onopen: () => {
+            if (connectionGen !== connectionGenRef.current) return;
+
             isConnectedRef.current = true;
             isConnectingRef.current = false;
             setIsConnected(true);
@@ -698,17 +772,21 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
 
             sessionPromise
               .then((session: any) => {
+                if (connectionGen !== connectionGenRef.current) {
+                  try {
+                    session.close();
+                  } catch {
+                    /* stale session */
+                  }
+                  return;
+                }
                 sessionRef.current = session;
                 try {
                   const introPrompt = skipGreetingOnConnectRef.current
                     ? buildIdleWakeNudge()
                     : buildLiveAgentGreetingIntroPrompt();
                   skipGreetingOnConnectRef.current = false;
-                  if (typeof session.sendRealtimeInput === 'function') {
-                    session.sendRealtimeInput({ text: introPrompt });
-                  } else if (typeof session.send === 'function') {
-                    session.send({ text: introPrompt });
-                  }
+                  safeSendRealtimeInput({ text: introPrompt });
                 } catch (e) {
                   console.warn('Could not send initial prompt:', e);
                 }
@@ -719,7 +797,14 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
             processorRef.current = processor;
 
             processor.onaudioprocess = (e) => {
-              if (isMutedRef.current) return;
+              if (
+                connectionGen !== connectionGenRef.current ||
+                !isConnectedRef.current ||
+                isDisconnectingRef.current ||
+                isMutedRef.current
+              ) {
+                return;
+              }
 
               const inputData = e.inputBuffer.getChannelData(0);
               const speechLevel = detectUserSpeechLevel(inputData);
@@ -735,26 +820,16 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                 void audioContext.resume();
               }
 
-              const payload = { audio: encodeMicChunk(inputData, audioContext.sampleRate) };
-
-              try {
-                if (sessionRef.current) {
-                  sessionRef.current.sendRealtimeInput(payload);
-                } else {
-                  sessionPromise
-                    .then((session: any) => {
-                      session.sendRealtimeInput(payload);
-                    })
-                    .catch((err: unknown) => {
-                      console.warn('Error sending input', err);
-                    });
-                }
-              } catch (err) {
-                console.warn('Error sending mic audio', err);
-              }
+              // Never queue sends via sessionPromise — those fire after close and spam
+              // "WebSocket is already in CLOSING or CLOSED state".
+              if (!sessionRef.current) return;
+              safeSendRealtimeInput({
+                audio: encodeMicChunk(inputData, audioContext.sampleRate),
+              });
             };
           },
           onmessage: (e: any) => {
+            if (connectionGen !== connectionGenRef.current) return;
             const message = e;
             lastServerActivityRef.current = Date.now();
 
@@ -783,15 +858,19 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                   }
 
                   if (sessionRef.current) {
-                    sessionRef.current.sendToolResponse({
-                      functionResponses: [
-                        {
-                          id: call.id,
-                          name: call.name,
-                          response: { result: 'Action executed successfully' },
-                        },
-                      ],
-                    });
+                    try {
+                      sessionRef.current.sendToolResponse({
+                        functionResponses: [
+                          {
+                            id: call.id,
+                            name: call.name,
+                            response: { result: 'Action executed successfully' },
+                          },
+                        ],
+                      });
+                    } catch (err) {
+                      console.warn('Could not send tool response', err);
+                    }
                   }
                 }
               }
@@ -848,21 +927,31 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
             }
           },
           onerror: (err: any) => {
+            if (connectionGen !== connectionGenRef.current) return;
             const errDetails = err ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : 'unknown';
             console.warn('Live API Error:', err, 'Details:', errDetails);
-            setError(`Connection error: ${err?.message || errDetails}`);
+            setError(formatLiveAgentError(err?.message || errDetails));
             disconnect();
           },
           onclose: () => {
+            if (connectionGen !== connectionGenRef.current) return;
             disconnect();
           },
         },
       });
 
       sessionRef.current = await sessionPromise;
+      if (connectionGen !== connectionGenRef.current) {
+        try {
+          sessionRef.current?.close();
+        } catch {
+          /* stale */
+        }
+        sessionRef.current = null;
+      }
     } catch (err: any) {
       console.warn('Failed to start Live API', err);
-      setError(err?.message || 'Could not start voice session.');
+      setError(formatLiveAgentError(err));
       disconnect();
     } finally {
       isConnectingRef.current = false;
