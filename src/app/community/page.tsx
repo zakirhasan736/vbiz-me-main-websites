@@ -1,12 +1,15 @@
-import type { Metadata } from 'next';
 import Community from '@/components/views/Community';
+import JsonLd from '@/components/seo/JsonLd';
+import { pageJsonLdBundle } from '@/lib/seo/json-ld';
+import { pagesSeo } from '@/lib/seo/pages';
 
-export const metadata: Metadata = {
-  title: 'Community Update | vBiz Me Network',
-  description:
-    'Discover the vBiz Me community — verified entrepreneurs, executive coaches, and advisors sharing high-speed digital smart vCards.',
-};
+export const metadata = pagesSeo.community;
 
 export default function CommunityPage() {
-  return <Community />;
+  return (
+    <>
+      <JsonLd data={pageJsonLdBundle('community')} />
+      <Community />
+    </>
+  );
 }

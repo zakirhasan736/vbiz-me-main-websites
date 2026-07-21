@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { AppProviders } from '@/components/providers/app-providers';
+import { buildDefaultMetadata } from '@/lib/seo/metadata';
 import './globals.css';
 
 export const viewport: Viewport = {
@@ -36,21 +37,7 @@ const HERO_LCP_CRITICAL_CSS = `
 
 const WEBKIT_PERF_BOOT = `(function(){try{var ua=navigator.userAgent;var chromium=/Chrome|CriOS|Edg|OPR|Chromium/i.test(ua);var firefox=/Firefox|FxiOS/i.test(ua);if(!firefox&&(/AppleWebKit/i.test(ua)&&!chromium||/Safari/i.test(ua)&&!chromium)){document.documentElement.classList.add('safari-light-motion');}}catch(e){}})();`;
 
-/** Hero LCP critical CSS only — no deferred motion boot. */
-
-export const metadata: Metadata = {
-  title: 'Create Interactive Virtual Business Cards | vBiz Me',
-  description:
-    'Stand out with vBiz Me’s digital business cards—featuring video intros, QR codes & custom designs. Share in seconds, no printing needed!',
-  // viewport-fit=cover: enables env(safe-area-inset-*) for iPhone notch / Dynamic Island
-  icons: {
-    icon: '/logo-vbizme.webp',
-  },
-  other: {
-    'apple-mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-status-bar-style': 'black-translucent',
-  },
-};
+export const metadata: Metadata = buildDefaultMetadata();
 
 export default function RootLayout({
   children,
