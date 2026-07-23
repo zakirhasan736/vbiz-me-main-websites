@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { AppProviders } from '@/components/providers/app-providers';
+import { GoogleAnalytics } from '@/components/seo/GoogleAnalytics';
 import { buildDefaultMetadata } from '@/lib/seo/metadata';
 import './globals.css';
 
@@ -57,6 +58,7 @@ export default function RootLayout({
           }}
         />
         <AppProviders>{children}</AppProviders>
+        <GoogleAnalytics />
       </body>
     </html>
   );
