@@ -40,6 +40,7 @@ import { CapabilityIcon } from '@/components/ui/CapabilityIcon';
 import type { CapabilityIconName } from '@/lib/capability-icons';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
+import { SocialProof } from '@/components/SocialProof';
 import { HOME_INDUSTRIES } from '@/lib/home-industries';
 import { vcardProfileUrl } from '@/lib/vcard-profile-url';
 import { useMobileViewport } from '@/lib/use-mobile-viewport';
@@ -1401,6 +1402,7 @@ export default function Home() {
       <InteractiveDemoSection />
       <HowItWorks />
       <PortfolioSection />
+      <SocialProof />
     </div>
   );
 }

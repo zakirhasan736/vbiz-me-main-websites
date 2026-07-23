@@ -14,6 +14,8 @@ export type GoogleReview = {
   comp: string;
   quote: string;
   val: string;
+  /** Star rating 1–5 (Google Business reviews shown on-site). */
+  rating: number;
   initial: string;
   icon: LucideIcon;
   color: string;
@@ -52,6 +54,7 @@ function entry(
     comp,
     quote,
     val: 'Google Review',
+    rating: 5,
     initial: initials(rater),
     icon: ICONS[index % ICONS.length],
     color: COLORS[index % COLORS.length],
@@ -198,3 +201,36 @@ export const GOOGLE_REVIEWS: GoogleReview[] = [
     '1 week ago',
   ),
 ];
+
+/**
+ * Aggregate stats for on-page display + JSON-LD.
+ * Keep ratingValue / reviewCount aligned with reviews actually shown on the page
+ * (GOOGLE_REVIEWS). Override via env only when the visible UI shows the same numbers.
+ */
+function parsePositiveNumber(value: string | undefined, fallback: number): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+const curatedAverage =
+  GOOGLE_REVIEWS.reduce((sum, review) => sum + review.rating, 0) / GOOGLE_REVIEWS.length;
+
+export const GOOGLE_BUSINESS_PROFILE = {
+  name: 'vBiz Me',
+  /** Public Google Business / Maps profile URL (sameAs + “See all reviews”). */
+  mapsUrl: process.env.NEXT_PUBLIC_GOOGLE_BUSINESS_URL?.trim() || '',
+  /** Optional Places API place id for future live sync. */
+  placeId: process.env.GOOGLE_PLACE_ID?.trim() || '',
+  ratingValue: parsePositiveNumber(
+    process.env.NEXT_PUBLIC_GOOGLE_RATING_VALUE,
+    Number(curatedAverage.toFixed(1)),
+  ),
+  reviewCount: Math.round(
+    parsePositiveNumber(
+      process.env.NEXT_PUBLIC_GOOGLE_REVIEW_COUNT,
+      GOOGLE_REVIEWS.length,
+    ),
+  ),
+  bestRating: 5,
+  worstRating: 1,
+} as const;

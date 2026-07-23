@@ -1,9 +1,15 @@
 import { absoluteUrl, siteConfig } from './site';
 import { SEO_PAGES, pageContent, type SeoPageKey } from './pages';
+import { GOOGLE_BUSINESS_PROFILE, GOOGLE_REVIEWS } from '@/lib/google-reviews';
 
 type JsonLd = Record<string, unknown>;
 
 export function organizationJsonLd(): JsonLd {
+  const sameAs = ['https://www.vbizme.com', 'https://app.vbizme.com'];
+  if (GOOGLE_BUSINESS_PROFILE.mapsUrl) {
+    sameAs.push(GOOGLE_BUSINESS_PROFILE.mapsUrl);
+  }
+
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -14,7 +20,7 @@ export function organizationJsonLd(): JsonLd {
     email: siteConfig.email,
     telephone: siteConfig.phone,
     description: siteConfig.description,
-    sameAs: ['https://www.vbizme.com', 'https://app.vbizme.com'],
+    sameAs,
   };
 }
 
@@ -28,6 +34,51 @@ export function websiteJsonLd(): JsonLd {
     description: siteConfig.description,
     publisher: { '@id': `${siteConfig.url}/#organization` },
     inLanguage: 'en-US',
+  };
+}
+
+/** Product/software reviews are eligible for review snippets; self-serving LocalBusiness stars are not. */
+export function googleReviewsJsonLd(): JsonLd {
+  const profile = GOOGLE_BUSINESS_PROFILE;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    '@id': `${siteConfig.url}/#vbiz-me-app`,
+    name: 'vBiz Me Virtual Business Card',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    url: siteConfig.url,
+    description: siteConfig.description,
+    image: absoluteUrl(siteConfig.defaultOgImage),
+    author: { '@id': `${siteConfig.url}/#organization` },
+    publisher: { '@id': `${siteConfig.url}/#organization` },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: profile.ratingValue,
+      reviewCount: profile.reviewCount,
+      bestRating: profile.bestRating,
+      worstRating: profile.worstRating,
+    },
+    review: GOOGLE_REVIEWS.map((review) => ({
+      '@type': 'Review',
+      author: {
+        '@type': 'Person',
+        name: review.rater,
+      },
+      name: `${review.rater} Google review`,
+      reviewBody: review.quote,
+      reviewRating: {
+        '@type': 'Rating',
+        ratingValue: review.rating,
+        bestRating: profile.bestRating,
+        worstRating: profile.worstRating,
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Google',
+      },
+    })),
   };
 }
 
@@ -89,7 +140,12 @@ export function siteNavigationJsonLd(): JsonLd {
 export function pageJsonLdBundle(key: SeoPageKey): JsonLd[] {
   const bundle: JsonLd[] = [webPageJsonLd(key), breadcrumbJsonLd(key)];
   if (key === 'home') {
-    bundle.unshift(organizationJsonLd(), websiteJsonLd(), siteNavigationJsonLd());
+    bundle.unshift(
+      organizationJsonLd(),
+      websiteJsonLd(),
+      siteNavigationJsonLd(),
+      googleReviewsJsonLd(),
+    );
   }
   return bundle;
 }

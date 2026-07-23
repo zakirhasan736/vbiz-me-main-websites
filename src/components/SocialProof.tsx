@@ -9,7 +9,7 @@ import {
 import { RevealText, RevealParagraph, RevealEyebrow, ScrollRevealCard, SectionRevealRoot, SectionRevealHeader, SectionRevealContent } from '@/components/animations/reveal';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 import { SiteGlowIcon } from '@/components/ui/SiteGlowIcon';
-import { GOOGLE_REVIEWS, type GoogleReview } from '@/lib/google-reviews';
+import { GOOGLE_BUSINESS_PROFILE, GOOGLE_REVIEWS, type GoogleReview } from '@/lib/google-reviews';
 
 type Review = GoogleReview;
 
@@ -163,6 +163,28 @@ export function SocialProof() {
             className="text-brand-text-muted font-light text-base sm:text-lg leading-relaxed"
             delay={0.1}
           />
+          <div
+            className="mt-5 inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-brand-text"
+            aria-label={`Google rating ${GOOGLE_BUSINESS_PROFILE.ratingValue} out of 5 from ${GOOGLE_BUSINESS_PROFILE.reviewCount} reviews`}
+          >
+            <span className="inline-flex items-center gap-1.5 font-semibold text-brand-gold">
+              <Star size={16} fill="#D4AF37" strokeWidth={0} />
+              {GOOGLE_BUSINESS_PROFILE.ratingValue.toFixed(1)}
+            </span>
+            <span className="text-brand-text-muted">
+              {GOOGLE_BUSINESS_PROFILE.reviewCount} Google reviews
+            </span>
+            {GOOGLE_BUSINESS_PROFILE.mapsUrl ? (
+              <a
+                href={GOOGLE_BUSINESS_PROFILE.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand-gold/90 underline underline-offset-4 hover:text-brand-gold"
+              >
+                See on Google
+              </a>
+            ) : null}
+          </div>
           </SectionRevealHeader>
         </SectionRevealRoot>
 
