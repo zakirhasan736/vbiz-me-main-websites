@@ -1,6 +1,7 @@
 import { absoluteUrl, siteConfig } from './site';
 import { SEO_PAGES, pageContent, type SeoPageKey } from './pages';
 import { GOOGLE_BUSINESS_PROFILE, GOOGLE_REVIEWS } from '@/lib/google-reviews';
+import { videoObjectJsonLd, videosForPage } from '@/lib/seo/videos';
 
 type JsonLd = Record<string, unknown>;
 
@@ -147,5 +148,10 @@ export function pageJsonLdBundle(key: SeoPageKey): JsonLd[] {
       googleReviewsJsonLd(),
     );
   }
+
+  for (const video of videosForPage(key)) {
+    bundle.push(videoObjectJsonLd(video));
+  }
+
   return bundle;
 }

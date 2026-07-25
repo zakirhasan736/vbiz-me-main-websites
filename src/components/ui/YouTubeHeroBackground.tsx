@@ -10,10 +10,12 @@ type YouTubeHeroBackgroundProps = {
   title?: string;
 };
 
-/** Elementor-style cover-fit YouTube iframe for page hero backgrounds. */
+/** Elementor-style cover-fit YouTube iframe for page hero backgrounds.
+ * Decorative only — not submitted to Google as VideoObject (not a watch page).
+ */
 export function YouTubeHeroBackground({
   videoId,
-  title = 'Background video',
+  title = 'Decorative background video',
 }: YouTubeHeroBackgroundProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [embedSrc, setEmbedSrc] = useState<string | null>(null);

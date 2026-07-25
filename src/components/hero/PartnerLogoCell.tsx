@@ -31,8 +31,11 @@ export function PartnerLogoCell({
           loop
           muted
           playsInline
-          aria-label={duplicate ? undefined : logo.alt}
-          {...mediaProps}
+          preload="metadata"
+          disablePictureInPicture
+          className={logoClassName}
+          draggable={false}
+          aria-hidden="true"
         />
       ) : (
         <img
