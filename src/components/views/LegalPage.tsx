@@ -98,16 +98,16 @@ export default function LegalPage({ content }: { content: LegalPageContent }) {
       <section className="site-section site-section--reveal legal-page-content-section relative border-b border-white/5 bg-brand-dark py-12 md:py-16">
         <div className="mx-auto grid w-full max-w-[1180px] grid-cols-1 gap-8 px-4 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8">
           <aside className="legal-page-sidebar">
-            <div className="rounded-lg border border-white/10 bg-white/[0.035] p-5">
+            <div className="rounded-lg border border-white/10 bg-white/[0.035] p-4">
               <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-white">
                 On This Page
               </h2>
-              <nav aria-label={`${content.title} sections`} className="mt-4 space-y-2">
+              <nav aria-label={`${content.title} sections`} className="mt-4 space-y-1">
                 {content.sections.map((section) => (
                   <a
                     key={section.id}
                     href={`#${section.id}`}
-                    className="block rounded-md px-3 py-2 text-sm text-neutral-400 transition-colors hover:bg-white/5 hover:text-brand-gold"
+                    className="block rounded-md px-3 py-1.5 text-[13px] leading-snug text-neutral-400 transition-colors hover:bg-white/5 hover:text-brand-gold"
                   >
                     {section.title.replace(/^\d+\.\s*/, '')}
                   </a>
@@ -115,7 +115,7 @@ export default function LegalPage({ content }: { content: LegalPageContent }) {
               </nav>
             </div>
 
-            <div className="mt-4 rounded-lg border border-brand-gold/20 bg-brand-gold/10 p-5">
+            <div className="mt-4 rounded-lg border border-brand-gold/20 bg-brand-gold/10 p-4">
               <p className="text-sm font-semibold text-white">Need help?</p>
               <p className="mt-2 text-sm leading-relaxed text-neutral-300">
                 Contact vBiz Me about account, billing, privacy, or legal questions.

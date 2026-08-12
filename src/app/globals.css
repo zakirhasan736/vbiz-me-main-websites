@@ -2872,12 +2872,9 @@ footer {
   @media (min-width: 1024px) {
     .legal-page-sidebar {
       position: sticky;
-      top: calc(var(--safe-top, 0px) + 7rem);
+      top: calc(var(--safe-top, 0px) + clamp(5.5rem, 10svh, 7rem));
       z-index: 20;
-      max-height: calc(100svh - var(--safe-top, 0px) - 8rem);
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding-bottom: 0.25rem;
+      overflow: visible;
     }
   }
 
