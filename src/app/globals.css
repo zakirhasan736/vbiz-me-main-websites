@@ -2861,6 +2861,26 @@ footer {
     overflow: visible;
   }
 
+  .legal-page-content-section {
+    overflow: visible !important;
+  }
+
+  .legal-page-sidebar {
+    align-self: start;
+  }
+
+  @media (min-width: 1024px) {
+    .legal-page-sidebar {
+      position: sticky;
+      top: calc(var(--safe-top, 0px) + 7rem);
+      z-index: 20;
+      max-height: calc(100svh - var(--safe-top, 0px) - 8rem);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding-bottom: 0.25rem;
+    }
+  }
+
   .overflow-visible-mobile,
   [data-section-reveal-root],
   [data-section-reveal-stagger],
@@ -2995,6 +3015,10 @@ footer [data-footer-bottom-item] {
 
 .footer-bottom-bar--revealed [data-footer-bottom-item]:nth-child(2) {
   transition-delay: 0.08s;
+}
+
+.footer-bottom-bar--revealed [data-footer-bottom-item]:nth-child(3) {
+  transition-delay: 0.14s;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4138,4 +4162,3 @@ body.theme-light .partner-logo-marquee__edge-glow--right {
     transparent 72%
   );
 }
-

@@ -844,7 +844,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                   if (call.name === 'callUser') {
                     window.location.href = `tel:+18607709893`;
                   } else if (call.name === 'emailUser') {
-                    window.location.href = `mailto:mcasanova@vbizme.com`;
+                    window.location.href = `mailto:info@vbizme.com`;
                   } else if (call.name === 'openVideos') {
                     const args = call.args as Record<string, string>;
                     window.open(

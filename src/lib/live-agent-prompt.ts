@@ -15,7 +15,7 @@ export const DEFAULT_CARD_DATA: LiveAgentCardData = {
   ownerName: 'Michaelangelo Casanova',
   title: 'CEO & Founder',
   company: 'vBiz Me',
-  email: 'mcasanova@vbizme.com',
+  email: 'info@vbizme.com',
   phone: '(860) 770-9893',
   website: 'https://vbizme.com',
   location: 'New Britain, CT',

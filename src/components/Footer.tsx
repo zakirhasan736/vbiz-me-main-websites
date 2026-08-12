@@ -40,6 +40,11 @@ const PLATFORM_LINKS = [
   ['/pricing', 'Pricing'],
 ] as const;
 
+const LEGAL_LINKS = [
+  ['/terms-and-conditions', 'Terms'],
+  ['/privacy-policy', 'Privacy'],
+] as const;
+
 const CTA_DESCRIPTION =
   'Share your professional identity in one tap—built for founders, creators, and teams who move fast.';
 
@@ -293,12 +298,12 @@ export const Footer = () => {
 
               <RevealGridItem direction="up" distance="MD" scaleOnUp={false}>
                 <a
-                  href="mailto:mcasanova@vbizme.com"
+                  href="mailto:info@vbizme.com"
                   data-footer-contact-item
                   className="flex items-start gap-2.5 group hover:text-brand-gold transition-colors text-base text-neutral-400 font-light"
                 >
                   <Mail size={14} className="mt-0.5 shrink-0 text-neutral-500 group-hover:text-brand-gold" />
-                  <span className="break-all leading-snug">mcasanova@vbizme.com</span>
+                  <span className="break-all leading-snug">info@vbizme.com</span>
                 </a>
               </RevealGridItem>
 
@@ -355,6 +360,21 @@ export const Footer = () => {
           >
             © {new Date().getFullYear()} vBiz Me. All rights reserved.
           </p>
+          <nav
+            aria-label="Legal links"
+            data-footer-bottom-item
+            className="flex items-center justify-center gap-4 text-sm md:text-base text-neutral-500 font-light tracking-wide"
+          >
+            {LEGAL_LINKS.map(([href, label]) => (
+              <Link
+                key={href}
+                href={href}
+                className="hover:text-brand-gold transition-colors"
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
           <p
             data-footer-bottom-item
             className="text-sm md:text-base text-neutral-500 font-light tracking-wide"

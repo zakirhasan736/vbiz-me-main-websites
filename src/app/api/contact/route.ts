@@ -1,6 +1,8 @@
 import nodemailer from 'nodemailer';
 import { NextRequest, NextResponse } from 'next/server';
 
+const CONTACT_EMAIL = process.env.ZOHO_EMAIL_USER || 'info@vbizme.com';
+
 const transporter = nodemailer.createTransport({
   host: process.env.ZOHO_SMTP_HOST,
   port: parseInt(process.env.ZOHO_SMTP_PORT || '587'),
@@ -34,8 +36,8 @@ export async function POST(request: NextRequest) {
 
     // Send email to your inbox (branded HTML)
     await transporter.sendMail({
-      from: `vBiz Me Contact Form <${process.env.ZOHO_EMAIL_USER}>`,
-      to: process.env.ZOHO_EMAIL_USER || 'info@vbizme.com',
+      from: `vBiz Me Contact Form <${CONTACT_EMAIL}>`,
+      to: CONTACT_EMAIL,
       subject: `${escapeHtml(email)} — ${escapeHtml(name)}`,
       replyTo: email,
       html: `
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     // Send confirmation email to user
     await transporter.sendMail({
-      from: `vBiz Me <${process.env.ZOHO_EMAIL_USER}>`,
+      from: `vBiz Me <${CONTACT_EMAIL}>`,
       to: email,
       subject: 'We received your message — vBiz Me',
       html: `
@@ -83,7 +85,7 @@ export async function POST(request: NextRequest) {
 
             <div style="margin-top:12px; padding:14px; background:#f7f7f8; border-radius:8px; white-space:pre-wrap; line-height:1.6;">${escapeHtml(message)}</div>
 
-            <p style="margin:16px 0 0 0; font-size:13px; color:#666">If you need to reach us immediately, reply to this email or contact <a href="mailto:${process.env.ZOHO_EMAIL_USER}">${process.env.ZOHO_EMAIL_USER}</a>.</p>
+            <p style="margin:16px 0 0 0; font-size:13px; color:#666">If you need to reach us immediately, reply to this email or contact <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.</p>
           </div>
           <div style="padding:12px 20px; background:#fafafa; font-size:12px; color:#777; text-align:center">vBiz Me — The Virtual Business Card That Sells For You</div>
         </div>

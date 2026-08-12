@@ -1,6 +1,6 @@
 import { buildPageMetadata } from './metadata';
 
-/** Primary marketing pages included in sitemap + SEO. */
+/** Site pages included in sitemap + SEO. */
 export const SEO_PAGES = [
   {
     key: 'home',
@@ -64,6 +64,20 @@ export const SEO_PAGES = [
     path: '/pricing',
     changeFrequency: 'monthly' as const,
     priority: 0.9,
+  },
+  {
+    key: 'termsAndConditions',
+    name: 'Terms and Conditions',
+    path: '/terms-and-conditions',
+    changeFrequency: 'yearly' as const,
+    priority: 0.4,
+  },
+  {
+    key: 'privacyPolicy',
+    name: 'Privacy Policy',
+    path: '/privacy-policy',
+    changeFrequency: 'yearly' as const,
+    priority: 0.4,
   },
 ] as const;
 
@@ -142,6 +156,20 @@ export const pageContent = {
     keywords: ['vBiz Me pricing', 'digital business card cost', 'vCard plans', 'smart card pricing'],
     path: '/pricing',
   },
+  termsAndConditions: {
+    title: 'Terms and Conditions',
+    description:
+      'Read the terms for using vBiz Me websites, public vCards, dashboards, backoffice administration tools, AI features, and integrations.',
+    keywords: ['vBiz Me terms', 'vBiz Me terms and conditions', 'vCard platform terms'],
+    path: '/terms-and-conditions',
+  },
+  privacyPolicy: {
+    title: 'Privacy Policy',
+    description:
+      'Learn how vBiz Me collects, uses, shares, and protects information across websites, public vCards, dashboards, and backoffice tools.',
+    keywords: ['vBiz Me privacy policy', 'vCard privacy', 'digital business card privacy'],
+    path: '/privacy-policy',
+  },
 } as const satisfies Record<
   SeoPageKey,
   { title: string; description: string; keywords: readonly string[]; path: string }
@@ -169,4 +197,12 @@ export const pagesSeo = {
     keywords: [...pageContent.community.keywords],
   }),
   pricing: buildPageMetadata({ ...pageContent.pricing, keywords: [...pageContent.pricing.keywords] }),
+  termsAndConditions: buildPageMetadata({
+    ...pageContent.termsAndConditions,
+    keywords: [...pageContent.termsAndConditions.keywords],
+  }),
+  privacyPolicy: buildPageMetadata({
+    ...pageContent.privacyPolicy,
+    keywords: [...pageContent.privacyPolicy.keywords],
+  }),
 } as const;

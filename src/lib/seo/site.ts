@@ -10,7 +10,7 @@ export const siteConfig = {
     'https://www.vbizme.com'
   ).replace(/\/$/, ''),
   locale: 'en_US',
-  email: 'mcasanova@vbizme.com',
+  email: 'info@vbizme.com',
   phone: '+18607709893',
   defaultOgImage: '/logo-vbizme.webp',
   twitterHandle: '@vbizme',

@@ -146,7 +146,7 @@ export default function Contact() {
                     </div>
                     <div>
                       <h3 className="text-white font-medium text-lg mb-1">Email Support</h3>
-                      <p className="text-neutral-400 font-light">mcasanova@vbizme.com</p>
+                      <p className="text-neutral-400 font-light">info@vbizme.com</p>
                     </div>
                   </div>
                 </div>
