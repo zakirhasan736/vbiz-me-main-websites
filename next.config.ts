@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'www.vbizme.com' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'app.vbizme.com' },
+      { protocol: 'https', hostname: 'app.nextcreavo.com' },
     ],
   },
   async headers() {

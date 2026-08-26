@@ -42,7 +42,7 @@ import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 import { SocialProof } from '@/components/SocialProof';
 import { HOME_INDUSTRIES } from '@/lib/home-industries';
-import { vcardProfileUrl } from '@/lib/vcard-profile-url';
+import { getVcardDemoHostLabel, getVcardDemoOrigin, slugFromDemoUrl, vcardProfileUrl } from '@/lib/vcard-profile-url';
 import { useMobileViewport } from '@/lib/use-mobile-viewport';
 
 const qrSliderItems = PORTFOLIO_QR_CARDS;
@@ -80,15 +80,6 @@ const INDUSTRY_DEMO_STEPS = [
 
 const INDUSTRY_SWITCH_LOADER_MS = 200;
 const INDUSTRY_SWITCH_LOADER_CACHED_MS = 90;
-
-function slugFromDemoUrl(url: string): string {
-  try {
-    const path = new URL(url).pathname.replace(/^\//, '');
-    return path || url;
-  } catch {
-    return url;
-  }
-}
 
 // Interactive Demo Component ("See It In Action")
 const InteractiveDemoSection = () => {
@@ -161,7 +152,7 @@ const InteractiveDemoSection = () => {
   useEffect(() => {
     const preconnect = document.createElement('link');
     preconnect.rel = 'preconnect';
-    preconnect.href = 'https://vcard.vbizme.com';
+    preconnect.href = getVcardDemoOrigin();
     preconnect.crossOrigin = 'anonymous';
     document.head.appendChild(preconnect);
 
