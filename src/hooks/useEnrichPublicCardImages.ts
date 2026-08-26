@@ -16,19 +16,26 @@ const ENRICH_CONCURRENCY = 4
  * When `/public-cards` returns the generic vBiz logo, fetch `GET /v/{slug}` and
  * use profile_media / intro_video — same source the live vCard profile uses.
  */
-export function useEnrichPublicCardImages(cards: PublicCardListItem[], enrichLocationForSearch = false) {
+export function useEnrichPublicCardImages(
+  cards: PublicCardListItem[],
+  enrichLocationForSearch = false,
+  priorityIds: Array<string | number> = []
+) {
   const [enrichedById, setEnrichedById] = useState<Record<string, PublicCardListItem>>({})
   const [enrichmentStatus, setEnrichmentStatus] = useState({ signature: '', completed: 0 })
   const inFlightRef = useRef(new Set<string>())
   const tokenRef = useRef(0)
 
   const cardsNeedingEnrichment = useMemo(() => {
-    return cards.filter(
+    const needing = cards.filter(
       (card) =>
         needsPublicCardMediaEnrichment(card) ||
         (enrichLocationForSearch && needsPublicCardLocationEnrichment(card))
     )
-  }, [cards, enrichLocationForSearch])
+    if (priorityIds.length === 0) return needing.slice(0, 8)
+    const allow = new Set(priorityIds.map(String))
+    return needing.filter((card) => allow.has(String(card.id)))
+  }, [cards, enrichLocationForSearch, priorityIds])
 
   const enrichmentSignature = cardsNeedingEnrichment.map((card) => card.id).join('|')
 

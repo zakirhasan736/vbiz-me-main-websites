@@ -162,6 +162,9 @@ function ConnectionCardInner({
 }
 
 export default function Community() {
+  const [viewMode, setViewMode] = useState<'grid' | 'slider'>('slider');
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [priorityCardIds, setPriorityCardIds] = useState<Array<string | number>>([]);
   const {
     cards,
     dropdowns,
@@ -178,7 +181,7 @@ export default function Community() {
     clearFilters,
     loadMore,
     refetch,
-  } = usePublicCardsDirectory();
+  } = usePublicCardsDirectory(priorityCardIds);
 
   const serviceDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -188,9 +191,6 @@ export default function Community() {
   const isDarkMode = theme !== 'light';
   const toggleTheme = () => setTheme(isDarkMode ? 'light' : 'midnight');
 
-  // View mode state (grid vs slider)
-  const [viewMode, setViewMode] = useState<'grid' | 'slider'>('slider');
-  const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isMobile, setIsMobile] = useState(false);
   const loadedMediaRef = useRef<Set<string>>(new Set());
   const [, bumpMediaLoaded] = useState(0);
@@ -287,6 +287,17 @@ export default function Community() {
   }, []);
 
   const sliderActiveIndex = cards.length === 0 ? 0 : Math.min(activeIndex, cards.length - 1);
+
+  useEffect(() => {
+    if (viewMode === 'slider') {
+      const ids = [-2, -1, 0, 1, 2]
+        .map((offset) => cards[sliderActiveIndex + offset]?.id)
+        .filter((id): id is string | number => id != null)
+      setPriorityCardIds(ids)
+      return
+    }
+    setPriorityCardIds(cards.slice(0, 12).map((card) => card.id))
+  }, [cards, sliderActiveIndex, viewMode]);
 
   // Prefetch neighbor card photos so slides feel instant after the first view.
   useEffect(() => {

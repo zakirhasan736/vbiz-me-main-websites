@@ -46,12 +46,13 @@ export function normalizePublicCardsSearchQuery(query: string): string {
 export function buildPublicCardsSearchParams(
   filters: PublicCardsFilterState,
   page?: number,
-  options?: { perPage?: number }
+  options?: { perPage?: number; dropdowns?: 0 | 1 }
 ): PublicCardsSearchParams {
   const params: PublicCardsSearchParams = {}
 
   if (page != null && page > 0) params.page = page
   if (options?.perPage != null && options.perPage > 0) params.per_page = options.perPage
+  if (options?.dropdowns != null) params.dropdowns = options.dropdowns
   if (filters.stateId != null && filters.stateId !== '') params.state_id = filters.stateId
   if (filters.cityId != null && filters.cityId !== '') params.city_id = filters.cityId
   if (filters.professionId != null && filters.professionId !== '') params.profession_id = filters.professionId
@@ -77,6 +78,7 @@ export function buildPublicCardsQueryPath(params?: PublicCardsSearchParams): str
   }
   if (params?.service) search.set('service', params.service)
   if (params?.search) search.set('search', params.search)
+  if (params?.dropdowns != null) search.set('dropdowns', String(params.dropdowns))
 
   const qs = search.toString()
   return `/public-cards${qs ? `?${qs}` : ''}`

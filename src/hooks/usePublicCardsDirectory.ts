@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { mapPublicCardToListItem, type PublicCardListItem } from '@/lib/publicCards/mapPublicCards'
-import { fetchPublicCards } from '@/lib/publicCards/fetchPublicCards'
 import {
   buildPublicCardsSearchParams,
   deriveProfessionOptionsFromListItems,
@@ -13,8 +12,6 @@ import {
   isPublicCardsSearchReady,
   normalizePublicCardsSearchQuery,
   PUBLIC_CARDS_CATALOG_PER_PAGE,
-  PUBLIC_CARDS_INITIAL_PER_PAGE,
-  PUBLIC_CARDS_MAX_PER_PAGE,
   PUBLIC_CARDS_SEARCH_MIN_CHARS,
   updatePublicCardsFilter,
   type PublicCardsFilterState,
@@ -22,16 +19,7 @@ import {
 import { useEnrichPublicCardImages } from '@/hooks/useEnrichPublicCardImages'
 import type { PublicCard, PublicCardsDropdowns } from '@/lib/publicCards/types'
 import { sortPublicCardsByMediaPriority } from '@/lib/publicCards/publicCardImage'
-
-function resetPagination(setters: {
-  setExtraCards: (value: PublicCardListItem[]) => void
-  setLoadedThroughPage: (value: number) => void
-  setHasLoadedAll: (value: boolean) => void
-}) {
-  setters.setExtraCards([])
-  setters.setLoadedThroughPage(1)
-  setters.setHasLoadedAll(false)
-}
+import { useGetPublicCardsQuery, useLazyGetPublicCardsQuery } from '@/redux/publicCards.api'
 
 function dedupePublicCards(cards: PublicCardListItem[]): PublicCardListItem[] {
   const seen = new Set<string>()
@@ -53,63 +41,48 @@ function dedupeRawPublicCards(cards: PublicCard[]): PublicCard[] {
   })
 }
 
-function hasStructuralPublicCardsFilters(filters: PublicCardsFilterState): boolean {
-  return filters.stateId != null || filters.cityId != null || filters.professionId != null
-}
-
-export function usePublicCardsDirectory() {
+export function usePublicCardsDirectory(priorityCardIds: Array<string | number> = []) {
   const [draftFilters, setDraftFilters] = useState<PublicCardsFilterState>(EMPTY_PUBLIC_CARDS_FILTERS)
   const [appliedFilters, setAppliedFilters] = useState<PublicCardsFilterState>(EMPTY_PUBLIC_CARDS_FILTERS)
-  const [firstPageCards, setFirstPageCards] = useState<PublicCardListItem[]>([])
   const [extraCards, setExtraCards] = useState<PublicCardListItem[]>([])
-  const [dropdowns, setDropdowns] = useState<PublicCardsDropdowns>({})
-  const [total, setTotal] = useState(0)
-  const [lastPage, setLastPage] = useState(1)
-  const [loadedThroughPage, setLoadedThroughPage] = useState(1)
-  const [pageSize, setPageSize] = useState(PUBLIC_CARDS_CATALOG_PER_PAGE)
-  const [hasLoadedAll, setHasLoadedAll] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isFetching, setIsFetching] = useState(false)
-  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [isPrefetchingAll, setIsPrefetchingAll] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [catalogSnapshot, setCatalogSnapshot] = useState<PublicCard[]>([])
-
-  const hasLoadedOnceRef = useRef(false)
   const prefetchTokenRef = useRef(0)
 
-  const structuralFilters = useMemo<PublicCardsFilterState>(
-    () => ({
-      ...appliedFilters,
-      service: '',
-    }),
+  const catalogParams = useMemo(
+    () =>
+      buildPublicCardsSearchParams(
+        { ...appliedFilters, service: '' },
+        1,
+        { perPage: PUBLIC_CARDS_CATALOG_PER_PAGE, dropdowns: 1 }
+      ),
     [appliedFilters.cityId, appliedFilters.professionId, appliedFilters.stateId]
   )
 
-  const loadedCards = useMemo(
-    () => dedupePublicCards([...firstPageCards, ...extraCards]),
-    [extraCards, firstPageCards]
-  )
+  const { data, isLoading, isFetching, error, refetch } = useGetPublicCardsQuery(catalogParams)
+  const [fetchPage] = useLazyGetPublicCardsQuery()
 
-  const mergedDropdowns: PublicCardsDropdowns = useMemo(() => {
-    const professionsFromCatalog = deriveProfessionOptionsFromPublicCards(catalogSnapshot)
+  const firstCards = useMemo(() => data?.cards.map(mapPublicCardToListItem) ?? [], [data?.cards])
+  const loadedCards = useMemo(() => dedupePublicCards([...firstCards, ...extraCards]), [extraCards, firstCards])
+
+  const dropdowns: PublicCardsDropdowns = useMemo(() => {
+    const apiDropdowns = data?.dropdowns ?? {}
+    const professionsFromCatalog = deriveProfessionOptionsFromPublicCards(dedupeRawPublicCards(data?.cards ?? []))
     const professions =
-      professionsFromCatalog.length > 0
-        ? professionsFromCatalog
-        : deriveProfessionOptionsFromListItems(loadedCards)
+      professionsFromCatalog.length > 0 ? professionsFromCatalog : deriveProfessionOptionsFromListItems(loadedCards)
 
     return {
-      ...dropdowns,
-      professions,
+      ...apiDropdowns,
+      professions: professions.length > 0 ? professions : apiDropdowns.professions,
     }
-  }, [catalogSnapshot, dropdowns, loadedCards])
+  }, [data?.cards, data?.dropdowns, loadedCards])
 
   const searchQuery = normalizePublicCardsSearchQuery(appliedFilters.service)
   const isSearchActive = isPublicCardsSearchReady(searchQuery)
 
   const { displayCards: enrichedLoadedCards, isEnrichingImages } = useEnrichPublicCardImages(
     loadedCards,
-    isSearchActive
+    isSearchActive,
+    priorityCardIds
   )
 
   const cards = useMemo(() => {
@@ -119,60 +92,53 @@ export function usePublicCardsDirectory() {
     return sortPublicCardsByMediaPriority(filtered)
   }, [enrichedLoadedCards, isSearchActive, searchQuery])
 
-  const isSinglePageResult = lastPage <= 1
-  const effectiveHasLoadedAll = hasLoadedAll || isSinglePageResult
-  const hasMore = !effectiveHasLoadedAll && loadedThroughPage < lastPage
-  const remainingCount = Math.max(total - loadedCards.length, 0)
-  const serverTotal = total
-
-  const fetchFirstPage = useCallback(
-    async (filters: PublicCardsFilterState, signal?: AbortSignal) => {
-      setIsFetching(true)
-      if (!hasLoadedOnceRef.current) setIsLoading(true)
-
-      try {
-        const structuralOnly: PublicCardsFilterState = { ...filters, service: '' }
-        const perPage = hasStructuralPublicCardsFilters(filters)
-          ? PUBLIC_CARDS_INITIAL_PER_PAGE
-          : PUBLIC_CARDS_CATALOG_PER_PAGE
-        const result = await fetchPublicCards(
-          buildPublicCardsSearchParams(structuralOnly, 1, { perPage }),
-          signal
-        )
-
-        hasLoadedOnceRef.current = true
-        const mapped = result.cards.map(mapPublicCardToListItem)
-        setFirstPageCards(mapped)
-        setDropdowns(result.dropdowns ?? {})
-        setTotal(result.pagination.total)
-        setLastPage(result.pagination.last_page)
-        setPageSize(result.pagination.per_page || perPage)
-        setLoadedThroughPage(1)
-        setExtraCards([])
-        setHasLoadedAll(result.pagination.last_page <= 1)
-        setError(null)
-
-        if (!hasStructuralPublicCardsFilters(filters)) {
-          setCatalogSnapshot(dedupeRawPublicCards(result.cards))
-        }
-      } catch (err) {
-        if (signal?.aborted) return
-        setError(err instanceof Error ? err.message : 'Failed to load public cards')
-      } finally {
-        if (!signal?.aborted) {
-          setIsLoading(false)
-          setIsFetching(false)
-        }
-      }
-    },
-    []
-  )
+  const lastPage = data?.pagination.last_page ?? 1
+  const serverTotal = data?.pagination.total ?? 0
+  const remainingPagesLoaded = extraCards.length > 0 || lastPage <= 1
+  const hasLoadedAll = remainingPagesLoaded || firstCards.length >= serverTotal
+  const hasMore = !hasLoadedAll
+  const catalogKey = `${JSON.stringify(catalogParams)}:${lastPage}:${serverTotal}`
+  const loadedCatalogKeyRef = useRef('')
 
   useEffect(() => {
-    const controller = new AbortController()
-    void fetchFirstPage(appliedFilters, controller.signal)
-    return () => controller.abort()
-  }, [appliedFilters, fetchFirstPage])
+    loadedCatalogKeyRef.current = ''
+    setExtraCards([])
+  }, [catalogParams])
+
+  useEffect(() => {
+    if (!data || isFetching) return
+    if (lastPage <= 1) {
+      loadedCatalogKeyRef.current = catalogKey
+      return
+    }
+    if (loadedCatalogKeyRef.current === catalogKey) return
+
+    const token = ++prefetchTokenRef.current
+    setIsPrefetchingAll(true)
+
+    void (async () => {
+      try {
+        const collected: PublicCardListItem[] = []
+        for (let page = 2; page <= lastPage; page += 1) {
+          const result = await fetchPage(
+            buildPublicCardsSearchParams(
+              { ...appliedFilters, service: '' },
+              page,
+              { perPage: PUBLIC_CARDS_CATALOG_PER_PAGE, dropdowns: 0 }
+            )
+          ).unwrap()
+          if (token !== prefetchTokenRef.current) return
+          collected.push(...result.cards.map(mapPublicCardToListItem))
+        }
+        if (token === prefetchTokenRef.current) {
+          loadedCatalogKeyRef.current = catalogKey
+          setExtraCards(dedupePublicCards(collected))
+        }
+      } finally {
+        if (token === prefetchTokenRef.current) setIsPrefetchingAll(false)
+      }
+    })()
+  }, [appliedFilters, catalogKey, data, fetchPage, isFetching, lastPage])
 
   const setDraftFilter = useCallback(
     <K extends keyof PublicCardsFilterState>(key: K, value: PublicCardsFilterState[K]) => {
@@ -190,7 +156,7 @@ export function usePublicCardsDirectory() {
     }
     setDraftFilters(nextApplied)
     setAppliedFilters(nextApplied)
-    resetPagination({ setExtraCards, setLoadedThroughPage, setHasLoadedAll })
+    setExtraCards([])
   }, [draftFilters])
 
   const updateAndApplyFilter = useCallback(
@@ -206,7 +172,7 @@ export function usePublicCardsDirectory() {
               : trimmedService,
         }
         setAppliedFilters(applied)
-        resetPagination({ setExtraCards, setLoadedThroughPage, setHasLoadedAll })
+        setExtraCards([])
         return next
       })
     },
@@ -216,141 +182,37 @@ export function usePublicCardsDirectory() {
   const clearFilters = useCallback(() => {
     setDraftFilters(EMPTY_PUBLIC_CARDS_FILTERS)
     setAppliedFilters(EMPTY_PUBLIC_CARDS_FILTERS)
-    resetPagination({ setExtraCards, setLoadedThroughPage, setHasLoadedAll })
+    setExtraCards([])
   }, [])
-
-  const refetch = useCallback(() => {
-    resetPagination({ setExtraCards, setLoadedThroughPage, setHasLoadedAll })
-    setAppliedFilters((current) => ({ ...current }))
-  }, [])
-
-  const loadMore = useCallback(async () => {
-    if (!hasMore || isLoadingMore) return
-
-    setIsLoadingMore(true)
-    try {
-      const nextPage = loadedThroughPage + 1
-      const result = await fetchPublicCards(
-        buildPublicCardsSearchParams(structuralFilters, nextPage, {
-          perPage: pageSize,
-        })
-      )
-      setExtraCards((prev) => dedupePublicCards([...prev, ...result.cards.map(mapPublicCardToListItem)]))
-      setLoadedThroughPage(nextPage)
-      if (nextPage >= result.pagination.last_page) {
-        setHasLoadedAll(true)
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load more cards')
-    } finally {
-      setIsLoadingMore(false)
-    }
-  }, [hasMore, isLoadingMore, loadedThroughPage, pageSize, structuralFilters])
-
-  const prefetchAllCards = useCallback(async () => {
-    if (effectiveHasLoadedAll || isPrefetchingAll || isLoading) return
-
-    const token = ++prefetchTokenRef.current
-    setIsPrefetchingAll(true)
-
-    try {
-      if (lastPage <= 1) {
-        if (token === prefetchTokenRef.current) setHasLoadedAll(true)
-        return
-      }
-
-      if (total <= PUBLIC_CARDS_MAX_PER_PAGE) {
-        const result = await fetchPublicCards(
-          buildPublicCardsSearchParams(structuralFilters, 1, {
-            perPage: Math.min(total, PUBLIC_CARDS_MAX_PER_PAGE),
-          })
-        )
-
-        if (token !== prefetchTokenRef.current) return
-
-        const mapped = result.cards.map(mapPublicCardToListItem)
-        setFirstPageCards(mapped)
-        setExtraCards([])
-        setLoadedThroughPage(result.pagination.last_page)
-        setHasLoadedAll(true)
-        return
-      }
-
-      let page = loadedThroughPage + 1
-      let accumulated = [...extraCards]
-
-      while (page <= lastPage) {
-        const result = await fetchPublicCards(
-          buildPublicCardsSearchParams(structuralFilters, page, {
-            perPage: pageSize,
-          })
-        )
-
-        if (token !== prefetchTokenRef.current) return
-
-        accumulated = dedupePublicCards([...accumulated, ...result.cards.map(mapPublicCardToListItem)])
-        setExtraCards(accumulated)
-        setLoadedThroughPage(page)
-
-        if (page >= lastPage) {
-          setHasLoadedAll(true)
-          break
-        }
-
-        page += 1
-      }
-    } finally {
-      if (token === prefetchTokenRef.current) {
-        setIsPrefetchingAll(false)
-      }
-    }
-  }, [
-    effectiveHasLoadedAll,
-    extraCards,
-    isLoading,
-    isPrefetchingAll,
-    lastPage,
-    loadedThroughPage,
-    pageSize,
-    structuralFilters,
-    total,
-  ])
-
-  useEffect(() => {
-    if (effectiveHasLoadedAll || isLoading) return
-    queueMicrotask(() => {
-      void prefetchAllCards()
-    })
-  }, [effectiveHasLoadedAll, isLoading, prefetchAllCards])
 
   return {
     cards,
     loadedCards,
-    dropdowns: mergedDropdowns,
+    dropdowns,
     draftFilters,
     appliedFilters,
     hasActiveFilters: hasActivePublicCardsFilters(appliedFilters),
     isLoading,
     isFetching,
-    isLoadingMore,
+    isLoadingMore: false,
     isPrefetchingAll,
     isEnrichingImages,
     isSearching: isFetching && !isLoading,
     isSearchActive,
     searchQuery,
-    error,
+    error: error ? 'Failed to load public cards' : null,
     hasMore,
-    hasLoadedAll: effectiveHasLoadedAll,
+    hasLoadedAll,
     loadedCount: loadedCards.length,
-    remainingCount,
+    remainingCount: Math.max(serverTotal - loadedCards.length, 0),
     total: isSearchActive ? cards.length : serverTotal,
     serverTotal,
     setDraftFilter,
     applyFilters,
     updateAndApplyFilter,
     clearFilters,
-    loadMore,
-    prefetchAllCards,
+    loadMore: async () => undefined,
+    prefetchAllCards: async () => undefined,
     refetch,
   }
 }

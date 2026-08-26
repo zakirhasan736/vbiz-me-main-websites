@@ -69,6 +69,7 @@ export type PublicCardsSearchParams = {
   profession_id?: PublicCardId
   service?: string
   search?: string
+  dropdowns?: 0 | 1
 }
 
 export type PublicCardsResponse = {

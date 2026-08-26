@@ -10,22 +10,26 @@ import { SafariPerfBoot } from '@/components/providers/safari-perf-boot';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { SmoothScrollProvider } from '@/components/providers/smooth-scroll-provider';
 
+import { ReduxProvider } from '@/redux/ReduxProvider';
+
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
-    <ThemeProvider>
-      <SafariPerfBoot />
-      <PageTransitionProvider>
-        <SmoothScrollProvider>
-          <div className="min-h-screen overflow-x-clip bg-brand-dark font-sans selection:bg-brand-gold selection:text-brand-dark">
-            <Navbar />
-            <main className="overflow-x-clip">
-              <PageTransitionOverlay>{children}</PageTransitionOverlay>
-            </main>
-            <Footer />
-            <LazyLiveAgentLauncher />
-          </div>
-        </SmoothScrollProvider>
-      </PageTransitionProvider>
-    </ThemeProvider>
+    <ReduxProvider>
+      <ThemeProvider>
+        <SafariPerfBoot />
+        <PageTransitionProvider>
+          <SmoothScrollProvider>
+            <div className="min-h-screen overflow-x-clip bg-brand-dark font-sans selection:bg-brand-gold selection:text-brand-dark">
+              <Navbar />
+              <main className="overflow-x-clip">
+                <PageTransitionOverlay>{children}</PageTransitionOverlay>
+              </main>
+              <Footer />
+              <LazyLiveAgentLauncher />
+            </div>
+          </SmoothScrollProvider>
+        </PageTransitionProvider>
+      </ThemeProvider>
+    </ReduxProvider>
   );
 }
