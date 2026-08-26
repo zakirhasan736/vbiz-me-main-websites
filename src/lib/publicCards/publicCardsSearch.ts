@@ -1,16 +1,21 @@
-import type { PublicCard, PublicCardsFiltersApplied, PublicCardsSearchParams } from '@/lib/publicCards/types'
+import type {
+  PublicCard,
+  PublicCardId,
+  PublicCardsFiltersApplied,
+  PublicCardsSearchParams,
+} from '@/lib/publicCards/types'
 
 export const PUBLIC_CARDS_SEARCH_MIN_CHARS = 2
 export const PUBLIC_CARDS_SEARCH_DEBOUNCE_MS = 350
 export const PUBLIC_CARDS_INITIAL_PER_PAGE = 20
-/** Matches backend total (~60) so one request loads the full directory for filters. */
-export const PUBLIC_CARDS_CATALOG_PER_PAGE = 60
+/** Backend max is 100 — one request loads as many public owners as allowed. */
+export const PUBLIC_CARDS_CATALOG_PER_PAGE = 100
 export const PUBLIC_CARDS_MAX_PER_PAGE = 100
 
 export type PublicCardsFilterState = {
-  stateId: number | null
-  cityId: number | null
-  professionId: number | null
+  stateId: PublicCardId | null
+  cityId: PublicCardId | null
+  professionId: PublicCardId | null
   service: string
 }
 
@@ -47,13 +52,14 @@ export function buildPublicCardsSearchParams(
 
   if (page != null && page > 0) params.page = page
   if (options?.perPage != null && options.perPage > 0) params.per_page = options.perPage
-  if (filters.stateId != null) params.state_id = filters.stateId
-  if (filters.cityId != null) params.city_id = filters.cityId
-  if (filters.professionId != null) params.profession_id = filters.professionId
+  if (filters.stateId != null && filters.stateId !== '') params.state_id = filters.stateId
+  if (filters.cityId != null && filters.cityId !== '') params.city_id = filters.cityId
+  if (filters.professionId != null && filters.professionId !== '') params.profession_id = filters.professionId
 
   const service = normalizePublicCardsSearchQuery(filters.service)
   if (isPublicCardsSearchReady(service)) {
     params.service = service
+    params.search = service
   }
 
   return params
@@ -64,10 +70,13 @@ export function buildPublicCardsQueryPath(params?: PublicCardsSearchParams): str
 
   if (params?.page) search.set('page', String(params.page))
   if (params?.per_page) search.set('per_page', String(params.per_page))
-  if (params?.state_id) search.set('state_id', String(params.state_id))
-  if (params?.city_id) search.set('city_id', String(params.city_id))
-  if (params?.profession_id) search.set('profession_id', String(params.profession_id))
+  if (params?.state_id != null && params.state_id !== '') search.set('state_id', String(params.state_id))
+  if (params?.city_id != null && params.city_id !== '') search.set('city_id', String(params.city_id))
+  if (params?.profession_id != null && params.profession_id !== '') {
+    search.set('profession_id', String(params.profession_id))
+  }
   if (params?.service) search.set('service', params.service)
+  if (params?.search) search.set('search', params.search)
 
   const qs = search.toString()
   return `/public-cards${qs ? `?${qs}` : ''}`
@@ -75,14 +84,14 @@ export function buildPublicCardsQueryPath(params?: PublicCardsSearchParams): str
 
 export function deriveProfessionOptionsFromPublicCards(
   cards: PublicCard[]
-): { id: number; name: string }[] {
-  const byId = new Map<number, string>()
+): { id: PublicCardId; name: string }[] {
+  const byId = new Map<string, string>()
 
   for (const card of cards) {
     if (card.profession_id == null) continue
     const name = card.profession?.trim()
     if (!name) continue
-    byId.set(card.profession_id, name)
+    byId.set(String(card.profession_id), name)
   }
 
   return Array.from(byId.entries())
@@ -91,15 +100,15 @@ export function deriveProfessionOptionsFromPublicCards(
 }
 
 export function deriveProfessionOptionsFromListItems(
-  cards: Array<{ professionId: number | null; profession: string }>
-): { id: number; name: string }[] {
-  const byId = new Map<number, string>()
+  cards: Array<{ professionId: PublicCardId | null; profession: string }>
+): { id: PublicCardId; name: string }[] {
+  const byId = new Map<string, string>()
 
   for (const card of cards) {
     if (card.professionId == null) continue
     const name = card.profession?.trim()
     if (!name || name === 'Professional') continue
-    byId.set(card.professionId, name)
+    byId.set(String(card.professionId), name)
   }
 
   return Array.from(byId.entries())
@@ -122,13 +131,20 @@ export function filterPublicCardsByQuery<
   })
 }
 
+function parseFilterId(value?: string | null): PublicCardId | null {
+  if (!value) return null
+  const asNumber = Number(value)
+  if (Number.isFinite(asNumber) && String(asNumber) === value) return asNumber
+  return value
+}
+
 export function parsePublicCardsFiltersApplied(applied?: PublicCardsFiltersApplied): PublicCardsFilterState {
   if (!applied) return { ...EMPTY_PUBLIC_CARDS_FILTERS }
 
   return {
-    stateId: applied.state_id ? Number(applied.state_id) : null,
-    cityId: applied.city_id ? Number(applied.city_id) : null,
-    professionId: applied.profession_id ? Number(applied.profession_id) : null,
+    stateId: parseFilterId(applied.state_id),
+    cityId: parseFilterId(applied.city_id),
+    professionId: parseFilterId(applied.profession_id),
     service: applied.service ?? '',
   }
 }

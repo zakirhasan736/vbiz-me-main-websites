@@ -17,9 +17,9 @@ const ENRICH_CONCURRENCY = 4
  * use profile_media / intro_video — same source the live vCard profile uses.
  */
 export function useEnrichPublicCardImages(cards: PublicCardListItem[], enrichLocationForSearch = false) {
-  const [enrichedById, setEnrichedById] = useState<Record<number, PublicCardListItem>>({})
+  const [enrichedById, setEnrichedById] = useState<Record<string, PublicCardListItem>>({})
   const [enrichmentStatus, setEnrichmentStatus] = useState({ signature: '', completed: 0 })
-  const inFlightRef = useRef(new Set<number>())
+  const inFlightRef = useRef(new Set<string>())
   const tokenRef = useRef(0)
 
   const cardsNeedingEnrichment = useMemo(() => {
@@ -44,9 +44,10 @@ export function useEnrichPublicCardImages(cards: PublicCardListItem[], enrichLoc
     let cursor = 0
 
     const enrichOne = async (card: PublicCardListItem) => {
-      if (cancelled || inFlightRef.current.has(card.id)) return
+      const id = String(card.id)
+      if (cancelled || inFlightRef.current.has(id)) return
 
-      inFlightRef.current.add(card.id)
+      inFlightRef.current.add(id)
       try {
         const result = await fetchMyCardBySlug(card.slug)
         if (cancelled || token !== tokenRef.current) return
@@ -55,18 +56,18 @@ export function useEnrichPublicCardImages(cards: PublicCardListItem[], enrichLoc
           ? resolvePublicCardMediaFromMyCard(result)
           : { src: null, isVideo: false }
         const location = {
-          city: result.profile.city,
-          state: result.profile.state,
+          city: result.profile?.city ?? null,
+          state: result.profile?.state ?? null,
         }
 
         setEnrichedById((prev) => ({
           ...prev,
-          [card.id]: applyPublicCardMediaEnrichment(card, media, location),
+          [id]: applyPublicCardMediaEnrichment(card, media, location),
         }))
       } catch {
         // Keep initials fallback when profile fetch fails.
       } finally {
-        inFlightRef.current.delete(card.id)
+        inFlightRef.current.delete(id)
         if (!cancelled && token === tokenRef.current) {
           setEnrichmentStatus((prev) =>
             prev.signature === enrichmentSignature ? { ...prev, completed: prev.completed + 1 } : prev
@@ -91,12 +92,13 @@ export function useEnrichPublicCardImages(cards: PublicCardListItem[], enrichLoc
     }
   }, [cardsNeedingEnrichment, enrichmentSignature])
 
-  const needingIds = useMemo(() => new Set(cardsNeedingEnrichment.map((card) => card.id)), [cardsNeedingEnrichment])
+  const needingIds = useMemo(() => new Set(cardsNeedingEnrichment.map((card) => String(card.id))), [cardsNeedingEnrichment])
 
   const displayCards = useMemo(() => {
     return cards.map((card) => {
-      if (needingIds.has(card.id) && enrichedById[card.id]) {
-        return enrichedById[card.id]
+      const id = String(card.id)
+      if (needingIds.has(id) && enrichedById[id]) {
+        return enrichedById[id]
       }
       return card
     })

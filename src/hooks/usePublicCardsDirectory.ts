@@ -34,19 +34,21 @@ function resetPagination(setters: {
 }
 
 function dedupePublicCards(cards: PublicCardListItem[]): PublicCardListItem[] {
-  const seen = new Set<number>()
+  const seen = new Set<string>()
   return cards.filter((card) => {
-    if (seen.has(card.id)) return false
-    seen.add(card.id)
+    const key = String(card.id)
+    if (seen.has(key)) return false
+    seen.add(key)
     return true
   })
 }
 
 function dedupeRawPublicCards(cards: PublicCard[]): PublicCard[] {
-  const seen = new Set<number>()
+  const seen = new Set<string>()
   return cards.filter((card) => {
-    if (seen.has(card.id)) return false
-    seen.add(card.id)
+    const key = String(card.id)
+    if (seen.has(key)) return false
+    seen.add(key)
     return true
   })
 }
@@ -64,6 +66,7 @@ export function usePublicCardsDirectory() {
   const [total, setTotal] = useState(0)
   const [lastPage, setLastPage] = useState(1)
   const [loadedThroughPage, setLoadedThroughPage] = useState(1)
+  const [pageSize, setPageSize] = useState(PUBLIC_CARDS_CATALOG_PER_PAGE)
   const [hasLoadedAll, setHasLoadedAll] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isFetching, setIsFetching] = useState(false)
@@ -82,8 +85,6 @@ export function usePublicCardsDirectory() {
     }),
     [appliedFilters.cityId, appliedFilters.professionId, appliedFilters.stateId]
   )
-
-  const hasStructuralFilters = hasStructuralPublicCardsFilters(appliedFilters)
 
   const loadedCards = useMemo(
     () => dedupePublicCards([...firstPageCards, ...extraCards]),
@@ -131,12 +132,11 @@ export function usePublicCardsDirectory() {
 
       try {
         const structuralOnly: PublicCardsFilterState = { ...filters, service: '' }
+        const perPage = hasStructuralPublicCardsFilters(filters)
+          ? PUBLIC_CARDS_INITIAL_PER_PAGE
+          : PUBLIC_CARDS_CATALOG_PER_PAGE
         const result = await fetchPublicCards(
-          buildPublicCardsSearchParams(structuralOnly, 1, {
-            perPage: hasStructuralPublicCardsFilters(filters)
-              ? PUBLIC_CARDS_INITIAL_PER_PAGE
-              : PUBLIC_CARDS_CATALOG_PER_PAGE,
-          }),
+          buildPublicCardsSearchParams(structuralOnly, 1, { perPage }),
           signal
         )
 
@@ -146,6 +146,7 @@ export function usePublicCardsDirectory() {
         setDropdowns(result.dropdowns ?? {})
         setTotal(result.pagination.total)
         setLastPage(result.pagination.last_page)
+        setPageSize(result.pagination.per_page || perPage)
         setLoadedThroughPage(1)
         setExtraCards([])
         setHasLoadedAll(result.pagination.last_page <= 1)
@@ -231,7 +232,7 @@ export function usePublicCardsDirectory() {
       const nextPage = loadedThroughPage + 1
       const result = await fetchPublicCards(
         buildPublicCardsSearchParams(structuralFilters, nextPage, {
-          perPage: PUBLIC_CARDS_INITIAL_PER_PAGE,
+          perPage: pageSize,
         })
       )
       setExtraCards((prev) => dedupePublicCards([...prev, ...result.cards.map(mapPublicCardToListItem)]))
@@ -244,7 +245,7 @@ export function usePublicCardsDirectory() {
     } finally {
       setIsLoadingMore(false)
     }
-  }, [hasMore, isLoadingMore, loadedThroughPage, structuralFilters])
+  }, [hasMore, isLoadingMore, loadedThroughPage, pageSize, structuralFilters])
 
   const prefetchAllCards = useCallback(async () => {
     if (effectiveHasLoadedAll || isPrefetchingAll || isLoading) return
@@ -261,15 +262,15 @@ export function usePublicCardsDirectory() {
       if (total <= PUBLIC_CARDS_MAX_PER_PAGE) {
         const result = await fetchPublicCards(
           buildPublicCardsSearchParams(structuralFilters, 1, {
-            perPage: total,
+            perPage: Math.min(total, PUBLIC_CARDS_MAX_PER_PAGE),
           })
         )
 
         if (token !== prefetchTokenRef.current) return
 
         const mapped = result.cards.map(mapPublicCardToListItem)
-        setFirstPageCards(mapped.slice(0, PUBLIC_CARDS_INITIAL_PER_PAGE))
-        setExtraCards(mapped.slice(PUBLIC_CARDS_INITIAL_PER_PAGE))
+        setFirstPageCards(mapped)
+        setExtraCards([])
         setLoadedThroughPage(result.pagination.last_page)
         setHasLoadedAll(true)
         return
@@ -281,7 +282,7 @@ export function usePublicCardsDirectory() {
       while (page <= lastPage) {
         const result = await fetchPublicCards(
           buildPublicCardsSearchParams(structuralFilters, page, {
-            perPage: PUBLIC_CARDS_INITIAL_PER_PAGE,
+            perPage: pageSize,
           })
         )
 
@@ -310,27 +311,17 @@ export function usePublicCardsDirectory() {
     isPrefetchingAll,
     lastPage,
     loadedThroughPage,
+    pageSize,
     structuralFilters,
     total,
   ])
 
   useEffect(() => {
     if (effectiveHasLoadedAll || isLoading) return
-    if (isSearchActive || hasStructuralFilters) {
-      queueMicrotask(() => {
-        void prefetchAllCards()
-      })
-    }
-  }, [
-    appliedFilters.cityId,
-    appliedFilters.professionId,
-    appliedFilters.stateId,
-    effectiveHasLoadedAll,
-    hasStructuralFilters,
-    isLoading,
-    isSearchActive,
-    prefetchAllCards,
-  ])
+    queueMicrotask(() => {
+      void prefetchAllCards()
+    })
+  }, [effectiveHasLoadedAll, isLoading, prefetchAllCards])
 
   return {
     cards,

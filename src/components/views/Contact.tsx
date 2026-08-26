@@ -1,40 +1,53 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Mail, MapPin, Phone, ArrowRight, CheckCircle2, AlertCircle } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Mail, MapPin, Phone, ArrowRight, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
 import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { RevealText, BannerDescription, ScrollRevealCard, SectionRevealRoot } from '@/components/animations/reveal';
+import { TurnstileWidget } from '@/components/contact/TurnstileWidget';
+import {
+  CONTACT_MIN_MESSAGE_CHARS,
+  CONTACT_MIN_MESSAGE_WORDS,
+  evaluateContactFields,
+} from '@/lib/contact-protection';
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() || '';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     email: '',
-    message: ''
+    message: '',
+    website: '',
   });
+  const [startedAt] = useState(() => Date.now());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [submitError, setSubmitError] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
+  const [turnstileReset, setTurnstileReset] = useState(0);
+  const [confirmedAccurate, setConfirmedAccurate] = useState(false);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+  const messageCheck = useMemo(() => evaluateContactFields(formData), [formData]);
+
+  const validateForm = (requireTurnstile = true) => {
+    const nextErrors = { ...messageCheck.errors };
+    if (requireTurnstile && !turnstileToken) {
+      nextErrors.turnstile = 'Please complete the security check, then send your message.';
     }
-    if (!formData.message.trim()) newErrors.message = 'Message is required';
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (!confirmedAccurate) {
+      nextErrors.confirm = 'Please check the box below so we know this is a real request.';
+    }
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -46,6 +59,7 @@ export default function Contact() {
 
     setIsSubmitting(true);
     setSubmitStatus('idle');
+    setSubmitError('');
 
     try {
       const response = await fetch('/api/contact', {
@@ -53,27 +67,42 @@ export default function Contact() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          email: formData.email,
+          message: formData.message,
+          website: formData.website,
+          turnstileToken,
+          startedAt,
+          confirmed: true,
+        }),
       });
 
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        throw new Error(payload.error || 'Failed to send message');
       }
 
       setSubmitStatus('success');
-      setFormData({ name: '', phone: '', email: '', message: '' });
-      
-      // Reset success message after 5 seconds
+      setFormData({ name: '', phone: '', email: '', message: '', website: '' });
+      setConfirmedAccurate(false);
+      setTurnstileToken('');
+      setTurnstileReset((value) => value + 1);
       setTimeout(() => setSubmitStatus('idle'), 5000);
     } catch (error) {
       console.error('Error sending message:', error);
       setSubmitStatus('error');
-      // Reset error message after 5 seconds
-      setTimeout(() => setSubmitStatus('idle'), 5000);
+      setSubmitError(error instanceof Error ? error.message : 'Something went wrong. Please try again later.');
+      setTurnstileReset((value) => value + 1);
+      setTimeout(() => setSubmitStatus('idle'), 7000);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const remainingChars = Math.max(CONTACT_MIN_MESSAGE_CHARS - messageCheck.charCount, 0);
 
   return (
     <div className="bg-brand-dark min-h-screen">
@@ -158,9 +187,25 @@ export default function Contact() {
               <div className="bg-brand-surface/80 backdrop-blur-xl py-6 px-4 md:py-8 md:px-6 rounded-[2.5rem] border border-white/10 shadow-2xl relative overflow-hidden group hover:border-brand-gold/30 transition-colors duration-500 text-left">
                 <div className="absolute inset-0 bg-gradient-to-br from-brand-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
-                <h3 className="text-3xl font-medium text-white mb-8 tracking-tight relative z-10">Send a Message</h3>
+                <h3 className="text-3xl font-medium text-white mb-2 tracking-tight relative z-10">Send a Message</h3>
+                <p className="text-neutral-500 text-sm font-light mb-8 relative z-10">
+                  Tell us what you need. We review every message and skip junk or automated traffic.
+                </p>
                 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6 relative z-10">
+                  <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+                    <label>
+                      Company website
+                      <input
+                        type="text"
+                        name="website"
+                        value={formData.website}
+                        onChange={handleInputChange}
+                        tabIndex={-1}
+                        autoComplete="off"
+                      />
+                    </label>
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col">
                       <input 
@@ -205,13 +250,54 @@ export default function Contact() {
                       name="message"
                       value={formData.message}
                       onChange={handleInputChange}
-                      placeholder="Tell us about what you need" 
+                      placeholder="Tell us what you need in your own words — at least a short paragraph we can understand." 
                       rows={5}
                       className={`w-full bg-[#111] border ${errors.message ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-brand-gold/50'} px-5 py-4 rounded-xl focus:outline-none focus:bg-[#151515] hover:bg-[#1a1a1a] hover:border-white/20 text-white placeholder-neutral-600 font-light transition-all resize-none`}
                       disabled={isSubmitting}
                     />
+                    <div className="mt-2 ml-1 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
+                      <span>
+                        {messageCheck.wordCount} words · {messageCheck.charCount} characters
+                        {remainingChars > 0 ? ` · ${remainingChars} more needed` : ' · looks long enough'}
+                      </span>
+                      <span>Minimum {CONTACT_MIN_MESSAGE_CHARS} characters and {CONTACT_MIN_MESSAGE_WORDS} words</span>
+                    </div>
                     {errors.message && <span className="text-red-400 text-base mt-2 ml-1 flex items-center gap-1"><AlertCircle size={12}/> {errors.message}</span>}
                   </div>
+
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-sm text-neutral-400">
+                      <ShieldCheck size={16} className="text-brand-gold" />
+                      Cloudflare human check
+                    </div>
+                    {TURNSTILE_SITE_KEY ? (
+                      <TurnstileWidget
+                        siteKey={TURNSTILE_SITE_KEY}
+                        onToken={setTurnstileToken}
+                        resetSignal={turnstileReset}
+                      />
+                    ) : (
+                      <p className="text-amber-400/90 text-sm">
+                        Cloudflare Turnstile is not configured yet, so messages cannot be sent.
+                      </p>
+                    )}
+                    {errors.turnstile && <span className="text-red-400 text-base mt-1 ml-1 flex items-center gap-1"><AlertCircle size={12}/> {errors.turnstile}</span>}
+                  </div>
+
+                  <label className="flex items-start gap-3 text-sm text-neutral-300 font-light leading-relaxed">
+                    <input
+                      type="checkbox"
+                      checked={confirmedAccurate}
+                      onChange={(e) => {
+                        setConfirmedAccurate(e.target.checked);
+                        if (errors.confirm) setErrors((prev) => ({ ...prev, confirm: '' }));
+                      }}
+                      className="mt-1"
+                      disabled={isSubmitting}
+                    />
+                    This is a real request from me — not junk mail or an automated message.
+                  </label>
+                  {errors.confirm && <span className="text-red-400 text-base -mt-3 ml-1 flex items-center gap-1"><AlertCircle size={12}/> {errors.confirm}</span>}
 
                   {submitStatus === 'success' && (
                     <div className="p-4 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl flex items-center gap-3 text-emerald-400 text-sm">
@@ -221,7 +307,7 @@ export default function Contact() {
 
                   {submitStatus === 'error' && (
                     <div className="p-4 bg-red-400/10 border border-red-500/25 rounded-2xl flex items-center gap-3 text-red-400 text-sm">
-                      <AlertCircle size={16} /> Something went wrong. Please try again later.
+                      <AlertCircle size={16} /> {submitError || 'Something went wrong. Please try again later.'}
                     </div>
                   )}
 

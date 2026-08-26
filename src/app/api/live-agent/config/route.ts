@@ -1,72 +1,82 @@
-import { NextResponse } from 'next/server';
-import { getGeminiEnvDiagnostics, getServerGeminiApiKey } from '@/lib/gemini-env';
-import { resolveLiveAgentVoice } from '@/lib/live-agent-voices';
+import { NextResponse } from 'next/server'
+import { resolveLiveAgentVoice } from '@/lib/live-agent-voices'
 
-export const dynamic = 'force-dynamic';
-export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
-async function probeGeminiApiKey(apiKey: string): Promise<{ ok: true } | { ok: false; message: string }> {
+function backendPublicBase(): string {
+  const raw = (process.env.VBIZ_API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.vbizme.com/api/v1').replace(
+    /\/$/,
+    ''
+  )
+  if (raw.endsWith('/v1/public')) return raw
+  if (raw.endsWith('/api/v1')) return `${raw}/public`
+  if (raw.endsWith('/api')) return `${raw}/v1/public`
+  return `${raw}/api/v1/public`
+}
+
+function unwrapLiveToken(payload: unknown): { token?: string; model?: string; expiresAt?: string; message?: string } {
+  if (!payload || typeof payload !== 'object') return {}
+  const root = payload as Record<string, unknown>
+  const nested =
+    root.data && typeof root.data === 'object' && !Array.isArray(root.data)
+      ? (root.data as Record<string, unknown>)
+      : root
+  return {
+    token: typeof nested.token === 'string' ? nested.token : undefined,
+    model: typeof nested.model === 'string' ? nested.model : undefined,
+    expiresAt: typeof nested.expiresAt === 'string' ? nested.expiresAt : undefined,
+    message: typeof root.message === 'string' ? root.message : typeof root.error === 'string' ? root.error : undefined,
+  }
+}
+
+export async function POST() {
+  const voice = resolveLiveAgentVoice()
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}&pageSize=1`,
-      { cache: 'no-store' },
-    );
-    if (response.ok) return { ok: true };
+    const response = await fetch(`${backendPublicBase()}/landing/assistant/live-token`, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+    })
+    const payload = await response.json().catch(() => null)
+    const data = unwrapLiveToken(payload)
 
-    const body = (await response.json().catch(() => null)) as {
-      error?: { message?: string; status?: string };
-    } | null;
-    const message = body?.error?.message || `Gemini API returned ${response.status}`;
-    if (/reported as leaked|leaked/i.test(message)) {
-      return {
-        ok: false,
-        message:
-          'Gemini API key was revoked as leaked. Create a new key in Google AI Studio, update GEMINI_API_KEY, and redeploy.',
-      };
+    if (!response.ok || !data.token || !data.model || !data.expiresAt) {
+      return NextResponse.json(
+        {
+          configured: false,
+          voice,
+          message:
+            data.message ||
+            'The live assistant could not start. Check GEMINI_API_KEY on vbiz-me-backend and try again.',
+        },
+        { status: response.ok ? 503 : response.status }
+      )
     }
-    return { ok: false, message };
-  } catch (err) {
-    return {
-      ok: false,
-      message: err instanceof Error ? err.message : 'Could not verify Gemini API key.',
-    };
+
+    return NextResponse.json({
+      configured: true,
+      token: data.token,
+      model: data.model,
+      expiresAt: data.expiresAt,
+      voice,
+    })
+  } catch {
+    return NextResponse.json(
+      {
+        configured: false,
+        voice,
+        message: 'Could not reach the vBiz Me API for a live assistant session.',
+      },
+      { status: 503 }
+    )
   }
 }
 
 export async function GET() {
-  const apiKey = getServerGeminiApiKey();
-  const diagnostics = getGeminiEnvDiagnostics();
-  const voice = resolveLiveAgentVoice();
-
-  if (!apiKey) {
-    return NextResponse.json(
-      {
-        ...diagnostics,
-        voice,
-        message:
-          'GEMINI_API_KEY is not set. Add GEMINI_API_KEY to .env in the project root and restart the app.',
-      },
-      { status: 503 },
-    );
-  }
-
-  const probe = await probeGeminiApiKey(apiKey);
-  if (!probe.ok) {
-    return NextResponse.json(
-      {
-        ...diagnostics,
-        voice,
-        configured: false,
-        message: probe.message,
-      },
-      { status: 503 },
-    );
-  }
-
   return NextResponse.json({
     configured: true,
-    apiKey,
-    voice,
-    keyHint: diagnostics.keyHint,
-  });
+    voice: resolveLiveAgentVoice(),
+    message: 'Use POST /api/live-agent/config to start a session. The Gemini API key stays on the backend.',
+  })
 }

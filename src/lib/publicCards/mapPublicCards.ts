@@ -1,11 +1,107 @@
+import { decodeHtmlText } from '@/lib/publicCards/htmlText'
 import { initialsFromPublicCardName, resolvePublicCardImage } from '@/lib/publicCards/publicCardImage'
-import type { PublicCard } from '@/lib/publicCards/types'
+import { getPublicCardAppBase } from '@/lib/publicCards/publicApi'
+import type {
+  PublicCard,
+  PublicCardId,
+  PublicCardsPaginatedData,
+  PublicCardsQueryResult,
+  PublicCardsResponse,
+} from '@/lib/publicCards/types'
+
+function asCardList(value: unknown): PublicCard[] {
+  return Array.isArray(value) ? (value as PublicCard[]) : []
+}
+
+function buildPaginationLinks(page: number, lastPage: number) {
+  const links = [
+    { url: page > 1 ? `?page=${page - 1}` : null, label: '&laquo; Previous', active: false },
+  ]
+  for (let i = 1; i <= lastPage; i += 1) {
+    links.push({ url: `?page=${i}`, label: String(i), active: i === page })
+  }
+  links.push({
+    url: page < lastPage ? `?page=${page + 1}` : null,
+    label: 'Next &raquo;',
+    active: false,
+  })
+  return links
+}
+
+/** Normalize Laravel-shaped or vbiz Express `/public/public-cards` payloads. */
+export function normalizePublicCardsResponse(response: PublicCardsResponse): PublicCardsQueryResult {
+  if (!response?.success || !response.data) {
+    throw new Error(response?.error || 'Failed to load public cards')
+  }
+
+  const pageData = response.data
+  const rawCards = asCardList(pageData.data)
+  const currentPage = Number(pageData.current_page) || Number(response.pagination?.current_page) || 1
+  const lastPage = Number(pageData.last_page) || Number(response.pagination?.last_page) || 1
+  const perPage = Number(pageData.per_page) || Number(response.pagination?.per_page) || rawCards.length || 12
+  const total = Number(pageData.total) || Number(response.pagination?.total) || rawCards.length
+
+  const cards = rawCards.map((card) => ({
+    ...card,
+    id: card.id,
+    name: decodeHtmlText(card.name),
+    profession: card.profession == null ? null : decodeHtmlText(card.profession),
+    profession_id: card.profession_id ?? null,
+    image: card.image ?? '',
+    image_type: card.image_type ?? '',
+    is_video: Boolean(card.is_video),
+    profile_url: card.profile_url || (card.slug ? `/v/${card.slug}` : ''),
+  }))
+
+  const links = Array.isArray(pageData.links)
+    ? pageData.links.map((link) => ({ ...link, label: decodeHtmlText(link.label) }))
+    : buildPaginationLinks(currentPage, lastPage)
+
+  const pagination: PublicCardsPaginatedData = {
+    current_page: currentPage,
+    data: cards,
+    first_page_url: pageData.first_page_url || '?page=1',
+    from: pageData.from ?? (total === 0 ? null : (currentPage - 1) * perPage + 1),
+    last_page: lastPage,
+    last_page_url: pageData.last_page_url || `?page=${lastPage}`,
+    links,
+    next_page_url:
+      pageData.next_page_url ??
+      response.pagination?.next_page_url ??
+      (currentPage < lastPage ? `?page=${currentPage + 1}` : null),
+    path: pageData.path || '/public-cards',
+    per_page: perPage,
+    prev_page_url:
+      pageData.prev_page_url ??
+      response.pagination?.prev_page_url ??
+      (currentPage > 1 ? `?page=${currentPage - 1}` : null),
+    to: pageData.to ?? (total === 0 ? null : Math.min(currentPage * perPage, total)),
+    total,
+  }
+
+  return {
+    cards,
+    pagination,
+    filtersApplied: response.filters_applied,
+    dropdowns: response.dropdowns
+      ? Object.fromEntries(
+          Object.entries(response.dropdowns).map(([key, options]) => [
+            key,
+            (Array.isArray(options) ? options : []).map((option) => ({
+              ...option,
+              name: decodeHtmlText(option.name),
+            })),
+          ])
+        )
+      : undefined,
+  }
+}
 
 export type PublicCardListItem = {
-  id: number
+  id: PublicCardId
   name: string
   profession: string
-  professionId: number | null
+  professionId: PublicCardId | null
   img: string | null
   isVideo: boolean
   initials: string
@@ -18,14 +114,21 @@ export function mapPublicCardToListItem(card: PublicCard): PublicCardListItem {
   const image = resolvePublicCardImage(card)
   return {
     id: card.id,
-    name: card.name,
-    profession: card.profession?.trim() || 'Professional',
+    name: decodeHtmlText(card.name),
+    profession: decodeHtmlText(card.profession?.trim() || 'Professional'),
     professionId: card.profession_id,
     img: image.src,
     isVideo: image.isVideo,
-    initials: initialsFromPublicCardName(card.name),
+    initials: initialsFromPublicCardName(decodeHtmlText(card.name)),
     slug: card.slug,
     city: null,
     state: null,
   }
+}
+
+export function mapPublicCardProfileUrl(slug: string, fallback?: string): string {
+  if (fallback?.startsWith('http')) return fallback
+  const trimmed = slug.trim()
+  if (!trimmed) return getPublicCardAppBase()
+  return `${getPublicCardAppBase()}/v/${trimmed}`
 }

@@ -1,30 +1,18 @@
+import { normalizePublicCardsResponse } from '@/lib/publicCards/mapPublicCards'
+import { getPublicCardAppBase, joinPublicApiPath } from '@/lib/publicCards/publicApi'
 import { buildPublicCardsQueryPath } from '@/lib/publicCards/publicCardsSearch'
 import type { PublicCardsQueryResult, PublicCardsResponse, PublicCardsSearchParams } from '@/lib/publicCards/types'
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://app.vbizme.com/api'
-
-function normalizePublicCardsResponse(response: PublicCardsResponse): PublicCardsQueryResult {
-  if (!response.success || !response.data) {
-    throw new Error(response.error || 'Failed to load public cards')
-  }
-
-  return {
-    cards: response.data.data,
-    pagination: response.data,
-    filtersApplied: response.filters_applied,
-    dropdowns: response.dropdowns,
-  }
-}
 
 export async function fetchPublicCards(
   params?: PublicCardsSearchParams,
   signal?: AbortSignal
 ): Promise<PublicCardsQueryResult> {
   const path = buildPublicCardsQueryPath(params)
-  const url = `${API_BASE.replace(/\/$/, '')}${path}`
+  const url = joinPublicApiPath(path)
 
   const res = await fetch(url, {
     headers: { Accept: 'application/json' },
+    cache: 'no-store',
     signal,
   })
 
@@ -41,6 +29,8 @@ export async function fetchPublicCards(
 }
 
 export function getPublicCardProfileUrl(card: { slug: string; profile_url?: string }): string {
-  if (card.profile_url) return card.profile_url
-  return `https://vcard.vbizme.com/${card.slug}`
+  if (card.profile_url?.startsWith('http')) return card.profile_url
+  const slug = card.slug?.trim()
+  if (!slug) return getPublicCardAppBase()
+  return `${getPublicCardAppBase()}/v/${slug}`
 }

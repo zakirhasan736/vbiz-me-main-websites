@@ -1,11 +1,11 @@
 import type { MyCardData, MyCardResponse } from '@/lib/publicCards/myCardTypes'
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://app.vbizme.com/api'
+import { joinPublicApiPath } from '@/lib/publicCards/publicApi'
 
 export async function fetchMyCardBySlug(slug: string, signal?: AbortSignal): Promise<MyCardData> {
-  const url = `${API_BASE.replace(/\/$/, '')}/v/${encodeURIComponent(slug.trim())}`
+  const url = joinPublicApiPath(`/v/${encodeURIComponent(slug.trim())}`)
   const res = await fetch(url, {
     headers: { Accept: 'application/json' },
+    cache: 'no-store',
     signal,
   })
 

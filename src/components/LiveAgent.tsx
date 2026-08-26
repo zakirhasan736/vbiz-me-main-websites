@@ -51,8 +51,9 @@ const SYSTEM_PROMPT = buildLiveAgentSystemPrompt(DEFAULT_CARD_DATA, undefined, {
   voice: true,
 });
 
-type LiveAgentConfig = {
-  apiKey: string;
+type LiveAgentSession = {
+  token: string;
+  model: string;
   voice: string;
 };
 
@@ -68,10 +69,10 @@ function formatLiveAgentError(err: unknown): string {
   const text = raw || JSON.stringify(err ?? '');
 
   if (/reported as leaked|leaked/i.test(text)) {
-    return 'Gemini API key was revoked as leaked. Create a new key in Google AI Studio, update GEMINI_API_KEY on the server, and redeploy.';
+    return 'The assistant could not start because the backend Gemini key was revoked as leaked. Update GEMINI_API_KEY on vbiz-me-backend and restart.';
   }
   if (/PERMISSION_DENIED|API_KEY_INVALID|API key not valid|403/i.test(text)) {
-    return 'Gemini API key is invalid or blocked. Create a new key in Google AI Studio and update GEMINI_API_KEY.';
+    return 'The assistant could not start. Check GEMINI_API_KEY on vbiz-me-backend.';
   }
   if (/quota|resource.?exhausted|429/i.test(text)) {
     return 'Gemini API quota exceeded. Check billing/limits in Google AI Studio.';
@@ -79,42 +80,31 @@ function formatLiveAgentError(err: unknown): string {
   return raw || 'Could not start voice session.';
 }
 
-async function resolveLiveAgentConfig(): Promise<LiveAgentConfig> {
-  const bakedKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY?.trim() || '';
+async function resolveLiveAgentSession(): Promise<LiveAgentSession> {
   const bakedVoice = resolveLiveAgentVoice();
-  const isLocalhost =
-    typeof window !== 'undefined' &&
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
-  if (isLocalhost && bakedKey) {
-    return { apiKey: bakedKey, voice: bakedVoice };
+  const response = await fetch('/api/live-agent/config', { method: 'POST', cache: 'no-store' });
+  const data = (await response.json()) as {
+    token?: string;
+    model?: string;
+    voice?: string;
+    expiresAt?: string;
+    message?: string;
+    apiKey?: string;
+  };
+  if (typeof data.apiKey === 'string' && data.apiKey.trim()) {
+    throw new Error('Live Agent refused a leaked API key payload. Restart the landing page with the latest backend token route.');
   }
-
-  try {
-    const response = await fetch('/api/live-agent/config', { cache: 'no-store' });
-    const data = (await response.json()) as {
-      apiKey?: string;
-      voice?: string;
-      message?: string;
-    };
-    if (response.ok && data.apiKey) {
-      return {
-        apiKey: data.apiKey,
-        voice: data.voice?.trim() || bakedVoice,
-      };
-    }
-    if (data.message && /leaked|invalid|blocked|not set|PERMISSION/i.test(data.message)) {
-      throw new Error(data.message);
-    }
-    if (bakedKey) return { apiKey: bakedKey, voice: bakedVoice };
-    throw new Error(data.message || 'Set GEMINI_API_KEY in .env and restart the app.');
-  } catch (err) {
-    if (err instanceof Error && /leaked|invalid|blocked|PERMISSION/i.test(err.message)) {
-      throw err;
-    }
-    if (bakedKey) return { apiKey: bakedKey, voice: bakedVoice };
-    throw err instanceof Error ? err : new Error('Could not load Live Agent config.');
+  if (!response.ok || !data.token?.trim() || !data.model?.trim()) {
+    throw new Error(data.message || 'Could not start a live assistant session from the vBiz Me API.');
   }
+  if (data.expiresAt && Date.parse(data.expiresAt) <= Date.now()) {
+    throw new Error('The live session expired before it could start. Please try again.');
+  }
+  return {
+    token: data.token.trim(),
+    model: data.model.trim(),
+    voice: data.voice?.trim() || bakedVoice,
+  };
 }
 
 type LiveAgentProps = {
@@ -130,7 +120,6 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
 
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [keyReady, setKeyReady] = useState(false);
 
   const sessionRef = useRef<any>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -145,7 +134,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   const isMutedRef = useRef(false);
   const isSpeakingRef = useRef(false);
   const aiRef = useRef<any>(null);
-  const apiKeyRef = useRef<string | null>(null);
+  const modelRef = useRef<string>('gemini-3.1-flash-live-preview');
   const voiceRef = useRef<string>(LIVE_AGENT_DEFAULT_VOICE);
   const micPausedUntilRef = useRef(0);
   const isConnectedRef = useRef(false);
@@ -475,27 +464,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    void resolveLiveAgentConfig()
-      .then((config) => {
-        if (cancelled) return;
-        apiKeyRef.current = config.apiKey;
-        voiceRef.current = config.voice;
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : 'Could not load Live Agent config.');
-      })
-      .finally(() => {
-        if (!cancelled) setKeyReady(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!autoConnect || !keyReady) return;
+    if (!autoConnect) return;
 
     scheduleAfterSiteLoad(() => {
       setIsOpen(true);
@@ -506,7 +475,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
         console.warn('Auto-start live agent failed:', err);
       });
     });
-  }, [autoConnect, keyReady]);
+  }, [autoConnect]);
 
   useEffect(() => {
     const onPageHide = () => disconnect();
@@ -656,23 +625,8 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     setIsConnected(false);
     setIsConnecting(false);
     setIsSpeaking(false);
+    aiRef.current = null;
     isDisconnectingRef.current = false;
-  };
-
-  const ensureAiClient = async () => {
-    if (aiRef.current) return aiRef.current;
-
-    const [runtime, config] = await Promise.all([
-      loadLiveAgentRuntime(),
-      apiKeyRef.current && voiceRef.current
-        ? Promise.resolve({ apiKey: apiKeyRef.current, voice: voiceRef.current })
-        : resolveLiveAgentConfig(),
-    ]);
-
-    apiKeyRef.current = config.apiKey;
-    voiceRef.current = config.voice;
-    aiRef.current = new runtime.GoogleGenAI({ apiKey: config.apiKey });
-    return aiRef.current;
   };
 
   const startConnection = async () => {
@@ -684,9 +638,11 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
     initAudioOutput();
 
     try {
-      const ai = await ensureAiClient();
-      const runtime = await loadLiveAgentRuntime();
-      if (!ai) return;
+      const [runtime, sessionAuth] = await Promise.all([loadLiveAgentRuntime(), resolveLiveAgentSession()]);
+      voiceRef.current = sessionAuth.voice;
+      modelRef.current = sessionAuth.model;
+      const ai = new runtime.GoogleGenAI({ apiKey: sessionAuth.token });
+      aiRef.current = ai;
 
       const stream = await navigator.mediaDevices.getUserMedia(LIVE_AGENT_MIC_CONSTRAINTS);
       mediaStreamRef.current = stream;
@@ -701,7 +657,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
       isDisconnectingRef.current = false;
 
       const sessionPromise = ai.live.connect({
-        model: 'gemini-3.1-flash-live-preview',
+        model: modelRef.current,
         config: {
           responseModalities: [runtime.Modality.AUDIO],
           speechConfig: {
@@ -1045,7 +1001,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
               ) : (
                 <button
                   onClick={toggleConnection}
-                  disabled={isConnecting || !keyReady}
+                  disabled={isConnecting}
                   aria-label={
                     isConnecting
                       ? 'Connecting to live AI assistant'

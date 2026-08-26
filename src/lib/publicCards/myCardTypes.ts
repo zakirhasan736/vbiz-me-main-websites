@@ -8,8 +8,8 @@ export type MyCardMediaBlock = {
 }
 
 export type MyCardProfile = {
-  city: string | null
-  state: string | null
+  city?: string | null
+  state?: string | null
 }
 
 export type MyCardData = {

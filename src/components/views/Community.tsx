@@ -13,6 +13,7 @@ import { useTheme } from '@/components/providers/theme-provider';
 import { usePublicCardsDirectory } from '@/hooks/usePublicCardsDirectory';
 import { getPublicCardProfileUrl } from '@/lib/publicCards/fetchPublicCards';
 import type { PublicCardListItem } from '@/lib/publicCards/mapPublicCards';
+import type { PublicCardId } from '@/lib/publicCards/types';
 import {
   PUBLIC_CARDS_SEARCH_DEBOUNCE_MS,
   PUBLIC_CARDS_SEARCH_MIN_CHARS,
@@ -32,6 +33,13 @@ const COMMUNITY_CARD = {
     footerH: { mobile: 100, desktop: 136 },
   },
 } as const;
+
+function parseSelectId(raw: string): PublicCardId | null {
+  if (!raw) return null;
+  const asNumber = Number(raw);
+  if (Number.isFinite(asNumber) && String(asNumber) === raw) return asNumber;
+  return raw;
+}
 
 const CARD_MEDIA_HOVER = 'grayscale-[10%] transition-all duration-700 group-hover/card:scale-[1.02] group-hover/card:grayscale-0';
 
@@ -246,7 +254,7 @@ export default function Community() {
   );
 
   const handleStateChange = useCallback(
-    (stateId: number | null) => {
+    (stateId: PublicCardId | null) => {
       updateAndApplyFilter('stateId', stateId);
       setActiveIndex(0);
     },
@@ -254,7 +262,7 @@ export default function Community() {
   );
 
   const handleCityChange = useCallback(
-    (cityId: number | null) => {
+    (cityId: PublicCardId | null) => {
       updateAndApplyFilter('cityId', cityId);
       setActiveIndex(0);
     },
@@ -262,7 +270,7 @@ export default function Community() {
   );
 
   const handleProfessionChange = useCallback(
-    (professionId: number | null) => {
+    (professionId: PublicCardId | null) => {
       updateAndApplyFilter('professionId', professionId);
       setActiveIndex(0);
     },
@@ -431,7 +439,7 @@ export default function Community() {
               <div className="relative w-full md:w-44">
                 <select
                   value={draftFilters.professionId ?? ''}
-                  onChange={(e) => handleProfessionChange(e.target.value ? Number(e.target.value) : null)}
+                  onChange={(e) => handleProfessionChange(parseSelectId(e.target.value))}
                   className={`w-full border rounded-xl py-2.5 md:py-3.5 px-3 md:px-4 pr-7 md:pr-10 text-[10px] md:text-[11px] font-bold uppercase tracking-wide md:tracking-wider focus:outline-none focus:border-brand-gold/40 appearance-none cursor-pointer ${
                     isDarkMode
                       ? 'bg-neutral-950 border-white/10 text-neutral-300'
@@ -450,7 +458,7 @@ export default function Community() {
               <div className="relative w-full md:w-40">
                 <select
                   value={draftFilters.stateId ?? ''}
-                  onChange={(e) => handleStateChange(e.target.value ? Number(e.target.value) : null)}
+                  onChange={(e) => handleStateChange(parseSelectId(e.target.value))}
                   className={`w-full border rounded-xl py-2.5 md:py-3.5 px-3 md:px-4 pr-7 md:pr-10 text-[10px] md:text-[11px] font-bold uppercase tracking-wide md:tracking-wider focus:outline-none focus:border-brand-gold/40 appearance-none cursor-pointer ${
                     isDarkMode
                       ? 'bg-neutral-950 border-white/10 text-neutral-300'
@@ -470,7 +478,7 @@ export default function Community() {
                 <select
                   value={draftFilters.cityId ?? ''}
                   disabled={!draftFilters.stateId}
-                  onChange={(e) => handleCityChange(e.target.value ? Number(e.target.value) : null)}
+                  onChange={(e) => handleCityChange(parseSelectId(e.target.value))}
                   className={`w-full border rounded-xl py-2.5 md:py-3.5 px-3 md:px-4 pr-7 md:pr-10 text-[10px] md:text-[11px] font-bold uppercase tracking-wide md:tracking-wider focus:outline-none focus:border-brand-gold/40 appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                     isDarkMode
                       ? 'bg-neutral-950 border-white/10 text-neutral-300'
