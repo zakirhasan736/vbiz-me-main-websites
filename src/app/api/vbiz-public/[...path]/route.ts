@@ -7,16 +7,14 @@ export const runtime = 'nodejs'
 async function proxyPublicApi(request: NextRequest, path: string[]) {
   const search = request.nextUrl.search
   const target = joinPublicApiPath(`/${path.join('/')}${search}`)
-  const forwarded = request.headers.get('x-forwarded-for')
-  const clientIp = request.headers.get('x-real-ip') || request.ip
+  const headers = new Headers({ Accept: request.headers.get('accept') || 'application/json' })
+  const forwarded = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
+  if (forwarded) headers.set('X-Forwarded-For', forwarded)
 
   try {
     const response = await fetch(target, {
       method: request.method,
-      headers: {
-        Accept: request.headers.get('accept') || 'application/json',
-        ...(forwarded || clientIp ? { 'X-Forwarded-For': forwarded || clientIp } : {}),
-      },
+      headers,
       cache: 'no-store',
     })
 
