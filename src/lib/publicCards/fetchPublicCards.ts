@@ -1,5 +1,5 @@
 import { normalizePublicCardsResponse } from '@/lib/publicCards/mapPublicCards'
-import { getPublicCardAppBase, joinPublicApiPath } from '@/lib/publicCards/publicApi'
+import { getPublicCardAppBase, publicCardsRequestUrl } from '@/lib/publicCards/publicApi'
 import { buildPublicCardsQueryPath } from '@/lib/publicCards/publicCardsSearch'
 import type { PublicCardsQueryResult, PublicCardsResponse, PublicCardsSearchParams } from '@/lib/publicCards/types'
 
@@ -8,7 +8,7 @@ export async function fetchPublicCards(
   signal?: AbortSignal
 ): Promise<PublicCardsQueryResult> {
   const path = buildPublicCardsQueryPath(params)
-  const url = joinPublicApiPath(path)
+  const url = publicCardsRequestUrl(path)
 
   const res = await fetch(url, {
     headers: { Accept: 'application/json' },

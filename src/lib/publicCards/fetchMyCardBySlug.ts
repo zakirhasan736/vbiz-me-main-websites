@@ -1,8 +1,8 @@
 import type { MyCardData, MyCardResponse } from '@/lib/publicCards/myCardTypes'
-import { joinPublicApiPath } from '@/lib/publicCards/publicApi'
+import { publicCardsRequestUrl } from '@/lib/publicCards/publicApi'
 
 export async function fetchMyCardBySlug(slug: string, signal?: AbortSignal): Promise<MyCardData> {
-  const url = joinPublicApiPath(`/v/${encodeURIComponent(slug.trim())}`)
+  const url = publicCardsRequestUrl(`/v/${encodeURIComponent(slug.trim())}`)
   const res = await fetch(url, {
     headers: { Accept: 'application/json' },
     cache: 'no-store',

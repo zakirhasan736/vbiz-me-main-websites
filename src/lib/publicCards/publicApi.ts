@@ -29,3 +29,12 @@ export function joinPublicApiPath(path: string): string {
   }
   return `${base}${suffix}`
 }
+
+/** Browser uses the landing Next proxy so www.vbizme.com is not blocked by API CORS. */
+export function publicCardsRequestUrl(path: string): string {
+  const suffix = path.startsWith('/') ? path : `/${path}`
+  if (typeof window !== 'undefined') {
+    return `/api/vbiz-public${suffix}`
+  }
+  return joinPublicApiPath(suffix)
+}
