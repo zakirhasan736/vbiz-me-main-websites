@@ -1,4 +1,4 @@
-import { getVcardDemoOrigin } from '@/lib/vcard-profile-url'
+import { getVcardDemoOrigin } from './vcard-profile-url'
 
 /** Brief loader while a live vCard iframe connects (mobile popups & phone frames). */
 export const VCARD_SHORT_LOADER = {

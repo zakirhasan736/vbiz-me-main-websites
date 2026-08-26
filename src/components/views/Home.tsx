@@ -158,7 +158,7 @@ const InteractiveDemoSection = () => {
 
     const dnsPrefetch = document.createElement('link');
     dnsPrefetch.rel = 'dns-prefetch';
-    dnsPrefetch.href = 'https://vcard.vbizme.com';
+    dnsPrefetch.href = getVcardDemoOrigin();
     document.head.appendChild(dnsPrefetch);
 
     return () => {
@@ -292,7 +292,7 @@ const InteractiveDemoSection = () => {
                         {industries.length} live demos
                       </span>
                       <span className="inline-flex items-center rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[10px] font-mono text-neutral-400">
-                        vcard.vbizme.com
+                        {getVcardDemoHostLabel()}
                       </span>
                     </div>
                   </div>
@@ -499,8 +499,8 @@ const InteractiveDemoSection = () => {
                 </a>
                 <p className="text-[10px] text-brand-text-muted font-light mt-2 leading-relaxed">
                   {activeIframeLoading
-                    ? `Fetching vcard.vbizme.com/${slugFromDemoUrl(activeObj.demoUrl)}…`
-                    : 'Opens the same production link your clients receive — hosted on vcard.vbizme.com'}
+                    ? `Fetching ${getVcardDemoHostLabel()}/${slugFromDemoUrl(activeObj.demoUrl)}…`
+                    : `Opens the same production link your clients receive — hosted on ${getVcardDemoHostLabel()}`}
                 </p>
               </div>
 
