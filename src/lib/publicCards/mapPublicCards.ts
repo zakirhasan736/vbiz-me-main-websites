@@ -50,7 +50,7 @@ export function normalizePublicCardsResponse(response: PublicCardsResponse): Pub
     image: card.image ?? '',
     image_type: card.image_type ?? '',
     is_video: Boolean(card.is_video),
-    profile_url: card.profile_url || (card.slug ? `/v/${card.slug}` : ''),
+    profile_url: card.profile_url || (card.slug ? `/vCard/${card.slug}` : ''),
   }))
 
   const links = Array.isArray(pageData.links)
@@ -130,5 +130,5 @@ export function mapPublicCardProfileUrl(slug: string, fallback?: string): string
   if (fallback?.startsWith('http')) return fallback
   const trimmed = slug.trim()
   if (!trimmed) return getPublicCardAppBase()
-  return `${getPublicCardAppBase()}/v/${trimmed}`
+  return `${getPublicCardAppBase()}/vCard/${encodeURIComponent(trimmed)}`
 }

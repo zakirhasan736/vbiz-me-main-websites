@@ -20,16 +20,18 @@ export function getVcardDemoHostLabel(): string {
   }
 }
 
-/** Live demo / See it in action cards: `{BASE}/v/{slug}` */
+/** Live demo / See it in action cards: `{BASE}/vCard/{slug}` */
 export function vcardProfileUrl(slug: string): string {
   const trimmed = slug.trim().replace(/^\/+/, '')
-  const path = trimmed.startsWith('v/') ? trimmed : `v/${trimmed}`
+  const path = trimmed.startsWith('vCard/') ? trimmed : trimmed.startsWith('v/') ? trimmed.replace(/^v\//, 'vCard/') : `vCard/${trimmed}`
   return `${getVcardDemoBaseUrl()}/${path}`
 }
 
 export function slugFromDemoUrl(url: string): string {
   try {
-    return new URL(url).pathname.replace(/^\//, '') || url
+    const parts = new URL(url).pathname.replace(/^\//, '').split('/').filter(Boolean)
+    if (parts[0] === 'vCard' || parts[0] === 'v') return parts[1] || parts[0] || url
+    return parts.join('/') || url
   } catch {
     return url
   }

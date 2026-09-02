@@ -32,5 +32,5 @@ export function getPublicCardProfileUrl(card: { slug: string; profile_url?: stri
   if (card.profile_url?.startsWith('http')) return card.profile_url
   const slug = card.slug?.trim()
   if (!slug) return getPublicCardAppBase()
-  return `${getPublicCardAppBase()}/v/${slug}`
+  return `${getPublicCardAppBase()}/vCard/${encodeURIComponent(slug)}`
 }
