@@ -23,9 +23,9 @@ export const publicCardsApi = createApi({
       transformResponse: (response: PublicCardsResponse) => normalizePublicCardsResponse(response),
       providesTags: ['PublicCards'],
     }),
-    getLandingDemoCards: build.query<LandingDemoCard[], void>({
+    getLandingDemoCards: build.query<LandingDemoCard[], undefined>({
       query: () => 'landing/demo-cards',
-      transformResponse: (response: LandingDemoCardsResponse) => {
+      transformResponse: (response: LandingDemoCardsResponse): LandingDemoCard[] => {
         if (!response.success || !Array.isArray(response.data)) return []
         return response.data
       },

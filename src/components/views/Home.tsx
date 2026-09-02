@@ -112,18 +112,23 @@ const INDUSTRY_SWITCH_LOADER_CACHED_MS = 90;
 
 // Interactive Demo Component ("See It In Action")
 const InteractiveDemoSection = () => {
-  const { data: landingDemoCards, isLoading: isDemoCardsLoading, isError: isDemoCardsError } =
-    useGetLandingDemoCardsQuery();
+  const {
+    data: landingDemoCards,
+    isLoading: isDemoCardsLoading,
+    isError: isDemoCardsError,
+  } = useGetLandingDemoCardsQuery(undefined);
+
+  const apiDemoCount = Array.isArray(landingDemoCards) ? landingDemoCards.length : 0;
 
   const industries = useMemo(() => {
-    if (landingDemoCards && landingDemoCards.length > 0) {
+    if (apiDemoCount > 0 && landingDemoCards) {
       return landingDemoCards.map(mapLandingDemoToIndustry);
     }
     return HOME_INDUSTRIES.map((ind) => ({
       ...ind,
       icon: HOME_INDUSTRY_ICONS[ind.id] || DEFAULT_INDUSTRY_ICON,
     }));
-  }, [landingDemoCards]);
+  }, [apiDemoCount, landingDemoCards]);
 
   const [activeIndId, setActiveIndId] = useState('');
   const [mobileDemoOpen, setMobileDemoOpen] = useState(false);
@@ -398,10 +403,10 @@ const InteractiveDemoSection = () => {
               </div>
 
               <div className="home-industry-toggle-grid relative p-2 sm:p-2.5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
-                {isDemoCardsLoading && !landingDemoCards?.length ? (
+                {isDemoCardsLoading && apiDemoCount === 0 ? (
                   <p className="px-3 py-4 text-xs font-semibold text-neutral-500">Loading live demos…</p>
                 ) : null}
-                {isDemoCardsError && !landingDemoCards?.length ? (
+                {isDemoCardsError && apiDemoCount === 0 ? (
                   <p className="px-3 py-2 text-[11px] font-semibold text-amber-400/90">
                     Showing cached demo list — live avatars unavailable.
                   </p>
