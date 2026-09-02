@@ -138,8 +138,8 @@ function ConnectionCardInner({
             isDarkMode
               ? 'border-white/10 bg-black/40 text-brand-gold'
               : 'border-brand-gold/25 bg-brand-gold/[0.06] text-amber-900'
-          }`}>
-            <Briefcase size={10} /> {card.profession ?? 'Professional'}
+          }`} title={card.roleLabel}>
+            <Briefcase size={10} /> {card.roleLabel}
           </div>
         </div>
         <button
@@ -824,9 +824,9 @@ export default function Community() {
                               </h4>
                               <p
                                 className="mt-1 w-full truncate px-1 text-[9px] font-black tracking-wider text-brand-gold uppercase md:text-xs"
-                                title={card.profession ?? undefined}
+                                title={card.roleLabel}
                               >
-                                {card.profession ?? 'Professional'}
+                                {card.roleLabel}
                               </p>
                             </div>
 

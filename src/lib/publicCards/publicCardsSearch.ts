@@ -119,13 +119,21 @@ export function deriveProfessionOptionsFromListItems(
 }
 
 export function filterPublicCardsByQuery<
-  T extends { name: string; profession: string; slug: string; city?: string | null; state?: string | null },
+  T extends {
+    name: string
+    profession: string
+    designation?: string | null
+    roleLabel?: string
+    slug: string
+    city?: string | null
+    state?: string | null
+  },
 >(cards: T[], query: string): T[] {
   const normalized = normalizePublicCardsSearchQuery(query).toLowerCase()
   if (!isPublicCardsSearchReady(normalized)) return cards
 
   return cards.filter((card) => {
-    const haystack = [card.name, card.profession, card.slug, card.city, card.state]
+    const haystack = [card.name, card.profession, card.designation, card.roleLabel, card.slug, card.city, card.state]
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
