@@ -1,4 +1,4 @@
-import { vcardProfileUrl } from '@/lib/vcard-profile-url';
+import { vcardProfileUrl } from '@/lib/vcard-profile-url'
 
 const vCard = vcardProfileUrl;
 
@@ -11,14 +11,35 @@ export type HomeIndustry = {
   avatar: string;
   /** When true, avatar / placeholder are looping profile videos (not static images). */
   mediaIsVideo?: boolean;
+  /** Two-letter fallback when avatar URL is empty. */
+  initials?: string;
   tagline: string;
   services: string[];
   bgColor: string;
   ctaText: string;
   demoUrl: string;
+  slug?: string;
 };
 
-/** Homepage industry demo list — order is intentional. */
+/** Slug → static homepage metadata (icons keyed separately). Used as API fallback + extras. */
+export const HOME_INDUSTRY_SLUG_BY_ID: Record<string, string> = {
+  executive: 'michaelangelo-casanova-2',
+  electrician: 'chago-vargas',
+  'finance-wealth': 'walter-jofre-jr',
+  'auto-sales': 'brian-dennis',
+  'financial-coach': 'sheldon-singleton',
+  restaurant: 'sabor-ecuatoriano-3',
+  'moving-services': 'richard-kincaid',
+  'real-estate': 'jessica-brito',
+  fitness: 'mike-faienza',
+  legal: 'wil-jacques',
+};
+
+export const HOME_INDUSTRY_ID_BY_SLUG: Record<string, string> = Object.fromEntries(
+  Object.entries(HOME_INDUSTRY_SLUG_BY_ID).map(([id, slug]) => [slug, id]),
+);
+
+/** Homepage industry demo list — order is intentional. Kept as offline fallback. */
 export const HOME_INDUSTRIES: HomeIndustry[] = [
   {
     id: 'executive',
@@ -30,11 +51,13 @@ export const HOME_INDUSTRIES: HomeIndustry[] = [
     avatar:
       'https://app.vbizme.com/storage/ecard/profileimages/91/mc%20vbizme.mp4',
     mediaIsVideo: true,
+    initials: 'MC',
     tagline: 'Lead with a polished executive presence and a memorable digital first impression.',
     services: ['Executive Brand Positioning', 'Investor-Ready Intro Videos', 'Leadership Networking'],
     bgColor: 'border-purple-500/20 bg-purple-500/5 hover:border-purple-500/40 text-purple-400',
     ctaText: 'View Executive Demo',
     demoUrl: vCard('michaelangelo-casanova-2'),
+    slug: 'michaelangelo-casanova-2',
   },
   {
     id: 'electrician',
@@ -45,11 +68,13 @@ export const HOME_INDUSTRIES: HomeIndustry[] = [
       'https://app.vbizme.com/storage/ecard/profileimages/68/%5BUnknown%5D.jpg',
     avatar:
       'https://app.vbizme.com/storage/ecard/profileimages/68/%5BUnknown%5D.jpg',
+    initials: 'CV',
     tagline: 'Win more service calls with instant estimates, reviews, and one-tap contact saves.',
     services: ['Residential Wiring', 'Panel Upgrades', 'Emergency Service Calls'],
     bgColor: 'border-amber-400/20 bg-amber-400/5 hover:border-amber-400/40 text-amber-300',
     ctaText: 'Request Service Quote',
     demoUrl: vCard('chago-vargas'),
+    slug: 'chago-vargas',
   },
   {
     id: 'finance-wealth',
@@ -60,11 +85,13 @@ export const HOME_INDUSTRIES: HomeIndustry[] = [
       'https://app.vbizme.com/storage/ecard/profileimages/194/Walter%20Profile.jpg',
     avatar:
       'https://app.vbizme.com/storage/ecard/profileimages/194/Walter%20Profile.jpg',
+    initials: 'WJ',
     tagline: 'Educate prospects on protection, planning, and wealth strategies in one shareable card.',
     services: ['Wealth Education Sessions', 'Insurance Planning', 'Client Portfolio Reviews'],
     bgColor: 'border-cyan-500/20 bg-cyan-500/5 hover:border-cyan-500/40 text-cyan-400',
     ctaText: 'Book Consultation',
     demoUrl: vCard('walter-jofre-jr'),
+    slug: 'walter-jofre-jr',
   },
   {
     id: 'auto-sales',
@@ -76,11 +103,13 @@ export const HOME_INDUSTRIES: HomeIndustry[] = [
     avatar:
       'https://app.vbizme.com/storage/ecard/profileimages/165/BD%20Profile%20Vid.mp4',
     mediaIsVideo: true,
+    initials: 'BD',
     tagline: 'Skip dealership runarounds. Instant showroom inventory VIP access.',
     services: ['Specialist Sourcing', 'Trade Appraisals', 'Fast-Track Credit Advisory'],
     bgColor: 'border-amber-400/20 bg-amber-400/5 hover:border-amber-400/40 text-amber-300',
     ctaText: 'Browse VIP Inventory',
     demoUrl: vCard('brian-dennis'),
+    slug: 'brian-dennis',
   },
   {
     id: 'financial-coach',
@@ -92,11 +121,13 @@ export const HOME_INDUSTRIES: HomeIndustry[] = [
     avatar:
       'https://app.vbizme.com/storage/ecard/profileimages/155/Untitled%20design-60.mp4',
     mediaIsVideo: true,
+    initials: 'SS',
     tagline: 'Guide clients toward confident financial decisions with a trusted advisor experience.',
     services: ['Wealth Strategy Planning', 'Retirement Roadmaps', 'Executive Advisory Briefings'],
     bgColor: 'border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/40 text-emerald-400',
     ctaText: 'Schedule Advisory Briefing',
     demoUrl: vCard('sheldon-singleton'),
+    slug: 'sheldon-singleton',
   },
   {
     id: 'restaurant',
@@ -108,11 +139,13 @@ export const HOME_INDUSTRIES: HomeIndustry[] = [
     avatar:
       'https://app.vbizme.com/storage/ecard/profileimages/205/SE3%20Animated%20logo.mp4',
     mediaIsVideo: true,
+    initials: 'SE',
     tagline: 'Secure immediate online reservation. Experience authentic culinary flair.',
     services: ['Artisan Platters & Drinks', 'Interactive Mobile Dining Menu', 'Gourmet Catering Options'],
     bgColor: 'border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/40 text-emerald-400',
     ctaText: 'Reserve Lounge Table',
     demoUrl: vCard('sabor-ecuatoriano-3'),
+    slug: 'sabor-ecuatoriano-3',
   },
   {
     id: 'moving-services',
@@ -123,11 +156,13 @@ export const HOME_INDUSTRIES: HomeIndustry[] = [
       'https://app.vbizme.com/storage/ecard/profileimages/96/WhatsApp Image 2025-03-24 at 13.47.02.jpeg',
     avatar:
       'https://app.vbizme.com/storage/ecard/profileimages/96/WhatsApp Image 2025-03-24 at 13.47.02.jpeg',
+    initials: 'RK',
     tagline: 'Turn every estimate handshake into a saved contact and instant booking follow-up.',
     services: ['Residential & Commercial Moves', 'Packing Services', 'One-Tap Save Contact'],
     bgColor: 'border-teal-500/20 bg-teal-500/5 hover:border-teal-400/40 text-teal-300',
     ctaText: 'View Moving Demo',
     demoUrl: vCard('richard-kincaid'),
+    slug: 'richard-kincaid',
   },
   {
     id: 'real-estate',
@@ -138,11 +173,13 @@ export const HOME_INDUSTRIES: HomeIndustry[] = [
       'https://app.vbizme.com/storage/ecard/profileimages/107/WhatsApp%20Image%202025-04-18%20at%2021.43.11.jpeg',
     avatar:
       'https://app.vbizme.com/storage/ecard/profileimages/107/WhatsApp%20Image%202025-04-18%20at%2021.43.11.jpeg',
+    initials: 'JB',
     tagline: 'Turn every open house handshake into a saved contact and instant listing follow-up.',
     services: ['Listing Showcases', 'Mortgage Partner Links', 'One-Tap Save Contact'],
     bgColor: 'border-rose-500/20 bg-rose-500/5 hover:border-rose-400/40 text-rose-300',
     ctaText: 'Explore Agent Demo',
     demoUrl: vCard('jessica-brito'),
+    slug: 'jessica-brito',
   },
   {
     id: 'fitness',
@@ -153,11 +190,13 @@ export const HOME_INDUSTRIES: HomeIndustry[] = [
       'https://app.vbizme.com/storage/ecard/profileimages/102/1000021308.jpg',
     avatar:
       'https://app.vbizme.com/storage/ecard/profileimages/102/1000021308.jpg',
+    initials: 'MF',
     tagline: 'Book sessions, share transformation stories, and keep clients engaged between workouts.',
     services: ['Class Scheduling', 'Training Packages', 'Wellness Content Hub'],
     bgColor: 'border-orange-500/20 bg-orange-500/5 hover:border-orange-400/40 text-orange-300',
     ctaText: 'View Trainer Demo',
     demoUrl: vCard('mike-faienza'),
+    slug: 'mike-faienza',
   },
   {
     id: 'legal',
@@ -168,10 +207,12 @@ export const HOME_INDUSTRIES: HomeIndustry[] = [
       'https://app.vbizme.com/storage/ecard/profileimages/77/Wil-Jacques-Pic.jpg',
     avatar:
       'https://app.vbizme.com/storage/ecard/profileimages/77/Wil-Jacques-Pic.jpg',
+    initials: 'WJ',
     tagline: 'Present credentials, consultation booking, and trust signals in a polished legal profile.',
     services: ['Consultation Booking', 'Credential Highlights', 'Secure Client Intake'],
     bgColor: 'border-indigo-500/20 bg-indigo-500/5 hover:border-indigo-400/40 text-indigo-300',
     ctaText: 'View Legal Demo',
     demoUrl: vCard('wil-jacques'),
+    slug: 'wil-jacques',
   },
 ];

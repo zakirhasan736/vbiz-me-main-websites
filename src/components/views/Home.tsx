@@ -8,7 +8,7 @@ import {
   MousePointerClick, Smartphone, ScrollText, Lightbulb, Loader2,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { GlowCard, MagneticButton } from '@/components/InteractiveElements';
 import { scrollElementIntoView } from '@/lib/scroll-utils';
 import { DeferredPhoneMockupFrame } from '@/components/DeferredPhoneMockupFrame';
@@ -41,9 +41,11 @@ import type { CapabilityIconName } from '@/lib/capability-icons';
 import { SectionEyebrow } from '@/components/ui/SectionEyebrow';
 import { SiteGlowCard } from '@/components/ui/SiteGlowCard';
 import { SocialProof } from '@/components/SocialProof';
-import { HOME_INDUSTRIES } from '@/lib/home-industries';
+import { HOME_INDUSTRIES, HOME_INDUSTRY_ID_BY_SLUG, type HomeIndustry } from '@/lib/home-industries';
 import { getVcardDemoHostLabel, getVcardDemoOrigin, slugFromDemoUrl, vcardProfileUrl } from '@/lib/vcard-profile-url';
 import { useMobileViewport } from '@/lib/use-mobile-viewport';
+import { useGetLandingDemoCardsQuery } from '@/redux/publicCards.api';
+import type { LandingDemoCard } from '@/lib/landingDemoCards/types';
 
 const qrSliderItems = PORTFOLIO_QR_CARDS;
 
@@ -59,6 +61,33 @@ const HOME_INDUSTRY_ICONS: Record<string, ReactNode> = {
   fitness: <Dumbbell className="w-4 h-4" />,
   legal: <Scale className="w-4 h-4" />,
 };
+
+const DEFAULT_INDUSTRY_ICON = <Briefcase className="w-4 h-4" />;
+
+function mapLandingDemoToIndustry(card: LandingDemoCard): HomeIndustry & { icon: ReactNode } {
+  const staticId = HOME_INDUSTRY_ID_BY_SLUG[card.slug];
+  const fallback = staticId ? HOME_INDUSTRIES.find((item) => item.id === staticId) : undefined;
+  const avatar = card.avatar_url?.trim() || '';
+  const demoUrl = vcardProfileUrl(card.slug);
+
+  return {
+    id: staticId || card.id || card.slug,
+    name: card.category || fallback?.name || card.name || 'Demo',
+    company: card.designation || fallback?.company || '',
+    introTitle: fallback?.introTitle || [card.name, card.designation].filter(Boolean).join(' — ') || card.category,
+    videoPlaceholder: avatar || fallback?.videoPlaceholder || '',
+    avatar,
+    mediaIsVideo: Boolean(card.avatar_is_video),
+    initials: card.initials || fallback?.initials || '??',
+    tagline: fallback?.tagline || '',
+    services: fallback?.services || [],
+    bgColor: fallback?.bgColor || 'border-brand-gold/20 bg-brand-gold/5 hover:border-brand-gold/40 text-brand-gold',
+    ctaText: fallback?.ctaText || 'View Demo',
+    demoUrl,
+    slug: card.slug,
+    icon: (staticId && HOME_INDUSTRY_ICONS[staticId]) || DEFAULT_INDUSTRY_ICON,
+  };
+}
 
 const INDUSTRY_DEMO_STEPS = [
   {
@@ -83,12 +112,20 @@ const INDUSTRY_SWITCH_LOADER_CACHED_MS = 90;
 
 // Interactive Demo Component ("See It In Action")
 const InteractiveDemoSection = () => {
-  const industries = HOME_INDUSTRIES.map((ind) => ({
-    ...ind,
-    icon: HOME_INDUSTRY_ICONS[ind.id],
-  }));
+  const { data: landingDemoCards, isLoading: isDemoCardsLoading, isError: isDemoCardsError } =
+    useGetLandingDemoCardsQuery();
 
-  const [activeIndId, setActiveIndId] = useState('executive');
+  const industries = useMemo(() => {
+    if (landingDemoCards && landingDemoCards.length > 0) {
+      return landingDemoCards.map(mapLandingDemoToIndustry);
+    }
+    return HOME_INDUSTRIES.map((ind) => ({
+      ...ind,
+      icon: HOME_INDUSTRY_ICONS[ind.id] || DEFAULT_INDUSTRY_ICON,
+    }));
+  }, [landingDemoCards]);
+
+  const [activeIndId, setActiveIndId] = useState('');
   const [mobileDemoOpen, setMobileDemoOpen] = useState(false);
   const [previewHighlighted, setPreviewHighlighted] = useState(false);
   const [demoIframeReady, setDemoIframeReady] = useState(false);
@@ -103,6 +140,13 @@ const InteractiveDemoSection = () => {
   const activeObj = industries.find((ind) => ind.id === activeIndId) || industries[0];
 
   activeIndIdRef.current = activeIndId;
+
+  useEffect(() => {
+    if (!industries.length) return;
+    if (!activeIndId || !industries.some((ind) => ind.id === activeIndId)) {
+      setActiveIndId(industries[0].id);
+    }
+  }, [activeIndId, industries]);
 
   const clearLoaderHideTimer = useCallback(() => {
     if (loaderHideTimerRef.current !== null) {
@@ -130,7 +174,7 @@ const InteractiveDemoSection = () => {
   const handleActiveIframeLoading = useCallback(
     (loading: boolean) => {
       const industryId = activeIndIdRef.current;
-      const demoUrl = HOME_INDUSTRIES.find((ind) => ind.id === industryId)?.demoUrl;
+      const demoUrl = industries.find((ind) => ind.id === industryId)?.demoUrl;
 
       iframeLoadingRef.current[industryId] = loading;
 
@@ -144,7 +188,7 @@ const InteractiveDemoSection = () => {
       }
       scheduleHideActiveLoader(industryId);
     },
-    [scheduleHideActiveLoader],
+    [industries, scheduleHideActiveLoader],
   );
 
   useEffect(() => () => clearLoaderHideTimer(), [clearLoaderHideTimer]);
@@ -189,7 +233,7 @@ const InteractiveDemoSection = () => {
   useEffect(() => {
     if (!demoIframeReady) return;
 
-    const prefetchLinks = HOME_INDUSTRIES.map((ind) => {
+    const prefetchLinks = industries.map((ind) => {
       const link = document.createElement('link');
       link.rel = 'prefetch';
       link.href = ind.demoUrl;
@@ -201,12 +245,12 @@ const InteractiveDemoSection = () => {
     return () => {
       prefetchLinks.forEach((link) => link.remove());
     };
-  }, [demoIframeReady]);
+  }, [demoIframeReady, industries]);
 
   const selectIndustry = (id: string) => {
     if (id === activeIndIdRef.current) return;
 
-    const targetUrl = HOME_INDUSTRIES.find((ind) => ind.id === id)?.demoUrl;
+    const targetUrl = industries.find((ind) => ind.id === id)?.demoUrl;
     const cached = targetUrl ? loadedDemoUrlsRef.current.has(targetUrl) : false;
 
     switchTimeRef.current = Date.now();
@@ -236,6 +280,10 @@ const InteractiveDemoSection = () => {
   useEffect(() => {
     setMobileDemoOpen(false);
   }, [activeIndId]);
+
+  if (!activeObj) {
+    return null;
+  }
 
   return (
     <section
@@ -350,9 +398,18 @@ const InteractiveDemoSection = () => {
               </div>
 
               <div className="home-industry-toggle-grid relative p-2 sm:p-2.5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
+                {isDemoCardsLoading && !landingDemoCards?.length ? (
+                  <p className="px-3 py-4 text-xs font-semibold text-neutral-500">Loading live demos…</p>
+                ) : null}
+                {isDemoCardsError && !landingDemoCards?.length ? (
+                  <p className="px-3 py-2 text-[11px] font-semibold text-amber-400/90">
+                    Showing cached demo list — live avatars unavailable.
+                  </p>
+                ) : null}
                 {industries.map((ind, index) => {
                   const isActive = activeIndId === ind.id;
                   const isSwitching = isActive && activeIframeLoading;
+                  const avatarUrl = ind.avatar?.trim() || '';
                   return (
                     <button
                       key={ind.id}
@@ -371,16 +428,17 @@ const InteractiveDemoSection = () => {
 
                       <span className="relative shrink-0">
                         <span
-                          className={`block h-11 w-11 overflow-hidden rounded-full ring-2 transition-all ${
+                          className={`flex h-11 w-11 items-center justify-center overflow-hidden rounded-full ring-2 transition-all ${
                             isActive
                               ? 'ring-brand-gold/50 shadow-[0_0_16px_rgba(212,175,55,0.25)]'
                               : 'ring-white/10 group-hover:ring-brand-gold/25'
-                          }`}
+                          } ${!avatarUrl ? 'bg-brand-gold/15 text-[11px] font-bold tracking-wide text-brand-gold' : ''}`}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          {ind.mediaIsVideo ? (
+                          {!avatarUrl ? (
+                            <span aria-hidden>{ind.initials || '??'}</span>
+                          ) : ind.mediaIsVideo ? (
                             <video
-                              src={ind.avatar}
+                              src={avatarUrl}
                               autoPlay
                               loop
                               muted
@@ -389,8 +447,9 @@ const InteractiveDemoSection = () => {
                               aria-hidden
                             />
                           ) : (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
-                              src={ind.avatar}
+                              src={avatarUrl}
                               alt=""
                               className="h-full w-full object-cover"
                               loading="lazy"
@@ -429,7 +488,7 @@ const InteractiveDemoSection = () => {
                           {ind.company}
                         </span>
                         <span className="text-[10px] font-mono text-neutral-600 block truncate mt-0.5">
-                          /{slugFromDemoUrl(ind.demoUrl)}
+                          /{ind.slug || slugFromDemoUrl(ind.demoUrl)}
                         </span>
                       </div>
 
