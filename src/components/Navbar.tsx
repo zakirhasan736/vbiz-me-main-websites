@@ -93,7 +93,7 @@ export const Navbar: React.FC = () => {
             '--navbar-base-pt': scrolled ? '1rem' : '1.5rem',
           } as React.CSSProperties
         }
-        className={`fixed top-0 inset-x-0 z-99 flex justify-center ${
+        className={`fixed top-0 inset-x-0 z-[200] flex justify-center ${
           scrolled ? 'pt-4 md:pt-5' : 'pt-6'
         }`}
       >
