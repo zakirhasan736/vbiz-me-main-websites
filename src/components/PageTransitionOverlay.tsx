@@ -36,7 +36,9 @@ function isInternalRoute(href: string | null, pathname: string): href is string 
 
 /** Header / footer chrome — never trap these behind the page-transition click lock. */
 function isSiteChromeAnchor(anchor: Element): boolean {
-  return Boolean(anchor.closest('[data-site-navbar], footer, [data-site-footer]'));
+  return Boolean(
+    anchor.closest('[data-site-navbar], [data-site-navigation], footer, [data-site-footer]'),
+  );
 }
 
 function waitForPageReady() {
@@ -254,7 +256,6 @@ export function PageTransitionOverlay({ children }: { children: ReactNode }) {
       {children}
       <div
         className="page-transition-overlay fixed inset-0 z-[10000] overflow-hidden pointer-events-none"
-        style={{ pointerEvents: overlayVisible ? 'auto' : 'none' }}
         aria-hidden={!overlayVisible}
       >
         <motion.div

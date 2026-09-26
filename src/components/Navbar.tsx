@@ -227,6 +227,7 @@ export const Navbar: React.FC = () => {
         {mobileMenuOpen && (
           <motion.div
             key="nav-drawer"
+            data-site-navigation
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}

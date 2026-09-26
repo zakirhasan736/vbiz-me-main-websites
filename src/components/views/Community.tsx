@@ -41,6 +41,16 @@ function parseSelectId(raw: string): PublicCardId | null {
   return raw;
 }
 
+function haveSameCardIds(
+  current: Array<string | number>,
+  next: Array<string | number>,
+): boolean {
+  return (
+    current.length === next.length &&
+    current.every((id, index) => String(id) === String(next[index]))
+  );
+}
+
 const CARD_MEDIA_HOVER = 'grayscale-[10%] transition-all duration-700 group-hover/card:scale-[1.02] group-hover/card:grayscale-0';
 
 /** Snappy 3D slide — cinematic but responsive. */
@@ -289,14 +299,16 @@ export default function Community() {
   const sliderActiveIndex = cards.length === 0 ? 0 : Math.min(activeIndex, cards.length - 1);
 
   useEffect(() => {
-    if (viewMode === 'slider') {
-      const ids = [-2, -1, 0, 1, 2]
-        .map((offset) => cards[sliderActiveIndex + offset]?.id)
-        .filter((id): id is string | number => id != null)
-      setPriorityCardIds(ids)
-      return
-    }
-    setPriorityCardIds(cards.slice(0, 12).map((card) => card.id))
+    const nextPriorityCardIds =
+      viewMode === 'slider'
+        ? [-2, -1, 0, 1, 2]
+            .map((offset) => cards[sliderActiveIndex + offset]?.id)
+            .filter((id): id is string | number => id != null)
+        : cards.slice(0, 12).map((card) => card.id);
+
+    setPriorityCardIds((current) =>
+      haveSameCardIds(current, nextPriorityCardIds) ? current : nextPriorityCardIds,
+    );
   }, [cards, sliderActiveIndex, viewMode]);
 
   // Prefetch neighbor card photos so slides feel instant after the first view.
