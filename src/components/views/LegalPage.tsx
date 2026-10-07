@@ -118,7 +118,7 @@ export default function LegalPage({ content }: { content: LegalPageContent }) {
             <div className="mt-4 rounded-lg border border-brand-gold/20 bg-brand-gold/10 p-4">
               <p className="text-sm font-semibold text-white">Need help?</p>
               <p className="mt-2 text-sm leading-relaxed text-neutral-300">
-                Contact vBiz Me about account, billing, privacy, or legal questions.
+                Contact vBiz Me LLC about account, billing, privacy, or legal questions.
               </p>
               <div className="mt-4 space-y-3 text-sm">
                 <a
@@ -149,7 +149,7 @@ export default function LegalPage({ content }: { content: LegalPageContent }) {
                 Related Legal Page
               </h2>
               <p className="mt-3 text-base leading-relaxed text-neutral-300">
-                Review the companion legal page for the other terms that apply to vBiz Me.
+                Review the companion legal page for the other terms that apply to vBiz Me LLC.
               </p>
               <div className="mt-5">
                 {content.variant === 'privacy' ? (

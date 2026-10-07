@@ -159,14 +159,14 @@ export const pageContent = {
   termsAndConditions: {
     title: 'Terms and Conditions',
     description:
-      'Read the terms for using vBiz Me websites, public vCards, dashboards, backoffice administration tools, AI features, and integrations.',
+      'Read the terms for using vBiz Me LLC websites, public vCards, dashboards, backoffice administration tools, AI features, and integrations.',
     keywords: ['vBiz Me terms', 'vBiz Me terms and conditions', 'vCard platform terms'],
     path: '/terms-and-conditions',
   },
   privacyPolicy: {
     title: 'Privacy Policy',
     description:
-      'Learn how vBiz Me collects, uses, shares, and protects information across websites, public vCards, dashboards, and backoffice tools.',
+      'Learn how vBiz Me LLC collects, uses, shares, and protects information across websites, public vCards, dashboards, and backoffice tools.',
     keywords: ['vBiz Me privacy policy', 'vCard privacy', 'digital business card privacy'],
     path: '/privacy-policy',
   },
