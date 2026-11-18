@@ -5,9 +5,12 @@ on:
     branches:
       - main
 
+# Queue deploys instead of cancelling. Cancelling stops the GitHub job but not the
+# script already running on the server over SSH, so two merges in quick succession
+# ran two `npm ci` in the same folder at once and broke node_modules (ENOTEMPTY).
 concurrency:
   group: production-deploy
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -36,7 +39,8 @@ jobs:
             git reset --hard origin/main
 
             echo "Installing dependencies..."
-            npm ci
+            # A half-removed node_modules from an interrupted install makes npm ci fail; clear it and retry once.
+            npm ci || { echo "npm ci failed, clearing node_modules and retrying..."; rm -rf node_modules; npm ci; }
 
             echo "Building Next.js..."
             npm run build
