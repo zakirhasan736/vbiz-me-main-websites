@@ -930,16 +930,16 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
   };
 
   return (
-    <div className="fixed bottom-6 right-6 lg:bottom-10 lg:right-10 z-[100] flex flex-col items-end gap-4 pointer-events-none">
+    <div className="fixed bottom-4 right-4 md:bottom-6 md:right-6 lg:bottom-10 lg:right-10 z-[100] flex flex-col items-end gap-3 md:gap-4 pointer-events-none">
       {isOpen && (
-          <div className="pointer-events-auto bg-zinc-950 backdrop-blur-xl border border-zinc-800 rounded-3xl p-5 shadow-sm w-72 min-h-[194px] flex flex-col gap-4 relative overflow-hidden">
+          <div className="pointer-events-auto bg-zinc-950 backdrop-blur-xl border border-zinc-800 rounded-2xl md:rounded-3xl p-3.5 md:p-5 shadow-sm w-[200px] md:w-72 min-h-[136px] md:min-h-[194px] flex flex-col gap-2.5 md:gap-4 relative overflow-hidden">
             {isSpeaking && (
               <div className="absolute inset-0 bg-gradient-to-t from-zinc-800/30 via-transparent to-transparent opacity-50 animate-pulse pointer-events-none" />
             )}
 
             <div className="flex items-center justify-between z-10 w-full">
-              <div className="flex items-center gap-3">
-                <div className="relative w-10 h-10 shrink-0">
+              <div className="flex items-center gap-2 md:gap-3">
+                <div className="relative w-7 h-7 md:w-10 md:h-10 shrink-0">
                   <Image
                     src={LIVE_AGENT_AVATAR.src}
                     alt={LIVE_AGENT_AVATAR.alt}
@@ -947,7 +947,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                     height={LIVE_AGENT_AVATAR.panel.height}
                     sizes={LIVE_AGENT_AVATAR.panel.sizes}
                     priority
-                    className={`w-10 h-10 rounded-full object-cover border ${
+                    className={`w-7 h-7 md:w-10 md:h-10 rounded-full object-cover border ${
                       isConnected ? 'border-zinc-100' : 'border-zinc-700'
                     } ${isSpeaking ? 'ring-2 ring-zinc-100/80 ring-offset-2 ring-offset-zinc-950' : ''}`}
                   />
@@ -958,8 +958,8 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                   )}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="font-bold text-sm text-zinc-100 tracking-wide">Live AI Assistant</span>
-                  <span className="text-[10px] text-zinc-400 uppercase tracking-widest truncate max-w-[172px]">
+                  <span className="font-bold text-xs md:text-sm text-zinc-100 tracking-wide">Live AI Assistant</span>
+                  <span className="text-[9px] md:text-[10px] text-zinc-400 uppercase tracking-widest truncate max-w-[130px] md:max-w-[172px]">
                     {isConnecting
                       ? 'Connecting...'
                       : isConnected
@@ -975,27 +975,27 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
             </div>
 
             {error && (
-              <div className="text-red-300 text-base flex items-center gap-1.5 p-2 bg-red-950/50 rounded-xl z-10 border border-red-500/30 min-h-9">
-                <AlertCircle size={14} className="shrink-0" />
+              <div className="text-red-300 text-xs md:text-base flex items-center gap-1.5 p-1.5 md:p-2 bg-red-950/50 rounded-lg md:rounded-xl z-10 border border-red-500/30 min-h-0 md:min-h-9">
+                <AlertCircle size={14} className="shrink-0 size-3 md:size-3.5" />
                 <span className="line-clamp-2 leading-snug">{error}</span>
               </div>
             )}
 
-            <div className="flex items-center justify-center gap-3 mt-2 z-10">
+            <div className="flex items-center justify-center gap-2 md:gap-3 mt-1 md:mt-2 z-10">
               {isConnected ? (
                 <>
                   <button
                     onClick={() => setIsMuted(!isMuted)}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center border transition-all ${isMuted ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'}`}
+                    className={`w-9 h-9 md:w-12 md:h-12 rounded-full flex items-center justify-center border transition-all ${isMuted ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'}`}
                   >
-                    {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
+                    {isMuted ? <MicOff size={18} className="size-3.5 md:size-[18px]" /> : <Mic size={18} className="size-3.5 md:size-[18px]" />}
                   </button>
                   <button
                     onClick={toggleConnection}
                     aria-label="End live AI assistant conversation"
-                    className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white transition-all active:scale-95 border border-red-400"
+                    className="w-11 h-11 md:w-16 md:h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white transition-all active:scale-95 border border-red-400"
                   >
-                    <Square size={20} fill="currentColor" />
+                    <Square size={20} fill="currentColor" className="size-3.5 md:size-5" />
                   </button>
                 </>
               ) : (
@@ -1007,12 +1007,12 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
                       ? 'Connecting to live AI assistant'
                       : 'Start live AI assistant conversation'
                   }
-                  className="w-16 h-16 rounded-full bg-zinc-100 hover:bg-white disabled:opacity-50 flex items-center justify-center text-zinc-950 transition-all ml-auto hover:scale-105 active:scale-95 shadow-sm"
+                  className="w-11 h-11 md:w-16 md:h-16 rounded-full bg-zinc-100 hover:bg-white disabled:opacity-50 flex items-center justify-center text-zinc-950 transition-all ml-auto hover:scale-105 active:scale-95 shadow-sm"
                 >
                   {isConnecting ? (
-                    <Loader2 size={24} className="animate-spin text-zinc-400" />
+                    <Loader2 size={24} className="animate-spin text-zinc-400 size-4 md:size-6" />
                   ) : (
-                    <Mic size={24} strokeWidth={2.5} />
+                    <Mic size={24} strokeWidth={2.5} className="size-4 md:size-6" />
                   )}
                 </button>
               )}
@@ -1024,7 +1024,7 @@ export function LiveAgent({ initialOpen = false, autoConnect = false }: LiveAgen
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`pointer-events-auto w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-transform duration-300 relative overflow-hidden shadow-sm ${
+        className={`pointer-events-auto w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-transform duration-300 relative overflow-hidden shadow-sm ${
           isOpen
             ? 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
             : 'bg-zinc-100 text-zinc-950 hover:scale-105 active:scale-95'
