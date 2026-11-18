@@ -31,8 +31,8 @@ import {
   SLIDE_DURATION,
   getThreeColumnGridDirection,
   getTwoColumnDirection,
-  prefersReducedMotion,
   resolveSlideDistance,
+  useReducedMotionPreference,
   type SlideDirection,
   type SlideDistanceTier,
 } from '@/lib/motion-animation-utils';
@@ -80,15 +80,21 @@ export function useSectionShouldReveal(): boolean {
 
 export type SectionRevealViewport = 'header' | 'content' | 'grid' | 'footer' | 'compareBelow';
 
+/**
+ * When a section starts revealing. Content sections fire once their top edge is a set distance
+ * inside the viewport (`amount: 'some'` + a negative bottom margin). A share of the section's
+ * height (e.g. 18%) can never be reached by a section taller than the screen — three stacked
+ * pricing cards on a phone or in an in-app browser — so it would stay hidden forever.
+ */
 const SECTION_VIEWPORT = {
-  header: { amount: 0.35, margin: '0px 0px -8% 0px' as const },
-  content: { amount: 0.18, margin: '0px 0px -10% 0px' as const },
-  grid: { amount: 0.12, margin: '0px 0px -6% 0px' as const },
+  header: { amount: 'some', margin: '0px 0px -12% 0px' as const },
+  content: { amount: 'some', margin: '0px 0px -15% 0px' as const },
+  grid: { amount: 'some', margin: '0px 0px -10% 0px' as const },
   /** Compare page — content below table/chart; needs deliberate scroll. */
-  compareBelow: { amount: 0.28, margin: '0px 0px -4% 0px' as const },
-  /** Each footer zone sentinel must be fully inside the viewport (not peeking at bottom). */
+  compareBelow: { amount: 'some', margin: '0px 0px -25% 0px' as const },
+  /** Each footer zone sentinel (1px tall) must be fully inside the viewport (not peeking at bottom). */
   footer: { amount: 1, margin: '0px 0px -20% 0px' as const },
-} satisfies Record<SectionRevealViewport, { amount: number; margin: string }>;
+} satisfies Record<SectionRevealViewport, { amount: 'some' | number; margin: string }>;
 
 function useSectionInView(
   viewport: SectionRevealViewport = 'content',
@@ -230,8 +236,8 @@ function useRevealTrigger() {
   const fallbackRef = useRef<HTMLDivElement>(null);
   const ownInView = useInView(fallbackRef, {
     once: true,
-    amount: 0.14,
-    margin: '0px 0px -6% 0px',
+    amount: 'some',
+    margin: '0px 0px -10% 0px',
   });
 
   if (section) {
@@ -282,8 +288,9 @@ export function SectionRevealGrid({
   const shouldReveal = section?.shouldReveal ?? fallback.shouldReveal;
   const ref = section ? undefined : fallback.ref;
   const timing = resolveStaggerTiming(stagger, delayChildren, simultaneous);
+  const reducedMotion = useReducedMotionPreference();
 
-  if (prefersReducedMotion()) {
+  if (reducedMotion) {
     return (
       <div id={id} data-capability-card-grid-root className={className}>
         {children}
@@ -338,8 +345,9 @@ export function SectionRevealStaggerList({
   const shouldReveal = section?.shouldReveal ?? fallback.shouldReveal;
   const ref = section ? undefined : fallback.ref;
   const timing = resolveStaggerTiming(stagger, delayChildren, simultaneous);
+  const reducedMotion = useReducedMotionPreference();
 
-  if (prefersReducedMotion()) {
+  if (reducedMotion) {
     return (
       <div id={id} data-section-reveal-stagger className={className}>
         {children}
@@ -390,8 +398,9 @@ export function RevealGridItem({
   const px = resolveSlideDistance(distance);
   const hidden = getSlideHiddenState(direction, px, scaleOnUp && direction === 'up');
   const duration = getSlideDuration(px);
+  const reducedMotion = useReducedMotionPreference();
 
-  if (prefersReducedMotion()) {
+  if (reducedMotion) {
     return (
       <div data-reveal-card className={className}>
         {children}
@@ -482,8 +491,9 @@ export const RevealText = ({
     delay,
     scaleOnUp: direction === 'up',
   });
+  const reducedMotion = useReducedMotionPreference();
 
-  if (priority || prefersReducedMotion()) {
+  if (priority || reducedMotion) {
     return (
       <Tag id={id} data-reveal-title className={`${className} ${alignment}`}>
         <span className={`block ${centered ? 'mx-auto text-center' : ''}`}>
@@ -528,8 +538,9 @@ export const RevealParagraph = ({
     delay,
     scaleOnUp: direction === 'up',
   });
+  const reducedMotion = useReducedMotionPreference();
 
-  if (prefersReducedMotion()) {
+  if (reducedMotion) {
     return (
       <p
         data-reveal-description
@@ -579,8 +590,9 @@ export const RevealEyebrow = ({
     delay,
     scaleOnUp: direction === 'up',
   });
+  const reducedMotion = useReducedMotionPreference();
 
-  if (prefersReducedMotion()) {
+  if (reducedMotion) {
     return <SectionEyebrow label={label} variant={variant} className={className} />;
   }
 
@@ -621,8 +633,9 @@ export const ScrollRevealCard = ({
     delay,
     scaleOnUp,
   });
+  const reducedMotion = useReducedMotionPreference();
 
-  if (prefersReducedMotion()) {
+  if (reducedMotion) {
     return (
       <div id={id || undefined} data-reveal-card className={className}>
         {children}

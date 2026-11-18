@@ -9,7 +9,7 @@ import {
   SLIDE_VISIBLE_STATE,
   getSlideDuration,
   getSlideHiddenState,
-  prefersReducedMotion,
+  useReducedMotionPreference,
 } from '@/lib/motion-animation-utils';
 
 type HeroSlideEntranceProps = {
@@ -26,8 +26,9 @@ export function HeroSlideEntrance({
   onEntranceComplete,
 }: HeroSlideEntranceProps) {
   const { animateReady } = useHeroAnimateReady();
+  const reducedMotion = useReducedMotionPreference();
 
-  if (prefersReducedMotion()) {
+  if (reducedMotion) {
     return (
       <div data-hero-entrance className={className}>
         {children}

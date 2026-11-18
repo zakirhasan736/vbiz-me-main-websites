@@ -26,7 +26,7 @@ import { usePageTransition } from '@/components/providers/page-transition-contex
 import { scrollToTop as scrollPageToTop } from '@/lib/scroll-utils';
 import { VBIZ_LOGO } from '@/lib/site-assets';
 import { renderHighlightedText } from '@/lib/text-highlight';
-import { PREMIUM_EASE, prefersReducedMotion } from '@/lib/motion-animation-utils';
+import { PREMIUM_EASE, useReducedMotionPreference } from '@/lib/motion-animation-utils';
 
 const PLATFORM_LINKS = [
   ['/', 'Home'],
@@ -72,7 +72,7 @@ function FooterSocialLink({
 }
 
 function FooterAmbientLayers({ shouldReveal }: { shouldReveal: boolean }) {
-  const reduced = prefersReducedMotion();
+  const reduced = useReducedMotionPreference();
 
   if (reduced) {
     return (

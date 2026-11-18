@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import { isWebKitBrowser } from '@/lib/scroll-config';
 
 /** Shared Framer Motion timing tokens */
@@ -198,6 +198,24 @@ export function getGridRevealDelay(
 export function prefersReducedMotion(): boolean {
   if (typeof window === 'undefined') return false;
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+
+function subscribeReducedMotion(onChange: () => void) {
+  const query = window.matchMedia(REDUCED_MOTION_QUERY);
+  query.addEventListener('change', onChange);
+  return () => query.removeEventListener('change', onChange);
+}
+
+/**
+ * "Reduce Motion" for use while rendering. Calling `prefersReducedMotion()` during render makes
+ * the browser's first render differ from the server HTML (which never knows the setting): React
+ * then keeps the server's hidden `opacity:0` styles ("won't be patched up") and the content never
+ * appears. This hook renders like the server first, then switches after hydration.
+ */
+export function useReducedMotionPreference(): boolean {
+  return useSyncExternalStore(subscribeReducedMotion, prefersReducedMotion, () => false);
 }
 
 /** WebKit/Safari: skip blur/filter and heavy scale — major scroll jank source. */
