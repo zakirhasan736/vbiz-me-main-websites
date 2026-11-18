@@ -8,12 +8,13 @@ import {
   SLIDE_VISIBLE_STATE,
   getSlideDuration,
   getSlideHiddenState,
-  prefersReducedMotion,
+  useReducedMotionPreference,
 } from '@/lib/motion-animation-utils';
 import { motion } from 'framer-motion';
 
 export function HeroTrustBar() {
   const { animateReady } = useHeroAnimateReady();
+  const reducedMotion = useReducedMotionPreference();
   const distance = SLIDE_DISTANCE.MD;
   const hidden = getSlideHiddenState('up', distance, true);
   const transition = { duration: getSlideDuration(distance), ease: PREMIUM_EASE, delay: 0.15 };
@@ -49,7 +50,7 @@ export function HeroTrustBar() {
     </div>
   );
 
-  if (prefersReducedMotion()) {
+  if (reducedMotion) {
     return <div data-reveal-card>{content}</div>;
   }
 

@@ -216,8 +216,8 @@ export default function Pricing() {
 
                         <div className="px-10 flex-1 w-full text-left">
                           <ul className="space-y-4">
-                            {plan.features.map((feature) => (
-                              <li key={feature} className="flex items-start gap-4">
+                            {plan.features.map((feature, featureIndex) => (
+                              <li key={`${featureIndex}-${feature}`} className="flex items-start gap-4">
                                 <div
                                   className={`mt-1 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
                                     plan.popular ? 'bg-brand-gold/20' : 'bg-white/10'

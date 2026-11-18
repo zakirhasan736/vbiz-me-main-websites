@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { prefersReducedMotion } from '@/lib/motion-animation-utils';
+import { prefersReducedMotion, useReducedMotionPreference } from '@/lib/motion-animation-utils';
 import { isWebKitBrowser } from '@/lib/scroll-config';
 import {
   buildYouTubeEmbedSrc,
@@ -40,6 +40,7 @@ export function useYouTubeEmbed({
   const [embedSrc, setEmbedSrc] = useState<string | null>(null);
 
   const needsTap = isWebKit && tapToPlayOnWebKit;
+  const reducedMotion = useReducedMotionPreference();
 
   useEffect(() => {
     setIsWebKit(isWebKitBrowser());
@@ -122,7 +123,7 @@ export function useYouTubeEmbed({
     embedOptions,
   ]);
 
-  const showTapPrompt = needsTap && !userStarted && enabled && inView && !prefersReducedMotion();
+  const showTapPrompt = needsTap && !userStarted && enabled && inView && !reducedMotion;
   const thumbnailUrl = getYouTubeThumbnailUrl(videoId);
 
   return {

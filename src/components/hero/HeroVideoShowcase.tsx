@@ -13,7 +13,8 @@ export default function HeroVideoShowcase() {
   const [pageLoaded, setPageLoaded] = useState(
     () => typeof document !== 'undefined' && document.readyState === 'complete',
   );
-  const [entranceSettled, setEntranceSettled] = useState(() => prefersReducedMotion());
+  // Settled by the effect below for Reduce Motion; reading it here would differ from the server render.
+  const [entranceSettled, setEntranceSettled] = useState(false);
 
   useEffect(() => {
     if (pageLoaded) return;

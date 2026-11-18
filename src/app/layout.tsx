@@ -36,6 +36,8 @@ const HERO_LCP_CRITICAL_CSS = `
 @media(max-width:767px){.hero-title-lcp{letter-spacing:-.02em}.hero-desc-lcp,.hero-desc-lcp__line{line-height:1.5;min-height:1.5em}}
 `;
 
+const NO_SCRIPT_REVEAL_CSS = `[data-reveal-card],[data-hero-entrance],[data-reveal-title]>span,[data-reveal-description]>span,[data-reveal-eyebrow]>div{opacity:1!important;transform:none!important}`;
+
 const WEBKIT_PERF_BOOT = `(function(){try{var ua=navigator.userAgent;var chromium=/Chrome|CriOS|Edg|OPR|Chromium/i.test(ua);var firefox=/Firefox|FxiOS/i.test(ua);if(!firefox&&(/AppleWebKit/i.test(ua)&&!chromium||/Safari/i.test(ua)&&!chromium)){document.documentElement.classList.add('safari-light-motion');}}catch(e){}})();`;
 
 export const metadata: Metadata = buildDefaultMetadata();
@@ -46,12 +48,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: WEBKIT_PERF_BOOT }} />
         <style dangerouslySetInnerHTML={{ __html: HERO_LCP_CRITICAL_CSS }} />
+        {/* Reveal animations start hidden; without JavaScript they would never be shown. */}
+        <noscript>
+          <style>{NO_SCRIPT_REVEAL_CSS}</style>
+        </noscript>
       </head>
-      <body className={`${inter.className} theme-midnight antialiased`}>
+      <body className={`${inter.className} theme-midnight antialiased`} suppressHydrationWarning>
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('vbizme-theme');if(t==='ocean'||t==='midnight'||t==='light'){document.body.classList.remove('theme-light','theme-midnight','theme-ocean');document.body.classList.add(t==='ocean'?'theme-ocean':t==='light'?'theme-light':'theme-midnight');}}catch(e){}})();`,
