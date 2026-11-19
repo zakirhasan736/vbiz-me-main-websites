@@ -5,11 +5,16 @@ export type LegalHighlight = {
   value: string;
 };
 
+/** A paragraph or list item; `lead` renders as a bold run-in heading (e.g. "Initial term."). */
+export type LegalParagraph = string | { lead: string; text: string };
+
 export type LegalSection = {
   id: string;
   title: string;
-  body: string[];
-  bullets?: string[];
+  body: LegalParagraph[];
+  bullets?: LegalParagraph[];
+  /** Paragraphs shown after the bullet list. */
+  afterBullets?: LegalParagraph[];
 };
 
 export type LegalPageContent = {
@@ -24,25 +29,27 @@ export type LegalPageContent = {
 
 export const LEGAL_LAST_UPDATED = 'October 7, 2026';
 
+export const TERMS_LAST_UPDATED = 'October 12, 2026';
+
 export const termsPageContent: LegalPageContent = {
   variant: 'terms',
   eyebrow: 'Legal Agreement',
-  title: 'Terms and Conditions',
+  title: 'vBiz Me Terms and Conditions',
   description:
-    'These Terms are an agreement with vBiz Me LLC and explain how customers, teams, administrators, and visitors may use vBiz Me, public vCards, and the vCard Backoffice Administration platform.',
-  lastUpdated: LEGAL_LAST_UPDATED,
+    'These Terms and Conditions govern your use of the websites, public vCards, Backoffice Administration dashboard, and related services operated by vBiz Me, LLC.',
+  lastUpdated: TERMS_LAST_UPDATED,
   highlights: [
     {
       label: 'Applies to',
-      value: 'Landing pages, public vCards, dashboards, admin tools, AI features, support, and integrations.',
+      value: 'Websites, public vCards, the Backoffice Administration dashboard, AI features, integrations, and related services.',
     },
     {
-      label: 'Account use',
-      value: 'You are responsible for authorized users, accurate profile content, and secure account access.',
+      label: 'Paid plans',
+      value: 'Paid vCard plans have an initial 12-month commitment. Your order shows pricing, schedule, and renewal terms.',
     },
     {
       label: 'Questions',
-      value: 'Contact vBiz Me LLC at info@vbizme.com for billing, account, or legal questions.',
+      value: 'Contact vBiz Me, LLC at mcasanova@vbizme.com for billing, cancellation, or legal questions.',
     },
   ],
   sections: [
@@ -50,131 +57,193 @@ export const termsPageContent: LegalPageContent = {
       id: 'acceptance',
       title: '1. Acceptance of These Terms',
       body: [
-        'By visiting vbizme.com, using a vBiz Me public vCard, creating an account, accessing the vCard Backoffice Administration dashboard, or using any related feature, you agree to these Terms and our Privacy Policy.',
-        'If you use the Services on behalf of a company, team, or other organization, you confirm that you have authority to bind that organization to these Terms.',
+        'These Terms and Conditions govern your use of the websites, public vCards, Backoffice Administration dashboard, and related services operated by vBiz Me, LLC (“vBiz Me,” “we,” “us,” or “our”). Together, these are the “Services.”',
+        'By accessing or using the Services, you agree to these Terms. Our Privacy Policy explains how we collect, use, and share personal information. Paid customers accept the applicable pricing, payment schedule, and service commitment when they affirmatively agree to the checkout terms, order form, or written service agreement.',
+        'If you act for a business, team, or other organization, you confirm that you have authority to bind that organization. The person or organization identified as the customer on the order is responsible for the payment and other obligations under that order.',
       ],
     },
     {
       id: 'services',
       title: '2. Our Services',
       body: [
-        'vBiz Me provides digital business card and backoffice tools that help professionals and organizations create, publish, share, manage, and measure interactive vCards.',
-        'The Services may include profile pages, QR code sharing, media hosting, contact save and lead capture tools, meetings, analytics, support tickets, notifications, templates, AI-assisted card creation, and third-party integrations such as Canva and social login providers.',
+        'vBiz Me provides video-first digital business cards and back-office tools that help professionals and organizations create, publish, share, manage, and measure interactive vCards. Depending on your plan, the Services may include public profile pages, QR code and NFC sharing, media hosting, contact saving, lead capture, scheduling, analytics, notifications, support tickets, templates, AI-assisted content creation, and integrations such as Canva and social login.',
+        'Your order identifies the features, limits, and services included in your plan.',
       ],
     },
     {
       id: 'accounts',
       title: '3. Accounts, Roles, and Security',
       body: [
-        'You must provide accurate account information and keep it current. You are responsible for maintaining the confidentiality of your login credentials and for all activity that occurs under your account.',
-        'Corporate owners, administrators, super administrators, staff members, and card owners must use their access only for legitimate business purposes and only within the permissions assigned to them.',
-        'You must tell us promptly if you believe your account, password, OAuth login, or administrator access has been compromised.',
+        'You agree to provide accurate account information and keep it current. You are responsible for protecting your login credentials and for activity carried out by you and the users you authorize. Notify us promptly if you suspect unauthorized access to your account, connected login, or administrator credentials.',
+        'Corporate owners, administrators, staff members, and card owners may use the Services only for authorized business purposes and within their assigned permissions. Organizations are responsible for managing user access and promptly removing access when a user is no longer authorized.',
       ],
     },
     {
       id: 'content',
       title: '4. Your vCard Content',
       body: [
-        'You are responsible for the profile information, images, videos, services, portfolios, posts, reviews, menus, social links, contact details, documents, and other content you upload, import, publish, or ask us to create for you.',
-        'You keep ownership of your content. You grant vBiz Me a worldwide, non-exclusive, royalty-free license to host, store, reproduce, adapt for display, transmit, publish, and use your content as needed to provide, secure, improve, and support the Services.',
-        'You represent that you have all rights and permissions needed for the content you provide, including rights for names, images, likenesses, testimonials, logos, trademarks, audio, video, and third-party materials.',
+        'You retain ownership of the content you provide or authorize us to publish. This may include profile information, names, logos, photographs, videos, audio, service descriptions, portfolios, reviews, menus, contact details, social links, and documents.',
+        'You grant vBiz Me a worldwide, nonexclusive, royalty-free license to host, store, copy, format, display, publish, and transmit that content as reasonably needed to provide, secure, improve, and support the Services. We may allow service providers acting on our behalf to use the content for those purposes.',
+        'You confirm that you have the rights and permissions needed to provide and publish the content. This includes permission to use third-party trademarks, testimonials, artwork, music, and the names, voices, images, and likenesses of other people.',
+      ],
+    },
+    {
+      id: 'marketing-permission',
+      title: '5. Permission to Feature Your Business in vBiz Me Marketing',
+      body: [
+        'If you separately approve marketing use at checkout or in writing, you grant vBiz Me a worldwide, nonexclusive, royalty-free license to feature your approved public-facing materials to promote vBiz Me and demonstrate how its vCards work. The permission may cover your name, business name, logo, trademarks, professional headshot, likeness, voice, vCard link, public vCard screenshots, photos, videos, and other materials you approve.',
+        'vBiz Me may use those materials on its websites, social media, emails, presentations, sales demonstrations, event materials, and paid advertisements. We may crop, resize, caption, or excerpt materials for the format while preserving their meaning. We will obtain separate approval before publishing a testimonial or a case study that attributes specific business results to you. This permission excludes private leads, private dashboard information, and customer contact lists.',
+        'You confirm that you can authorize the approved use and have obtained any necessary third-party permissions. You may withdraw permission for future use by emailing mcasanova@vbizme.com. After receiving your request, we will stop new uses and remove materials from channels we control within a reasonable time. Previously distributed print materials and copies independently shared by others may remain in circulation.',
       ],
     },
     {
       id: 'public-cards',
-      title: '5. Public vCards and Lead Handling',
+      title: '6. Public vCards and Lead Handling',
       body: [
-        'Published vCards may be visible to anyone with the public link, QR code, NFC tap, or shared profile route. Information that you place on a public vCard may be indexed, copied, or shared by visitors.',
-        'When visitors save a contact, leave a message, submit lead details, click social links, request meetings, or interact with a vCard, that activity may be routed to the relevant card owner, corporate owner, or authorized administrator.',
-        'If you collect or use visitor leads through vBiz Me, you are responsible for honoring applicable privacy, marketing, consent, recordkeeping, and communication laws that apply to your own business.',
+        'Published vCards may be accessible through a public link, QR code, NFC tap, search engine, directory, or shared profile. Visitors and third parties may copy, share, or index information you publish. Publish only information you intend to make public.',
+        'When visitors save a contact, send a message, submit lead information, request a meeting, or otherwise interact with a vCard, the relevant information or activity may be shared with the card owner, corporate account owner, or authorized administrators, as applicable.',
+        'If you collect, export, or use visitor information, you are responsible for providing the notices, obtaining the permissions, honoring opt-outs, safeguarding data, and meeting the privacy and marketing requirements that apply to your business. A visitor’s submission through a vCard authorizes only the uses allowed by applicable law and the notice or consent presented to that visitor.',
       ],
     },
     {
       id: 'ai',
-      title: '6. AI-Assisted Features',
+      title: '7. AI-Assisted Features',
       body: [
-        'The Services may offer AI-assisted tools that analyze user-provided text, websites, files, images, or business descriptions to draft vCard sections, content ideas, FAQs, services, portfolio entries, or other profile material.',
-        'AI output may be incomplete, inaccurate, or unsuitable for your industry. You are responsible for reviewing and approving AI-generated content before publishing or relying on it.',
-        'Do not submit confidential, regulated, or third-party information to AI features unless you have permission and are comfortable with that information being processed to provide the requested feature.',
+        'AI-assisted features may use information you supply to draft profile copy, service descriptions, FAQs, portfolio entries, and other content. AI output can contain errors or unsuitable material. You are responsible for reviewing its accuracy, verifying rights and claims, and approving it before publication or use.',
+        'Submit confidential, regulated, or third-party information only if you have permission to do so and its processing through the feature is lawful.',
       ],
     },
     {
       id: 'integrations',
-      title: '7. Third-Party Integrations',
+      title: '8. Third-Party Services and Integrations',
       body: [
-        'Some features connect to third-party services, including payment processors, Google or Facebook social login, Canva, analytics providers, email services, hosting providers, and communication tools.',
-        'Your use of third-party services is also governed by their own terms, privacy policies, permissions, and account settings. vBiz Me is not responsible for third-party services that we do not control.',
-        'If you connect Canva or another integration, you authorize us to exchange data with that service as needed to provide the requested integration, such as listing designs, importing exported media, or confirming connection status.',
+        'The Services may connect to third-party payment processors, social login providers, Canva, analytics providers, hosting providers, and communication tools. Their terms, privacy policies, and permissions apply to your use of those services.',
+        'When you enable an integration, you authorize us to exchange the information reasonably needed to perform the action you request, such as retrieving designs, importing exported media, or confirming connection status. Third-party providers control the availability and operation of their own services.',
       ],
     },
     {
       id: 'payments',
-      title: '8. Plans, Payments, and Subscriptions',
+      title: '9. Pricing, Payments, and the 12-Month Commitment',
       body: [
-        'Paid plans, setup fees, recurring charges, trials, renewals, taxes, limits, and included features are described on the pricing page, checkout flow, invoice, order form, or written agreement that applies to your account.',
-        'Payments may be processed by third-party payment providers. You authorize vBiz Me and its payment providers to charge the payment method associated with your account for applicable fees.',
-        'Unless a separate written agreement says otherwise, fees are non-refundable except where required by law or expressly stated in the applicable checkout or order terms.',
+        {
+          lead: 'Initial term.',
+          text: 'Paid vBiz Me vCard plans have an initial commitment of 12 consecutive months unless an order signed or accepted by both parties expressly provides otherwise. The term starts on the date disclosed in your order. If you pay monthly, each payment is an installment of that 12-month commitment.',
+        },
+        {
+          lead: 'Pricing and authorization.',
+          text: 'Your order shows your billing amount and frequency, one-time fees, applicable taxes, and any discounts. If you receive a conditional discount, your order will show the standard price, the discounted price, and the amount subject to repayment if you cancel early. By affirmatively authorizing recurring payments, you authorize vBiz Me and its payment processor to charge your selected payment method according to the disclosed schedule.',
+        },
+        {
+          lead: 'Refunds.',
+          text: 'Fees already paid are nonrefundable except as stated in your order, expressly provided in these Terms, or required by law.',
+        },
+        {
+          lead: 'Renewal.',
+          text: 'Your order states whether service ends after the initial term, continues month to month, or renews for another fixed term. Automatic renewal applies only if its terms are disclosed and you affirmatively consent where required. We will provide any required notices and cancellation options. A request to stop renewal at the end of the current term does not trigger an early cancellation charge.',
+        },
+      ],
+    },
+    {
+      id: 'cancellation',
+      title: '10. Cancellation and Repayment of Discounts',
+      body: [
+        {
+          lead: 'How to cancel.',
+          text: 'You may request cancellation by emailing mcasanova@vbizme.com, through an available account cancellation option, or by any additional method required by law. Identify the account and tell us whether you want service to end early or continue through the end of the term without renewal. We will confirm the effective date and provide an itemized statement of amounts due, if any.',
+        },
+        {
+          lead: 'Ending service before the initial 12 months are up.',
+          text: 'To the extent permitted by law, if you choose to end service before the end of the initial term, you are responsible for:',
+        },
+      ],
+      bullets: [
+        {
+          lead: 'The remaining subscription installments.',
+          text: 'This is the unpaid balance of the agreed subscription price for the initial 12-month term, less any payments or credits already applied to that term.',
+        },
+        {
+          lead: 'Any conditional vCard discount disclosed in your order.',
+          text: 'For a discounted one-time vCard setup or purchase fee, this is the difference between the standard fee disclosed when you ordered and the discounted fee you agreed to pay. Any unpaid portion of the agreed discounted fee may also be due. A recurring discount is subject to repayment only if your order expressly identifies the amount and explains how it is calculated.',
+        },
+      ],
+      afterBullets: [
+        {
+          lead: 'Example.',
+          text: 'If your standard setup fee was $129, you paid $50, and you cancel with five $8 monthly installments remaining, the early cancellation balance is $119 before any applicable taxes or credits. That is $40 in remaining installments plus the $79 setup discount.',
+        },
+        'We will invoice the balance and credit amounts already paid. We may charge the payment method on file for that balance only when you have specifically authorized that charge and applicable law permits it. Stopping or revoking automatic payments does not remove amounts lawfully owed.',
+        {
+          lead: 'Exceptions.',
+          text: 'The remaining-term charge and discount repayment do not apply if vBiz Me ends your service without cause, if you cancel because vBiz Me materially breaches the agreement and fails to correct the breach within 30 days after receiving written notice, or if applicable law gives you the right to cancel without those charges. Any refund rights under applicable law or your order still apply.',
+        },
       ],
     },
     {
       id: 'acceptable-use',
-      title: '9. Acceptable Use',
-      body: ['You agree not to use the Services to:'],
+      title: '11. Acceptable Use',
+      body: ['You agree to use the Services lawfully and within the access permissions granted to you. You may not:'],
       bullets: [
-        'Violate any law, regulation, contract, privacy right, publicity right, intellectual property right, or platform rule.',
-        'Publish false, misleading, deceptive, defamatory, hateful, harassing, explicit, or harmful content.',
-        'Upload malware, attempt unauthorized access, interfere with service operations, scrape data at scale, or bypass security controls.',
-        'Send spam, unsolicited marketing, phishing messages, or communications that do not follow applicable consent requirements.',
-        'Impersonate another person or organization, misrepresent qualifications, or publish content you are not authorized to use.',
+        'Publish deceptive, defamatory, harassing, hateful, unlawfully explicit, or otherwise unlawful content.',
+        'Impersonate a person or organization, misrepresent your qualifications, or upload material you lack permission to use.',
+        'Send spam, phishing messages, or communications that violate applicable consent or opt-out requirements.',
+        'Upload malware, access accounts or systems without authorization, bypass security controls, interfere with platform operations, or scrape data at scale without permission.',
+        'Use the Services to violate intellectual property, privacy, publicity, contractual, or other legal rights.',
       ],
     },
     {
       id: 'platform-rights',
-      title: '10. vBiz Me Platform Rights',
+      title: '12. vBiz Me Platform Rights',
       body: [
-        'The Services, software, dashboard interfaces, templates, designs, logos, code, workflows, documentation, and platform branding are owned by vBiz Me or its licensors.',
-        'These Terms do not transfer ownership of the platform to you. You may use the Services only as allowed by these Terms, your plan, and any written agreement with vBiz Me.',
-      ],
-    },
-    {
-      id: 'availability',
-      title: '11. Service Changes and Availability',
-      body: [
-        'We may update, improve, suspend, restrict, or discontinue features from time to time. We aim to keep the Services reliable, but we do not guarantee uninterrupted access or error-free operation.',
-        'Certain features may depend on internet access, browser support, mobile device capabilities, third-party providers, hosting services, payment processors, or connected accounts.',
+        'vBiz Me and its licensors retain ownership of the platform, including its software, code, dashboard, templates, designs, branding, workflows, and documentation. During your active service term, you may access and use the Services as permitted by these Terms and your order.',
       ],
     },
     {
       id: 'termination',
-      title: '12. Suspension and Termination',
+      title: '13. Availability, Suspension, and Termination',
       body: [
-        'We may suspend or terminate access if we believe an account violates these Terms, creates security or legal risk, abuses the Services, fails to pay required fees, or harms vBiz Me, users, visitors, or third parties.',
-        'You may stop using the Services at any time. Some data may be retained as described in the Privacy Policy or as required for legal, billing, security, backup, fraud prevention, or legitimate business purposes.',
+        'We may update features and make changes to keep the Services secure and operational. Service availability may depend on internet connectivity, compatible browsers and devices, third-party providers, and connected accounts.',
+        'We may suspend or terminate access for nonpayment, material violations of these Terms, fraud, abuse, unauthorized access, or significant legal or security risks. When reasonably practicable, we will give notice and an opportunity to resolve the issue. We may act immediately when necessary to protect the Services or the people who use them.',
+        'When service ends, we may disable public vCards, dashboard access, and related features. We may retain records as described in our Privacy Policy or as required for legal, billing, fraud prevention, security, or backup purposes. Payment obligations already incurred and provisions intended to operate after termination remain effective, subject to applicable law.',
       ],
     },
     {
       id: 'disclaimers',
-      title: '13. Disclaimers and Limitation of Liability',
+      title: '14. Warranties and Limitation of Liability',
       body: [
-        'The Services are provided on an "as is" and "as available" basis. To the fullest extent permitted by law, vBiz Me disclaims warranties of merchantability, fitness for a particular purpose, non-infringement, accuracy, and uninterrupted availability.',
-        'To the fullest extent permitted by law, vBiz Me will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages, or for lost profits, lost revenue, lost business opportunities, lost data, or reputational harm.',
+        'To the fullest extent permitted by law, the Services are provided “as is” and “as available.” vBiz Me disclaims implied warranties of merchantability, fitness for a particular purpose, and noninfringement. We do not guarantee uninterrupted or error-free service, search indexing or ranking, lead volume, conversions, or business results.',
+        'To the fullest extent permitted by law, vBiz Me is not liable for indirect, incidental, special, consequential, exemplary, or punitive damages, including lost profits, revenue, opportunities, data, or goodwill. vBiz Me’s total liability arising out of or related to the Services will not exceed the fees you paid to vBiz Me for the affected Services during the 12 months before the event giving rise to the claim. These limits apply only where permitted by law and do not limit liability that the law makes nonwaivable.',
       ],
     },
     {
-      id: 'law',
-      title: '14. Governing Law and Updates',
+      id: 'third-party-claims',
+      title: '15. Responsibility for Third-Party Claims',
       body: [
-        'These Terms are governed by the laws of the United States and, where applicable, the State of Connecticut, without regard to conflict-of-law rules, unless another written agreement requires a different governing law.',
-        'We may update these Terms when our Services, business, or legal obligations change. The "Last updated" date shows when the page was most recently revised. Continued use of the Services after an update means you accept the updated Terms.',
+        'If you use the Services on behalf of a business, that business agrees, to the extent permitted by law, to indemnify vBiz Me for third-party claims and reasonable defense costs arising from content you supplied without the necessary rights, your unlawful handling of visitor information, or your material violation of the Acceptable Use section. This obligation applies only to the extent the claim arises from your conduct.',
       ],
     },
     {
       id: 'sms-terms',
-      title: '15. SMS Terms',
+      title: '16. SMS Terms',
       body: [
-        'By opting in, you agree to receive account-related text messages from vBiz Me LLC at the mobile number you provide.',
-        'Messages may include account notifications, appointments, scheduling alerts, contact activity, profile activity, saved-contact notifications, and other service-related communications. Message frequency varies. Message and data rates may apply.',
-        'Reply STOP to unsubscribe at any time. Reply HELP for assistance. Consent to receive SMS messages is not a condition of purchasing any product or service.',
+        'When you opt in, you agree to receive account-related text messages from vBiz Me, LLC at the mobile number you provide. Messages may include account notices, appointment confirmations and reminders, scheduling alerts, profile activity, saved-contact alerts, and related service communications.',
+        'Message frequency varies. Message and data rates may apply. Reply STOP to unsubscribe or HELP for assistance. You can also reach us at mcasanova@vbizme.com. Consent to receive text messages is voluntary and is not a condition of purchase. Any promotional text messaging program will use a separate opt-in.',
+      ],
+    },
+    {
+      id: 'electronic-acceptance',
+      title: '17. Electronic Acceptance, Notices, and Agreement Updates',
+      body: [
+        'When you check an acceptance box or otherwise affirmatively accept an order electronically, you agree that your action serves as your electronic signature for that transaction. We may send agreements, confirmations, invoices, and account notices electronically, subject to any additional requirements under applicable law. Keep your account email current.',
+        'These Terms and your accepted order or signed service agreement form the agreement for the Services. If an accepted order or signed agreement expressly conflicts with these Terms, that document controls for the affected order. If a provision is found unenforceable, the remaining provisions continue to apply. A delay in enforcing a provision does not waive the right to enforce it later.',
+        'We may revise these Terms and will post the date of the latest revision. We will provide notice of material changes and obtain fresh consent where required. Changes to the price, minimum term, or early cancellation obligations of an existing order require your agreement.',
+      ],
+    },
+    {
+      id: 'law',
+      title: '18. Governing Law and Contact Information',
+      body: [
+        'Connecticut law governs these Terms, together with applicable federal law, without regard to conflict-of-law rules. Any court proceeding relating to these Terms may be brought in a state or federal court with jurisdiction in Connecticut, subject to mandatory rights under applicable law.',
+        'vBiz Me, LLC',
       ],
     },
   ],
