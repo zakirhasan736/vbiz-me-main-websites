@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { Clock3, FileCheck2, Mail, Phone, ShieldCheck } from 'lucide-react';
 import { PageHeroBackground } from '@/components/ui/PageHeroBackground';
 import { siteConfig } from '@/lib/seo/site';
-import type { LegalPageContent, LegalSection } from '@/lib/legal-pages';
+import type { LegalPageContent, LegalParagraph, LegalSection } from '@/lib/legal-pages';
 
 const DISPLAY_PHONE = '+1 (860) 770-9893';
 
@@ -16,6 +16,32 @@ function LegalIcon({ variant }: { variant: LegalPageContent['variant'] }) {
   );
 }
 
+function legalText(item: LegalParagraph): string {
+  return typeof item === 'string' ? item : `${item.lead} ${item.text}`;
+}
+
+/** A paragraph or list item, with an optional bold run-in heading ("Initial term."). */
+function LegalRichText({ item }: { item: LegalParagraph }) {
+  if (typeof item === 'string') return <>{item}</>;
+  return (
+    <>
+      <strong className="font-semibold text-white">{item.lead}</strong> {item.text}
+    </>
+  );
+}
+
+function LegalParagraphs({ items, className }: { items: LegalParagraph[]; className: string }) {
+  return (
+    <div className={className}>
+      {items.map((item) => (
+        <p key={legalText(item)}>
+          <LegalRichText item={item} />
+        </p>
+      ))}
+    </div>
+  );
+}
+
 function LegalSectionBlock({ section }: { section: LegalSection }) {
   return (
     <section
@@ -25,20 +51,24 @@ function LegalSectionBlock({ section }: { section: LegalSection }) {
       <h2 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
         {section.title}
       </h2>
-      <div className="mt-4 space-y-4 text-base leading-relaxed text-neutral-300">
-        {section.body.map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
-        ))}
-      </div>
+      <LegalParagraphs items={section.body} className="mt-4 space-y-4 text-base leading-relaxed text-neutral-300" />
       {section.bullets ? (
         <ul className="mt-5 space-y-3 text-base leading-relaxed text-neutral-300">
           {section.bullets.map((item) => (
-            <li key={item} className="flex gap-3">
+            <li key={legalText(item)} className="flex gap-3">
               <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-gold" aria-hidden="true" />
-              <span>{item}</span>
+              <span>
+                <LegalRichText item={item} />
+              </span>
             </li>
           ))}
         </ul>
+      ) : null}
+      {section.afterBullets ? (
+        <LegalParagraphs
+          items={section.afterBullets}
+          className="mt-5 space-y-4 text-base leading-relaxed text-neutral-300"
+        />
       ) : null}
     </section>
   );
